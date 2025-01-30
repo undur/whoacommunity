@@ -1,5 +1,6 @@
 package whoacommunity.components;
 
+import ng.appserver.NGActionResults;
 import ng.appserver.NGComponent;
 import ng.appserver.NGContext;
 import whoacommunity.data.User;
@@ -33,5 +34,12 @@ public class WCLook extends NGComponent {
 
 	public String envString() {
 		return "Góður kóði slf. 2025";
+	}
+
+	public NGActionResults search() {
+		final WCSearchPage nextPage = pageWithName( WCSearchPage.class );
+		nextPage.searchString = searchString;
+		nextPage.search();
+		return nextPage;
 	}
 }
