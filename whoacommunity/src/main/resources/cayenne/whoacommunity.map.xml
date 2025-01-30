@@ -6,11 +6,23 @@
 	<property name="defaultPackage" value="whoacommunity.data"/>
 	<db-entity name="wc_channel">
 		<db-attribute name="creation_date" type="TIMESTAMP" isMandatory="true"/>
-		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isGenerated="true" isMandatory="true"/>
 		<db-attribute name="modification_date" type="TIMESTAMP" isMandatory="true"/>
 		<db-attribute name="name" type="VARCHAR" length="1024"/>
 		<db-attribute name="slack_id" type="VARCHAR" length="1024"/>
 		<db-attribute name="unique_id" type="OTHER"/>
+	</db-entity>
+	<db-entity name="wc_message">
+		<db-attribute name="channel_id" type="INTEGER"/>
+		<db-attribute name="creation_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="date_time" type="TIMESTAMP"/>
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isGenerated="true" isMandatory="true"/>
+		<db-attribute name="modification_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="slack_subtype" type="VARCHAR" length="1024"/>
+		<db-attribute name="slack_type" type="VARCHAR" length="1024"/>
+		<db-attribute name="text" type="VARCHAR" length="1000000"/>
+		<db-attribute name="unique_id" type="OTHER" isMandatory="true"/>
+		<db-attribute name="user_id" type="INTEGER"/>
 	</db-entity>
 	<db-entity name="wc_user">
 		<db-attribute name="creation_date" type="TIMESTAMP" isMandatory="true"/>
@@ -30,6 +42,15 @@
 		<obj-attribute name="slackID" type="java.lang.String" db-attribute-path="slack_id"/>
 		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
 	</obj-entity>
+	<obj-entity name="Message" className="whoacommunity.data.Message" dbEntityName="wc_message">
+		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
+		<obj-attribute name="dateTime" type="java.time.LocalDateTime" db-attribute-path="date_time"/>
+		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
+		<obj-attribute name="slackSubtype" type="java.lang.String" db-attribute-path="slack_subtype"/>
+		<obj-attribute name="slackType" type="java.lang.String" db-attribute-path="slack_type"/>
+		<obj-attribute name="text" type="java.lang.String" db-attribute-path="text"/>
+		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
+	</obj-entity>
 	<obj-entity name="User" className="whoacommunity.data.User" dbEntityName="wc_user">
 		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
 		<obj-attribute name="emailAddress" type="java.lang.String" db-attribute-path="email_address"/>
@@ -40,6 +61,22 @@
 		<obj-attribute name="slackUsername" type="java.lang.String" db-attribute-path="slack_username"/>
 		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
 	</obj-entity>
+	<db-relationship name="messages" source="wc_channel" target="wc_message" toMany="true">
+		<db-attribute-pair source="id" target="channel_id"/>
+	</db-relationship>
+	<db-relationship name="channel" source="wc_message" target="wc_channel">
+		<db-attribute-pair source="channel_id" target="id"/>
+	</db-relationship>
+	<db-relationship name="user" source="wc_message" target="wc_user">
+		<db-attribute-pair source="user_id" target="id"/>
+	</db-relationship>
+	<db-relationship name="messages" source="wc_user" target="wc_message" toMany="true">
+		<db-attribute-pair source="id" target="user_id"/>
+	</db-relationship>
+	<obj-relationship name="messages" source="Channel" target="Message" deleteRule="Deny" db-relationship-path="messages"/>
+	<obj-relationship name="channel" source="Message" target="Channel" deleteRule="Nullify" db-relationship-path="channel"/>
+	<obj-relationship name="user" source="Message" target="User" deleteRule="Nullify" db-relationship-path="user"/>
+	<obj-relationship name="messages" source="User" target="Message" deleteRule="Deny" db-relationship-path="messages"/>
 	<dbImport xmlns="http://cayenne.apache.org/schema/11/dbimport">
 		<tableTypes>
 			<tableType>TABLE</tableType>

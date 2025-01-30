@@ -4,16 +4,19 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.cayenne.PersistentObject;
 import org.apache.cayenne.exp.property.BaseProperty;
 import org.apache.cayenne.exp.property.DateProperty;
+import org.apache.cayenne.exp.property.ListProperty;
 import org.apache.cayenne.exp.property.NumericIdProperty;
 import org.apache.cayenne.exp.property.PropertyFactory;
 import org.apache.cayenne.exp.property.SelfProperty;
 import org.apache.cayenne.exp.property.StringProperty;
 
+import whoacommunity.data.Message;
 import whoacommunity.data.User;
 
 /**
@@ -39,6 +42,7 @@ public abstract class _User extends PersistentObject {
     public static final StringProperty<String> SLACK_PROFILE_IMAGE_URL = PropertyFactory.createString("slackProfileImageUrl", String.class);
     public static final StringProperty<String> SLACK_USERNAME = PropertyFactory.createString("slackUsername", String.class);
     public static final BaseProperty<UUID> UNIQUE_ID = PropertyFactory.createBase("uniqueID", UUID.class);
+    public static final ListProperty<Message> MESSAGES = PropertyFactory.createList("messages", Message.class);
 
     protected LocalDateTime creationDate;
     protected String emailAddress;
@@ -49,6 +53,7 @@ public abstract class _User extends PersistentObject {
     protected String slackUsername;
     protected UUID uniqueID;
 
+    protected Object messages;
 
     public void setCreationDate(LocalDateTime creationDate) {
         beforePropertyWrite("creationDate", this.creationDate, creationDate);
@@ -130,6 +135,19 @@ public abstract class _User extends PersistentObject {
         return this.uniqueID;
     }
 
+    public void addToMessages(Message obj) {
+        addToManyTarget("messages", obj, true);
+    }
+
+    public void removeFromMessages(Message obj) {
+        removeToManyTarget("messages", obj, true);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Message> messages() {
+        return (List<Message>)readProperty("messages");
+    }
+
     @Override
     public Object readPropertyDirectly(String propName) {
         if(propName == null) {
@@ -153,6 +171,8 @@ public abstract class _User extends PersistentObject {
                 return this.slackUsername;
             case "uniqueID":
                 return this.uniqueID;
+            case "messages":
+                return this.messages;
             default:
                 return super.readPropertyDirectly(propName);
         }
@@ -189,6 +209,9 @@ public abstract class _User extends PersistentObject {
             case "uniqueID":
                 this.uniqueID = (UUID)val;
                 break;
+            case "messages":
+                this.messages = val;
+                break;
             default:
                 super.writePropertyDirectly(propName, val);
         }
@@ -213,6 +236,7 @@ public abstract class _User extends PersistentObject {
         out.writeObject(this.slackProfileImageUrl);
         out.writeObject(this.slackUsername);
         out.writeObject(this.uniqueID);
+        out.writeObject(this.messages);
     }
 
     @Override
@@ -226,6 +250,7 @@ public abstract class _User extends PersistentObject {
         this.slackProfileImageUrl = (String)in.readObject();
         this.slackUsername = (String)in.readObject();
         this.uniqueID = (UUID)in.readObject();
+        this.messages = in.readObject();
     }
 
 }
