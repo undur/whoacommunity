@@ -47,7 +47,7 @@ public class SlackImporter {
 	/**
 	 * Stores the result of our import
 	 */
-	private record SlackImportResult( List<Channel> channels, List<User> users ) {}
+	public record SlackImportResult( List<Channel> channels, List<User> users ) {}
 
 	/**
 	 * @param id ID of the channel
@@ -81,7 +81,7 @@ public class SlackImporter {
 	 * @param username of the user
 	 * @param real_name The user's actual name
 	 */
-	public record User( String id, String name, UserProfile profile ) {}
+	public record User( String id, String name, String real_name, UserProfile profile ) {}
 
 	/**
 	 * Some more data about the user, including e-mail address, profile image etc.
@@ -143,8 +143,15 @@ public class SlackImporter {
 		}
 	}
 
+	/**
+	 * Shortcut for creating an importer, since I'm a lazy bastard
+	 */
+	public static SlackImporter defaultImporter() {
+		return new SlackImporter( Path.of( "/Users/hugi/tmp/wocommunity-slack-export-2025-01-28" ) );
+	}
+
 	public static void main( String[] args ) {
-		final SlackImporter imp = new SlackImporter( Path.of( "/Users/hugi/tmp/wocommunity-slack-export-2025-01-28" ) );
+		final SlackImporter imp = defaultImporter();
 
 		for( User user : imp.importUsers() ) {
 			System.out.println( user.profile().email() );
