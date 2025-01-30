@@ -7,6 +7,7 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.ObjectSelect;
 
+import is.rebbi.core.util.StringUtilities;
 import ng.appserver.NGActionResults;
 import ng.appserver.NGComponent;
 import ng.appserver.NGContext;
@@ -35,15 +36,19 @@ public class WCSearchPage extends NGComponent {
 	}
 
 	public NGActionResults search() {
+		errorMessage = null;
 
-		if( searchString.length() < 3 ) {
-			errorMessage = "Please enter at least three characters in the search string.";
+		// If you're searching by string only, you don't get to search for really short string
+		if( (searchString == null || searchString.length() < 3) && selectedChannel == null && selectedUser == null ) {
+			errorMessage = "Please enter at least three characters in the search string if you're not searching by any other conditions.";
 			return null;
 		}
 
 		final List<Expression> l = new ArrayList<>();
 
-		l.add( Message.TEXT.containsIgnoreCase( searchString ) );
+		if( StringUtilities.hasValue( searchString ) ) {
+			l.add( Message.TEXT.containsIgnoreCase( searchString ) );
+		}
 
 		if( selectedUser != null ) {
 			l.add( Message.USER.eq( selectedUser ) );
@@ -60,6 +65,8 @@ public class WCSearchPage extends NGComponent {
 				.prefetch( Message.USER.joint() )
 				.prefetch( Message.CHANNEL.joint() )
 				.select( WCCore.newContext() );
+
+		messages = WCMain.filterMessages( messages );
 
 		return null;
 	}
