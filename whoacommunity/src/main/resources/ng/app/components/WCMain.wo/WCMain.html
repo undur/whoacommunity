@@ -1,18 +1,49 @@
 <wo:WCLook>
-	<div class="row">
-		<div class="col-md-3">
-			<div class="card">
-				<div class="card-header">
-					<h3>Channels</h3>
-				</div>
-				<div class="card-body">
-					<ul>
-						<wo:repetition list="$channels" item="$currentChannel">
-							<li><wo:link href="$currentChannelURL"><wo:str value="$currentChannel.name" /></wo:link></li>
-						</wo:repetition>
-					</ul>
-				</div>
+	<wo:if condition="$isLoggedIn" negate="$true">
+		<div class="row">
+			<div class="col-6 offset-3" align="center">
+				<wo:form>
+					<wo:textfield value="$password" class="form-control" /> <wo:submit action="$login" class="btn mt-3" value="Login" />
+				</wo:form>
 			</div>
 		</div>
-	</div>
+	</wo:if>
+
+	<wo:if condition="$isLoggedIn">
+		<div class="row">
+			<div class="col-md-3">
+				<div class="card">
+					<div class="card-header">
+						<h3>Channels</h3>
+					</div>
+					<div class="card-body">
+						<ul>
+							<wo:repetition list="$channels" item="$currentChannel">
+								<li><wo:link action="$selectChannel"><wo:str value="$currentChannel.name" /></wo:link></li>
+							</wo:repetition>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<wo:if condition="$selectedChannel">
+				<div class="col-md-9">
+					<div class="card">
+						<div class="card-header">
+							<h3><wo:str value="$selectedChannel.name" /></h3>
+						</div>
+						<div class="card-body">
+							<wo:repetition list="$messages" item="$currentMessage">
+								<p>
+								<strong><wo:str value="$currentMessage.user.name" /></strong> <small style="color:gray"><wo:str value="$currentMessageDate" /></small><br>
+								<wo:str value="$currentMessage.text" /><br>
+								<wo:str value="$currentMessage.slackType" /><br>
+								<wo:str value="$currentMessage.slackSubtype" />
+								</p>
+							</wo:repetition>
+						</div>
+					</div>
+				</div>
+			</wo:if>
+		</div>
+	</wo:if>
 </wo:WCLook>
