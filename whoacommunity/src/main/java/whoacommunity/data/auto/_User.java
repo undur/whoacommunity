@@ -34,14 +34,14 @@ public abstract class _User extends PersistentObject {
     public static final DateProperty<LocalDateTime> CREATION_DATE = PropertyFactory.createDate("creationDate", LocalDateTime.class);
     public static final DateProperty<LocalDateTime> MODIFICATION_DATE = PropertyFactory.createDate("modificationDate", LocalDateTime.class);
     public static final StringProperty<String> NAME = PropertyFactory.createString("name", String.class);
-    public static final StringProperty<String> SLACK_ID = PropertyFactory.createString("slackId", String.class);
+    public static final StringProperty<String> SLACK_ID = PropertyFactory.createString("slackID", String.class);
     public static final BaseProperty<UUID> UNIQUE_ID = PropertyFactory.createBase("uniqueID", UUID.class);
     public static final StringProperty<String> USERNAME = PropertyFactory.createString("username", String.class);
 
     protected LocalDateTime creationDate;
     protected LocalDateTime modificationDate;
     protected String name;
-    protected String slackId;
+    protected String slackID;
     protected UUID uniqueID;
     protected String username;
 
@@ -76,14 +76,14 @@ public abstract class _User extends PersistentObject {
         return this.name;
     }
 
-    public void setSlackId(String slackId) {
-        beforePropertyWrite("slackId", this.slackId, slackId);
-        this.slackId = slackId;
+    public void setSlackID(String slackID) {
+        beforePropertyWrite("slackID", this.slackID, slackID);
+        this.slackID = slackID;
     }
 
-    public String slackId() {
-        beforePropertyRead("slackId");
-        return this.slackId;
+    public String slackID() {
+        beforePropertyRead("slackID");
+        return this.slackID;
     }
 
     public void setUniqueID(UUID uniqueID) {
@@ -119,8 +119,8 @@ public abstract class _User extends PersistentObject {
                 return this.modificationDate;
             case "name":
                 return this.name;
-            case "slackId":
-                return this.slackId;
+            case "slackID":
+                return this.slackID;
             case "uniqueID":
                 return this.uniqueID;
             case "username":
@@ -146,8 +146,8 @@ public abstract class _User extends PersistentObject {
             case "name":
                 this.name = (String)val;
                 break;
-            case "slackId":
-                this.slackId = (String)val;
+            case "slackID":
+                this.slackID = (String)val;
                 break;
             case "uniqueID":
                 this.uniqueID = (UUID)val;
@@ -174,7 +174,7 @@ public abstract class _User extends PersistentObject {
         out.writeObject(this.creationDate);
         out.writeObject(this.modificationDate);
         out.writeObject(this.name);
-        out.writeObject(this.slackId);
+        out.writeObject(this.slackID);
         out.writeObject(this.uniqueID);
         out.writeObject(this.username);
     }
@@ -185,7 +185,7 @@ public abstract class _User extends PersistentObject {
         this.creationDate = (LocalDateTime)in.readObject();
         this.modificationDate = (LocalDateTime)in.readObject();
         this.name = (String)in.readObject();
-        this.slackId = (String)in.readObject();
+        this.slackID = (String)in.readObject();
         this.uniqueID = (UUID)in.readObject();
         this.username = (String)in.readObject();
     }
