@@ -38,7 +38,7 @@
 							<p>
 							<span class="badge bg-azure text-azure-fg">#<wo:str value="$currentMessage.channel.name" /></span><br>
 							<strong><wo:str value="$currentMessage.user.name" /></strong> <small style="color:gray"><wo:str value="$currentMessage.dateTime" /></small><br>
-							<wo:str value="$currentMessage.text" /><br>
+							<wo:str value="$currentMessage.textRendered" escapeHTML="$false" /><br>
 							</p>
 						</wo:repetition>
 					</div>
