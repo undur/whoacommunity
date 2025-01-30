@@ -6,7 +6,12 @@
 					<p>Enter password for access</p>
 				</div>
 				<wo:form>
-					<wo:textfield value="$password" class="form-control" /> <wo:submit action="$login" class="btn mt-3" value="Login" />
+					<wo:textfield value="$password" class="form-control" id="passwordField" /> <wo:submit action="$login" class="btn mt-3" value="Login" />
+					<script>
+						window.onload = function() {
+							document.getElementById('passwordField').focus();
+						};
+					</script>
 				</wo:form>
 			</div>
 		</div>
