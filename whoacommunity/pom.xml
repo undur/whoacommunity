@@ -7,6 +7,9 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>whoacommunity</name>
 	<packaging>woapplication</packaging>
+	<properties>
+		<cayenne.version>5.0-SNAPSHOT</cayenne.version>
+	</properties>
 	<build>
 		<finalName>${project.artifactId}</finalName>
 		<plugins>
@@ -23,6 +26,23 @@
 				<artifactId>vermilingua-maven-plugin</artifactId>
 				<version>1.0.3</version>
 				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.cayenne.plugins</groupId>
+				<artifactId>cayenne-maven-plugin</artifactId>
+				<version>${cayenne.version}</version>
+				<configuration>
+					<map>${project.basedir}/src/main/resources/cayenne/whoacommunity.map.xml</map>
+					<destDir>${project.basedir}/src/main/java</destDir>
+					<superTemplate>${project.basedir}/src/main/resources/cayenne-templates/superclass_50_nogetprefix.vm</superTemplate>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>cgen</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -46,6 +66,16 @@
 			<groupId>org.apache.cayenne</groupId>
 			<artifactId>cayenne</artifactId>
 			<version>5.0-M1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>5.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>is.rebbi</groupId>
+			<artifactId>jambalaya5</artifactId>
+			<version>2.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
