@@ -37,10 +37,8 @@
 						<div class="card-body">
 							<wo:repetition list="$messages" item="$currentMessage">
 								<p>
-								<strong><wo:str value="$currentMessage.user.name" /></strong> <small style="color:gray"><wo:str value="$currentMessageDate" /></small><br>
-								<wo:str value="$currentMessage.text" /><br>
-								<wo:str value="$currentMessage.slackType" /><br>
-								<wo:str value="$currentMessage.slackSubtype" />
+									<strong><wo:str value="$currentMessage.user.name" /></strong> <small style="color:gray"><wo:str value="$currentMessageDate" /></small><br>
+									<wo:str value="$currentMessage.text" /><br>
 								</p>
 							</wo:repetition>
 						</div>
