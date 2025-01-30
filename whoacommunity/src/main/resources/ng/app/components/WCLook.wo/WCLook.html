@@ -127,34 +127,36 @@
 						</div>
 						-->
 					</div>
-					<wo:if condition="$user" negate="$true">
-						<div class="nav-item dropdown">
-							<a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
-								Login
-							</a>
-							<div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-								Login?	
-							</div>
-						</div>
-					</wo:if>
-					<wo:if condition="$user">
-						<div class="nav-item dropdown">
-							<a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
-								<wo:container elementName="span" class="avatar avatar-sm" style="$avatarBackgroundStyle"></wo:container>
-								<div class="d-none d-xl-block ps-2">
-									<div><wo:str value="$usernameForDisplay" /></div>
-									<div class="mt-1 small text-muted"><wo:str value="$user.person.emailAddress" /></div>
+					<wo:if condition="$false"> <!-- FIXME: Disable login while no user functionality is present -->
+						<wo:if condition="$user" negate="$true">
+							<div class="nav-item dropdown">
+								<a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
+									Login
+								</a>
+								<div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+									Login?	
 								</div>
-							</a>
-							<div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-								<!-- FIXME!
-								<wo:ViewLink object="$user" class="dropdown-item">Mín síða</wo:ViewLink >
-								<wo:link action="$userSettings" class="dropdown-item">Mínar stillingar</wo:link>
-								<div class="dropdown-divider"></div>
-								-->
-								<wo:link action="$logout" class="dropdown-item">Skrá út / aftengjast</wo:link>
 							</div>
-						</div>
+						</wo:if>
+						<wo:if condition="$user">
+							<div class="nav-item dropdown">
+								<a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
+									<wo:container elementName="span" class="avatar avatar-sm" style="$avatarBackgroundStyle"></wo:container>
+									<div class="d-none d-xl-block ps-2">
+										<div><wo:str value="$usernameForDisplay" /></div>
+										<div class="mt-1 small text-muted"><wo:str value="$user.person.emailAddress" /></div>
+									</div>
+								</a>
+								<div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+									<!-- FIXME!
+									<wo:ViewLink object="$user" class="dropdown-item">Mín síða</wo:ViewLink >
+									<wo:link action="$userSettings" class="dropdown-item">Mínar stillingar</wo:link>
+									<div class="dropdown-divider"></div>
+									-->
+									<wo:link action="$logout" class="dropdown-item">Skrá út / aftengjast</wo:link>
+								</div>
+							</div>
+						</wo:if>
 					</wo:if>
 				</div>
 			</div>
@@ -174,14 +176,16 @@
 							</li>
 						</ul>
 						<div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
-							<wo:form action="$search" autocomplete="off" novalidate>
-								<div class="input-icon">
-									<span class="input-icon-addon">
-										<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg>
-									</span>
-									<wo:textfield value="$searchString" class="form-control" placeholder="Search messages…" aria-label="Search site" name="searchString" />
-								</div>
-							</wo:form>
+							<wo:if condition="$session.isLoggedIn">
+								<wo:form action="$search" autocomplete="off" novalidate>
+									<div class="input-icon">
+										<span class="input-icon-addon">
+											<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg>
+										</span>
+										<wo:textfield value="$searchString" class="form-control" placeholder="Search messages…" aria-label="Search site" name="searchString" />
+									</div>
+								</wo:form>
+							</wo:if>
 						</div>
 					</div>
 				</div>

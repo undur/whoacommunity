@@ -8,13 +8,12 @@ import org.apache.cayenne.query.ObjectSelect;
 import ng.appserver.NGActionResults;
 import ng.appserver.NGComponent;
 import ng.appserver.NGContext;
+import whoacommunity.app.Session;
 import whoacommunity.app.WCCore;
 import whoacommunity.data.Channel;
 import whoacommunity.data.Message;
 
 public class WCMain extends NGComponent {
-
-	private boolean _isLoggedIn;
 
 	public String password;
 
@@ -28,7 +27,7 @@ public class WCMain extends NGComponent {
 
 	public NGActionResults login() {
 		if( "wocomponent".equals( password ) ) {
-			_isLoggedIn = true;
+			((Session)session()).isLoggedIn = true;
 		}
 
 		return null;
@@ -70,9 +69,5 @@ public class WCMain extends NGComponent {
 				.stream()
 				.filter( f -> !"channel_join".equals( f.slackSubtype() ) )
 				.toList();
-	}
-
-	public boolean isLoggedIn() {
-		return _isLoggedIn;
 	}
 }

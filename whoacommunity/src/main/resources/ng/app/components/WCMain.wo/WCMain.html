@@ -1,5 +1,5 @@
 <wo:WCLook>
-	<wo:if condition="$isLoggedIn" negate="$true">
+	<wo:if condition="$session.isLoggedIn" negate="$true">
 		<div class="row">
 			<div class="col-6 offset-3" align="center">
 				<wo:form>
@@ -9,7 +9,7 @@
 		</div>
 	</wo:if>
 
-	<wo:if condition="$isLoggedIn">
+	<wo:if condition="$session.isLoggedIn">
 		<div class="row">
 			<div class="col-md-3">
 				<div class="card">
