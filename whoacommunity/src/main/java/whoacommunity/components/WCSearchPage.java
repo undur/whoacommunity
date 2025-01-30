@@ -56,6 +56,7 @@ public class WCSearchPage extends NGComponent {
 		messages = ObjectSelect
 				.query( Message.class )
 				.where( ExpressionFactory.and( l ) )
+				.orderBy( Message.DATE_TIME.asc() )
 				.prefetch( Message.USER.joint() )
 				.prefetch( Message.CHANNEL.joint() )
 				.select( WCCore.newContext() );
