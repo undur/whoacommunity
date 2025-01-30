@@ -32,18 +32,22 @@ public abstract class _User extends PersistentObject {
     public static final String ID_PK_COLUMN = "id";
 
     public static final DateProperty<LocalDateTime> CREATION_DATE = PropertyFactory.createDate("creationDate", LocalDateTime.class);
+    public static final StringProperty<String> EMAIL_ADDRESS = PropertyFactory.createString("emailAddress", String.class);
     public static final DateProperty<LocalDateTime> MODIFICATION_DATE = PropertyFactory.createDate("modificationDate", LocalDateTime.class);
     public static final StringProperty<String> NAME = PropertyFactory.createString("name", String.class);
     public static final StringProperty<String> SLACK_ID = PropertyFactory.createString("slackID", String.class);
+    public static final StringProperty<String> SLACK_PROFILE_IMAGE_URL = PropertyFactory.createString("slackProfileImageUrl", String.class);
+    public static final StringProperty<String> SLACK_USERNAME = PropertyFactory.createString("slackUsername", String.class);
     public static final BaseProperty<UUID> UNIQUE_ID = PropertyFactory.createBase("uniqueID", UUID.class);
-    public static final StringProperty<String> USERNAME = PropertyFactory.createString("username", String.class);
 
     protected LocalDateTime creationDate;
+    protected String emailAddress;
     protected LocalDateTime modificationDate;
     protected String name;
     protected String slackID;
+    protected String slackProfileImageUrl;
+    protected String slackUsername;
     protected UUID uniqueID;
-    protected String username;
 
 
     public void setCreationDate(LocalDateTime creationDate) {
@@ -54,6 +58,16 @@ public abstract class _User extends PersistentObject {
     public LocalDateTime creationDate() {
         beforePropertyRead("creationDate");
         return this.creationDate;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        beforePropertyWrite("emailAddress", this.emailAddress, emailAddress);
+        this.emailAddress = emailAddress;
+    }
+
+    public String emailAddress() {
+        beforePropertyRead("emailAddress");
+        return this.emailAddress;
     }
 
     public void setModificationDate(LocalDateTime modificationDate) {
@@ -86,6 +100,26 @@ public abstract class _User extends PersistentObject {
         return this.slackID;
     }
 
+    public void setSlackProfileImageUrl(String slackProfileImageUrl) {
+        beforePropertyWrite("slackProfileImageUrl", this.slackProfileImageUrl, slackProfileImageUrl);
+        this.slackProfileImageUrl = slackProfileImageUrl;
+    }
+
+    public String slackProfileImageUrl() {
+        beforePropertyRead("slackProfileImageUrl");
+        return this.slackProfileImageUrl;
+    }
+
+    public void setSlackUsername(String slackUsername) {
+        beforePropertyWrite("slackUsername", this.slackUsername, slackUsername);
+        this.slackUsername = slackUsername;
+    }
+
+    public String slackUsername() {
+        beforePropertyRead("slackUsername");
+        return this.slackUsername;
+    }
+
     public void setUniqueID(UUID uniqueID) {
         beforePropertyWrite("uniqueID", this.uniqueID, uniqueID);
         this.uniqueID = uniqueID;
@@ -94,16 +128,6 @@ public abstract class _User extends PersistentObject {
     public UUID uniqueID() {
         beforePropertyRead("uniqueID");
         return this.uniqueID;
-    }
-
-    public void setUsername(String username) {
-        beforePropertyWrite("username", this.username, username);
-        this.username = username;
-    }
-
-    public String username() {
-        beforePropertyRead("username");
-        return this.username;
     }
 
     @Override
@@ -115,16 +139,20 @@ public abstract class _User extends PersistentObject {
         switch(propName) {
             case "creationDate":
                 return this.creationDate;
+            case "emailAddress":
+                return this.emailAddress;
             case "modificationDate":
                 return this.modificationDate;
             case "name":
                 return this.name;
             case "slackID":
                 return this.slackID;
+            case "slackProfileImageUrl":
+                return this.slackProfileImageUrl;
+            case "slackUsername":
+                return this.slackUsername;
             case "uniqueID":
                 return this.uniqueID;
-            case "username":
-                return this.username;
             default:
                 return super.readPropertyDirectly(propName);
         }
@@ -140,6 +168,9 @@ public abstract class _User extends PersistentObject {
             case "creationDate":
                 this.creationDate = (LocalDateTime)val;
                 break;
+            case "emailAddress":
+                this.emailAddress = (String)val;
+                break;
             case "modificationDate":
                 this.modificationDate = (LocalDateTime)val;
                 break;
@@ -149,11 +180,14 @@ public abstract class _User extends PersistentObject {
             case "slackID":
                 this.slackID = (String)val;
                 break;
+            case "slackProfileImageUrl":
+                this.slackProfileImageUrl = (String)val;
+                break;
+            case "slackUsername":
+                this.slackUsername = (String)val;
+                break;
             case "uniqueID":
                 this.uniqueID = (UUID)val;
-                break;
-            case "username":
-                this.username = (String)val;
                 break;
             default:
                 super.writePropertyDirectly(propName, val);
@@ -172,22 +206,26 @@ public abstract class _User extends PersistentObject {
     protected void writeState(ObjectOutputStream out) throws IOException {
         super.writeState(out);
         out.writeObject(this.creationDate);
+        out.writeObject(this.emailAddress);
         out.writeObject(this.modificationDate);
         out.writeObject(this.name);
         out.writeObject(this.slackID);
+        out.writeObject(this.slackProfileImageUrl);
+        out.writeObject(this.slackUsername);
         out.writeObject(this.uniqueID);
-        out.writeObject(this.username);
     }
 
     @Override
     protected void readState(ObjectInputStream in) throws IOException, ClassNotFoundException {
         super.readState(in);
         this.creationDate = (LocalDateTime)in.readObject();
+        this.emailAddress = (String)in.readObject();
         this.modificationDate = (LocalDateTime)in.readObject();
         this.name = (String)in.readObject();
         this.slackID = (String)in.readObject();
+        this.slackProfileImageUrl = (String)in.readObject();
+        this.slackUsername = (String)in.readObject();
         this.uniqueID = (UUID)in.readObject();
-        this.username = (String)in.readObject();
     }
 
 }
