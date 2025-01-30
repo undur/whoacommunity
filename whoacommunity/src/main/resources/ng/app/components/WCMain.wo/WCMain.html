@@ -2,6 +2,9 @@
 	<wo:if condition="$session.isLoggedIn" negate="$true">
 		<div class="row">
 			<div class="col-6 offset-3" align="center">
+				<div class="alert alert-blue">
+					<p>Enter password for access</p>
+				</div>
 				<wo:form>
 					<wo:textfield value="$password" class="form-control" /> <wo:submit action="$login" class="btn mt-3" value="Login" />
 				</wo:form>
