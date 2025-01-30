@@ -4,7 +4,6 @@ import org.apache.cayenne.ObjectContext;
 
 import whoacommunity.app.WCCore;
 import whoacommunity.slack.SlackImporter.SlackImportResult;
-import whoacommunity.slack.SlackImporter.SlackUser;
 
 public class SlackDBImporter {
 
@@ -13,13 +12,15 @@ public class SlackDBImporter {
 
 		SlackImportResult run = SlackImporter.defaultImporter().run();
 
-		for( SlackUser user : run.users() ) {
-			System.out.println( user.id() );
-			System.out.println( user.name() );
-			System.out.println( user.real_name() );
-			System.out.println( user.profile().email() );
-			System.out.println( user.profile().image_original() );
-			System.out.println( "============" );
-		}
+		//		for( SlackUser slackUser : run.users() ) {
+		//			final User user = oc.newObject( User.class );
+		//			user.setSlackID( slackUser.id() );
+		//			user.setSlackUsername( slackUser.name() );
+		//			user.setName( slackUser.real_name() );
+		//			user.setEmailAddress( slackUser.profile().email() );
+		//			user.setSlackProfileImageUrl( slackUser.profile().image_original() );
+		//		}
+		//
+		//		oc.commitChanges();
 	}
 }
