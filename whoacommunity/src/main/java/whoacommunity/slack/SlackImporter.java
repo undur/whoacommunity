@@ -47,18 +47,18 @@ public class SlackImporter {
 	/**
 	 * Stores the result of our import
 	 */
-	public record SlackImportResult( List<Channel> channels, List<User> users ) {}
+	public record SlackImportResult( List<SlackChannel> channels, List<SlackUser> users ) {}
 
 	/**
 	 * @param id ID of the channel
 	 * @param name Name of the channel
 	 */
-	public record Channel( String id, String name, List<Message> messages ) {
+	public record SlackChannel( String id, String name, List<SlackMessage> messages ) {
 
 		/**
 		 * Since the imported channel won't contain any messages, we override the constructor to set messages to an emty ArrayList (that we can then add messages to)
 		 */
-		public Channel( String id, String name, List<Message> messages ) {
+		public SlackChannel( String id, String name, List<SlackMessage> messages ) {
 			this.id = id;
 			this.name = name;
 			this.messages = new ArrayList<>();
@@ -74,14 +74,14 @@ public class SlackImporter {
 	 *
 	 * FIXME: Look into importing the rich text version // Hugi 2025-01-29
 	 */
-	public record Message( String user, String type, String subtype, String ts, String text ) {}
+	public record SlackMessage( String user, String type, String subtype, String ts, String text ) {}
 
 	/**
 	 * @param id The users's id
 	 * @param username of the user
 	 * @param real_name The user's actual name
 	 */
-	public record User( String id, String name, String real_name, UserProfile profile ) {}
+	public record SlackUser( String id, String name, String real_name, SlackUserProfile profile ) {}
 
 	/**
 	 * Some more data about the user, including e-mail address, profile image etc.
@@ -89,41 +89,41 @@ public class SlackImporter {
 	 * @param image_original Full size original profile image
 	 * @param email Email address
 	 */
-	public record UserProfile( String image_original, String email ) {}
+	public record SlackUserProfile( String image_original, String email ) {}
 
 	public SlackImportResult run() {
-		final List<Channel> channels = importChannelsAndMessages();
-		final List<User> users = importUsers();
+		final List<SlackChannel> channels = importChannelsAndMessages();
+		final List<SlackUser> users = importUsers();
 
 		return new SlackImportResult( channels, users );
 	}
 
-	private List<User> importUsers() {
+	private List<SlackUser> importUsers() {
 		final Path path = root().resolve( "users.json" );
-		return importList( path, User.class );
+		return importList( path, SlackUser.class );
 	}
 
-	private List<Channel> importChannelsAndMessages() {
+	private List<SlackChannel> importChannelsAndMessages() {
 		final Path path = root().resolve( "channels.json" );
 
-		final List<Channel> channels = importList( path, Channel.class );
+		final List<SlackChannel> channels = importList( path, SlackChannel.class );
 
 		// Now add the channel's messages
-		for( Channel channel : channels ) {
+		for( SlackChannel channel : channels ) {
 			channel.messages().addAll( importChannelMessages( channel.name() ) );
 		}
 
 		return channels;
 	}
 
-	private List<Message> importChannelMessages( String name ) {
+	private List<SlackMessage> importChannelMessages( String name ) {
 		final Path channelFolderPath = root().resolve( name );
 
-		final List<Message> messages = new ArrayList<>();
+		final List<SlackMessage> messages = new ArrayList<>();
 
 		try {
 			Files.list( channelFolderPath ).forEach( messagePath -> {
-				messages.addAll( importList( messagePath, Message.class ) );
+				messages.addAll( importList( messagePath, SlackMessage.class ) );
 			} );
 		}
 		catch( IOException e ) {
@@ -153,13 +153,13 @@ public class SlackImporter {
 	public static void main( String[] args ) {
 		final SlackImporter imp = defaultImporter();
 
-		for( User user : imp.importUsers() ) {
+		for( SlackUser user : imp.importUsers() ) {
 			System.out.println( user.profile().email() );
 		}
 
-		for( Channel channel : imp.run().channels() ) {
+		for( SlackChannel channel : imp.run().channels() ) {
 			System.out.println( "======== " + channel.name() );
-			for( Message message : channel.messages() ) {
+			for( SlackMessage message : channel.messages() ) {
 				System.out.println( message.text() );
 			}
 		}
