@@ -1,2 +1,18 @@
 <wo:WCLook>
+	<div class="row">
+		<div class="col-md-3">
+			<div class="card">
+				<div class="card-header">
+					<h3>Channels</h3>
+				</div>
+				<div class="card-body">
+					<ul>
+						<wo:repetition list="$channels" item="$currentChannel">
+							<li><wo:link href="$currentChannelURL"><wo:str value="$currentChannel.name" /></wo:link></li>
+						</wo:repetition>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
 </wo:WCLook>
