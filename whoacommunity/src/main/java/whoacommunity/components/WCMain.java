@@ -65,6 +65,13 @@ public class WCMain extends NGComponent {
 				.prefetch( Message.USER.joint() )
 				.select( WCCore.newContext() );
 
+		return filterMessages( messages );
+	}
+
+	/**
+	 * @return The cleaned up message list
+	 */
+	public static List<Message> filterMessages( final List<Message> messages ) {
 		return messages
 				.stream()
 				.filter( f -> !"channel_join".equals( f.slackSubtype() ) )
