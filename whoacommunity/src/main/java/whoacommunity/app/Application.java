@@ -2,12 +2,12 @@ package whoacommunity.app;
 
 import ng.appserver.NGApplication;
 import ng.appserver.NGElementUtils;
-import whoacommunity.components.WCLook;
+import whoacommunity.components.WCMain;
 
 public class Application extends NGApplication {
 
 	static {
-		NGElementUtils.addClass( WCLook.class );
+		NGElementUtils.addPackage( "whoacommunity.components" );
 	}
 
 	public static void main( String[] args ) {
@@ -16,7 +16,7 @@ public class Application extends NGApplication {
 
 	public Application() {
 		routeTable().map( "/", request -> {
-			return pageWithName( "Blorp", request.context() );
+			return pageWithName( WCMain.class, request.context() );
 		} );
 	}
 }
