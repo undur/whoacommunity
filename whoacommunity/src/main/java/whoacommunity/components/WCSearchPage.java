@@ -66,7 +66,7 @@ public class WCSearchPage extends NGComponent {
 				.prefetch( Message.CHANNEL.joint() )
 				.select( WCCore.newContext() );
 
-		messages = WCMain.filterMessages( messages );
+		messages = WCSlackArchivePage.filterMessages( messages );
 
 		return null;
 	}

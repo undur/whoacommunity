@@ -13,7 +13,7 @@ import whoacommunity.app.WCCore;
 import whoacommunity.data.Channel;
 import whoacommunity.data.Message;
 
-public class WCMain extends NGComponent {
+public class WCSlackArchivePage extends NGComponent {
 
 	public String password;
 
@@ -21,7 +21,7 @@ public class WCMain extends NGComponent {
 	public Channel selectedChannel;
 	public Message currentMessage;
 
-	public WCMain( NGContext context ) {
+	public WCSlackArchivePage( NGContext context ) {
 		super( context );
 	}
 
