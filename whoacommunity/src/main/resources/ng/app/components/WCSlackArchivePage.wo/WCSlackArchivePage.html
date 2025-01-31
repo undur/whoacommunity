@@ -27,14 +27,14 @@
 					<div class="card-body">
 						<ul>
 							<wo:repetition list="$channels" item="$currentChannel">
-								<li><wo:link action="$selectChannel"><wo:str value="$currentChannel.name" /></wo:link></li>
+								<li><wo:aul action="$selectChannel" updateContainerID="messagesUC"><wo:str value="$currentChannel.name" /></wo:aul></li>
 							</wo:repetition>
 						</ul>
 					</div>
 				</div>
 			</div>
-			<wo:if condition="$selectedChannel">
-				<div class="col-md-9">
+			<wo:auc id="messagesUC" class="col-md-9">
+				<wo:if condition="$selectedChannel">
 					<div class="card">
 						<div class="card-header">
 							<h3><wo:str value="$selectedChannel.name" /></h3>
@@ -48,8 +48,8 @@
 							</wo:repetition>
 						</div>
 					</div>
-				</div>
-			</wo:if>
+				</wo:if>
+			</wo:auc>
 		</div>
 	</wo:if>
 </wo:WCLook>
