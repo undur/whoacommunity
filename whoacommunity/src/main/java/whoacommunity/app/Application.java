@@ -4,6 +4,7 @@ import ng.appserver.NGApplication;
 import ng.appserver.NGElementUtils;
 import whoacommunity.components.WCMain;
 import whoacommunity.components.WCSlackArchivePage;
+import whoacommunity.components.WCSlackClientPage;
 
 public class Application extends NGApplication {
 
@@ -16,5 +17,6 @@ public class Application extends NGApplication {
 
 		routeTable().mapComponent( "/", WCMain.class );
 		routeTable().mapComponent( "/slack-archive", WCSlackArchivePage.class );
+		routeTable().mapComponent( "/slack-client", WCSlackClientPage.class );
 	}
 }
