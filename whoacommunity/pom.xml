@@ -8,7 +8,7 @@
 	<name>whoacommunity</name>
 	<packaging>woapplication</packaging>
 	<properties>
-		<cayenne.version>5.0-SNAPSHOT</cayenne.version>
+		<cayenne.version>5.0-M1</cayenne.version>
 	</properties>
 	<build>
 		<finalName>${project.artifactId}</finalName>
@@ -65,7 +65,7 @@
 		<dependency>
 			<groupId>org.apache.cayenne</groupId>
 			<artifactId>cayenne</artifactId>
-			<version>5.0-M1</version>
+			<version>${cayenne.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.zaxxer</groupId>
