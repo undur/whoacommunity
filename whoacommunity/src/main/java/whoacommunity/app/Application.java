@@ -1,7 +1,7 @@
 package whoacommunity.app;
 
 import ng.appserver.NGApplication;
-import ng.appserver.NGElementUtils;
+import ng.appserver.templating.NGElementUtils;
 import whoacommunity.components.WCMain;
 import whoacommunity.components.WCSlackArchivePage;
 import whoacommunity.components.WCSlackClientPage;
