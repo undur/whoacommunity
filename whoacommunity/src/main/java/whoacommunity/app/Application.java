@@ -1,7 +1,6 @@
 package whoacommunity.app;
 
 import ng.appserver.NGApplication;
-import ng.appserver.templating.NGElementUtils;
 import whoacommunity.components.WCMain;
 import whoacommunity.components.WCSlackArchivePage;
 import whoacommunity.components.WCSlackClientPage;
@@ -13,7 +12,7 @@ public class Application extends NGApplication {
 	}
 
 	public Application() {
-		NGElementUtils.addPackage( "whoacommunity.components" );
+		elementManager().registerElementPackage( "whoacommunity.components" );
 
 		routeTable().mapComponent( "/", WCMain.class );
 		routeTable().mapComponent( "/slack-archive", WCSlackArchivePage.class );
