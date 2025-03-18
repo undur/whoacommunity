@@ -6,8 +6,8 @@ import java.util.List;
 import org.apache.cayenne.query.ObjectSelect;
 
 import ng.appserver.NGActionResults;
-import ng.appserver.NGComponent;
 import ng.appserver.NGContext;
+import ng.appserver.templating.NGComponent;
 import whoacommunity.app.Session;
 import whoacommunity.app.WCCore;
 import whoacommunity.data.Channel;

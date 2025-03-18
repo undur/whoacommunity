@@ -9,8 +9,8 @@ import org.apache.cayenne.query.ObjectSelect;
 
 import is.rebbi.core.util.StringUtilities;
 import ng.appserver.NGActionResults;
-import ng.appserver.NGComponent;
 import ng.appserver.NGContext;
+import ng.appserver.templating.NGComponent;
 import whoacommunity.app.WCCore;
 import whoacommunity.data.Channel;
 import whoacommunity.data.Message;

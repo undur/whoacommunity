@@ -1,8 +1,8 @@
 package whoacommunity.components;
 
 import ng.appserver.NGActionResults;
-import ng.appserver.NGComponent;
 import ng.appserver.NGContext;
+import ng.appserver.templating.NGComponent;
 import whoacommunity.data.User;
 
 public class WCLook extends NGComponent {

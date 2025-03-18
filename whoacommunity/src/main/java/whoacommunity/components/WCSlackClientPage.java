@@ -23,8 +23,8 @@ import com.slack.api.model.Reaction;
 import com.slack.api.model.User;
 
 import ng.appserver.NGActionResults;
-import ng.appserver.NGComponent;
 import ng.appserver.NGContext;
+import ng.appserver.templating.NGComponent;
 import whoacommunity.app.Session;
 import whoacommunity.slack.api.SlackAPIClient;
 

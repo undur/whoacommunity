@@ -1,7 +1,7 @@
 package whoacommunity.components;
 
-import ng.appserver.NGComponent;
 import ng.appserver.NGContext;
+import ng.appserver.templating.NGComponent;
 
 public class WCMain extends NGComponent {
 
