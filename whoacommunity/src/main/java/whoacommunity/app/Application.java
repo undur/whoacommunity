@@ -12,8 +12,6 @@ public class Application extends NGApplication {
 	}
 
 	public Application() {
-		elementManager().registerElementPackage( "whoacommunity.components" );
-
 		routeTable().map( "/", WCMain.class );
 		routeTable().map( "/slack-archive", WCSlackArchivePage.class );
 		routeTable().map( "/slack-client", WCSlackClientPage.class );
