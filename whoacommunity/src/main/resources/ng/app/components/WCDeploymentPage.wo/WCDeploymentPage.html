@@ -1,0 +1,35 @@
+<wo:WCLook>
+	<div class="row">
+		<div class="col-md-4">
+			<div class="card">
+				<div class="card-header">
+					<h3>Deployment configuration builder</h3>
+				</div>
+				<div class="card-body">
+					<wo:form class="space-y">
+						<div class="form-group">
+							<label class="form-label">Platform</label>
+						</div>
+						<div class="form-group">
+							<label class="form-label">Java version</label>
+						</div>
+						<div class="form-group">
+							<label class="form-label">Wonder? Slim? No?</label>
+						</div>
+						<div class="form-group">
+							<label class="form-label">Modulo? WO Apache adaptor?</label>
+						</div>
+						<wo:submit action="$updateConfig" class="btn btn-primary" value="Update configuration" />
+					</wo:form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row mt-3">
+		<div class="col">
+			<div class="card">
+				<code><wo:str value="$configString" /></code>
+			</div>
+		</div>
+	</div>
+</wo:WCLook>
