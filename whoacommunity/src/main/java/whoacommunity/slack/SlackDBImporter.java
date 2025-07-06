@@ -13,10 +13,10 @@ import whoacommunity.app.WCCore;
 import whoacommunity.data.Channel;
 import whoacommunity.data.Message;
 import whoacommunity.data.User;
-import whoacommunity.slack.SlackImporter.SlackChannel;
+import whoacommunity.slack.SlackImporter.ImportedSlackChannel;
 import whoacommunity.slack.SlackImporter.SlackImportResult;
-import whoacommunity.slack.SlackImporter.SlackMessage;
-import whoacommunity.slack.SlackImporter.SlackUser;
+import whoacommunity.slack.SlackImporter.ImportedSlackMessage;
+import whoacommunity.slack.SlackImporter.ImportedSlackUser;
 
 public class SlackDBImporter {
 
@@ -25,7 +25,7 @@ public class SlackDBImporter {
 
 		final SlackImportResult importRun = SlackImporter.defaultImporter().run();
 
-		for( SlackUser slackUser : importRun.users() ) {
+		for( ImportedSlackUser slackUser : importRun.users() ) {
 			final User user = oc.newObject( User.class );
 			user.setSlackID( slackUser.id() );
 			user.setSlackUsername( slackUser.name() );
@@ -36,12 +36,12 @@ public class SlackDBImporter {
 
 		final Map<String, User> userCache = createUserCache( oc );
 
-		for( SlackChannel slackChannel : importRun.channels() ) {
+		for( ImportedSlackChannel slackChannel : importRun.channels() ) {
 			Channel channel = oc.newObject( Channel.class );
 			channel.setName( slackChannel.name() );
 			channel.setSlackID( slackChannel.id() );
 
-			for( SlackMessage slackMessage : slackChannel.messages() ) {
+			for( ImportedSlackMessage slackMessage : slackChannel.messages() ) {
 				Message message = oc.newObject( Message.class );
 				message.setDateTime( parseTimestampString( slackMessage.ts() ) );
 				message.setText( slackMessage.text() );

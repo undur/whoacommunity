@@ -47,18 +47,18 @@ public class SlackImporter {
 	/**
 	 * Stores the result of our import
 	 */
-	public record SlackImportResult( List<SlackChannel> channels, List<SlackUser> users ) {}
+	public record SlackImportResult( List<ImportedSlackChannel> channels, List<ImportedSlackUser> users ) {}
 
 	/**
 	 * @param id ID of the channel
 	 * @param name Name of the channel
 	 */
-	public record SlackChannel( String id, String name, List<SlackMessage> messages ) {
+	public record ImportedSlackChannel( String id, String name, List<ImportedSlackMessage> messages ) {
 
 		/**
 		 * Since the imported channel won't contain any messages, we override the constructor to set messages to an emty ArrayList (that we can then add messages to)
 		 */
-		public SlackChannel( String id, String name, List<SlackMessage> messages ) {
+		public ImportedSlackChannel( String id, String name, List<ImportedSlackMessage> messages ) {
 			this.id = id;
 			this.name = name;
 			this.messages = new ArrayList<>();
@@ -74,14 +74,14 @@ public class SlackImporter {
 	 *
 	 * FIXME: Look into importing the rich text version // Hugi 2025-01-29
 	 */
-	public record SlackMessage( String user, String type, String subtype, String ts, String text ) {}
+	public record ImportedSlackMessage( String user, String type, String subtype, String ts, String text ) {}
 
 	/**
 	 * @param id The users's id
 	 * @param username of the user
 	 * @param real_name The user's actual name
 	 */
-	public record SlackUser( String id, String name, String real_name, SlackUserProfile profile ) {}
+	public record ImportedSlackUser( String id, String name, String real_name, ImportedSlackUserProfile profile ) {}
 
 	/**
 	 * Some more data about the user, including e-mail address, profile image etc.
@@ -89,41 +89,41 @@ public class SlackImporter {
 	 * @param image_original Full size original profile image
 	 * @param email Email address
 	 */
-	public record SlackUserProfile( String image_original, String email ) {}
+	public record ImportedSlackUserProfile( String image_original, String email ) {}
 
 	public SlackImportResult run() {
-		final List<SlackChannel> channels = importChannelsAndMessages();
-		final List<SlackUser> users = importUsers();
+		final List<ImportedSlackChannel> channels = importChannelsAndMessages();
+		final List<ImportedSlackUser> users = importUsers();
 
 		return new SlackImportResult( channels, users );
 	}
 
-	private List<SlackUser> importUsers() {
+	private List<ImportedSlackUser> importUsers() {
 		final Path path = root().resolve( "users.json" );
-		return importList( path, SlackUser.class );
+		return importList( path, ImportedSlackUser.class );
 	}
 
-	private List<SlackChannel> importChannelsAndMessages() {
+	private List<ImportedSlackChannel> importChannelsAndMessages() {
 		final Path path = root().resolve( "channels.json" );
 
-		final List<SlackChannel> channels = importList( path, SlackChannel.class );
+		final List<ImportedSlackChannel> channels = importList( path, ImportedSlackChannel.class );
 
 		// Now add the channel's messages
-		for( SlackChannel channel : channels ) {
+		for( ImportedSlackChannel channel : channels ) {
 			channel.messages().addAll( importChannelMessages( channel.name() ) );
 		}
 
 		return channels;
 	}
 
-	private List<SlackMessage> importChannelMessages( String name ) {
+	private List<ImportedSlackMessage> importChannelMessages( String name ) {
 		final Path channelFolderPath = root().resolve( name );
 
-		final List<SlackMessage> messages = new ArrayList<>();
+		final List<ImportedSlackMessage> messages = new ArrayList<>();
 
 		try {
 			Files.list( channelFolderPath ).forEach( messagePath -> {
-				messages.addAll( importList( messagePath, SlackMessage.class ) );
+				messages.addAll( importList( messagePath, ImportedSlackMessage.class ) );
 			} );
 		}
 		catch( IOException e ) {
@@ -153,13 +153,13 @@ public class SlackImporter {
 	public static void main( String[] args ) {
 		final SlackImporter imp = defaultImporter();
 
-		for( SlackUser user : imp.importUsers() ) {
+		for( ImportedSlackUser user : imp.importUsers() ) {
 			System.out.println( user.profile().email() );
 		}
 
-		for( SlackChannel channel : imp.run().channels() ) {
+		for( ImportedSlackChannel channel : imp.run().channels() ) {
 			System.out.println( "======== " + channel.name() );
-			for( SlackMessage message : channel.messages() ) {
+			for( ImportedSlackMessage message : channel.messages() ) {
 				System.out.println( message.text() );
 			}
 		}
