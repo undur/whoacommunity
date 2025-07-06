@@ -7,8 +7,15 @@
 				</div>
 				<div class="card-body">
 				<wo:form>
+					<label>Article title</label>
 					<wo:textfield value="$selectedObject.title" class="form-control" /><br>
+
+					<label>Article format</label>
+					<wo:popUpButton list="$articleFormats" selection="$selectedObject.format" class="form-select" /><br>
+					
+					<label>Article content</label>
 					<wo:text value="$selectedObject.content" cols="100" rows="20" class="form-control" /><br>
+
 					<wo:submit action="$saveChanges" value="Save changes" class="btn btn-primary" />
 				</wo:form>
 				</div>	

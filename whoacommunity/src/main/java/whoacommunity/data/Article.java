@@ -59,7 +59,7 @@ public class Article extends _Article implements DateTimeStamped, UUIDStamped {
 		return ArticleFormat.valueOf( formatCode() );
 	}
 
-	public void setArticleFormat( ArticleFormat value ) {
+	public void setFormat( ArticleFormat value ) {
 		setFormatCode( value.code() );
 	}
 }
