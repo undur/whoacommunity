@@ -1,12 +1,16 @@
 <wo:WCLook>
 	<div class="row">
 		<div class="col-md-8">
-			<div class="card">
-				<div class="card-body">
-					<h2>Hi there!</h2>
-					<p>This site is dedicated to preserving the life of software made with WebObjects and providing a nice smooth road to the future.</p>
+			<wo:repetition list="$articles" item="$currentArticle">
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title"><wo:str value="$currentArticle.title" /></h3>
+					</div>
+					<div class="card-body">
+						<p><wo:str value="$currentArticle.contentAsHTML" /></p>
+					</div>
 				</div>
-			</div>
+			</wo:repetition>
 		</div>
 		<div class="col-md-4">
 			<div class="card">
