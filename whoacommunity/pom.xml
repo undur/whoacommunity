@@ -97,5 +97,10 @@
 			<artifactId>slack-api-client</artifactId>
 			<version>1.45.3</version>
 		</dependency>
+		<dependency>
+			<groupId>com.vladsch.flexmark</groupId>
+			<artifactId>flexmark-all</artifactId>
+			<version>0.64.8</version>
+		</dependency>
 	</dependencies>
 </project>

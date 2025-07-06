@@ -68,6 +68,7 @@
 		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
 		<obj-attribute name="title" type="java.lang.String" db-attribute-path="title"/>
 		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
+		<post-add method-name="onPostAdd"/>
 	</obj-entity>
 	<obj-entity name="ArticleTag" className="whoacommunity.data.ArticleTag" dbEntityName="wc_article_tag">
 		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>

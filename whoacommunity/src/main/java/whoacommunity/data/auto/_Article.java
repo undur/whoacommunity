@@ -137,6 +137,8 @@ public abstract class _Article extends PersistentObject {
         return (List<ArticleTag>)readProperty("articleTags");
     }
 
+    protected abstract void onPostAdd();
+
     @Override
     public Object readPropertyDirectly(String propName) {
         if(propName == null) {
