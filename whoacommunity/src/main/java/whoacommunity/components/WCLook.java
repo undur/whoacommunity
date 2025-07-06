@@ -42,4 +42,11 @@ public class WCLook extends NGComponent {
 		nextPage.search();
 		return nextPage;
 	}
+
+	/**
+	 * FIXME: A hack to determine whether we show the admin page. Will eventually be controlled through login/access privileges // Hugi 2025-07-06
+	 */
+	public boolean isLocal() {
+		return application().isDevelopmentMode();
+	}
 }
