@@ -4,7 +4,10 @@
 			<wo:repetition list="$articles" item="$currentArticle">
 				<div class="card">
 					<div class="card-header">
-						<h3 class="card-title"><wo:str value="$currentArticle.title" /></h3>
+						<h3 class="card-title">
+							<wo:str value="$currentArticle.title" /><br>
+							<small style="display; inline-block; margin-left: 10px; color: gray"><wo:str value="$formattedDate" /></small>
+						</h3>
 						<wo:if condition="$isLocal">
 							<div class="card-actions">
 								<wo:link action="$editArticle" class="btn btn-primary">Edit</wo:link>
