@@ -4,12 +4,14 @@ import java.util.List;
 
 import org.apache.cayenne.query.ObjectSelect;
 
+import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
-import ng.appserver.templating.NGComponent;
+import whoacommunity.app.WCComponent;
 import whoacommunity.app.WCCore;
+import whoacommunity.components.admin.WCArticleEditPage;
 import whoacommunity.data.Article;
 
-public class WCMain extends NGComponent {
+public class WCMain extends WCComponent {
 
 	public Article currentArticle;
 
@@ -22,5 +24,11 @@ public class WCMain extends NGComponent {
 				.query( Article.class )
 				.orderBy( Article.DATE.desc() )
 				.select( WCCore.newContext() );
+	}
+
+	public NGActionResults editArticle() {
+		final WCArticleEditPage nextPage = pageWithName( WCArticleEditPage.class );
+		nextPage.selectedObject = currentArticle;
+		return nextPage;
 	}
 }

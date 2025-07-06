@@ -5,9 +5,14 @@
 				<div class="card">
 					<div class="card-header">
 						<h3 class="card-title"><wo:str value="$currentArticle.title" /></h3>
+						<wo:if condition="$isLocal">
+							<div class="card-actions">
+								<wo:link action="$editArticle" class="btn btn-primary">Edit</wo:link>
+							</div>
+						</wo:if>
 					</div>
 					<div class="card-body">
-						<p><wo:str value="$currentArticle.contentAsHTML" /></p>
+						<p><wo:str value="$currentArticle.contentAsHTML" escapeHTML="$false" /></p>
 					</div>
 				</div>
 			</wo:repetition>

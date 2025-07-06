@@ -1,11 +1,18 @@
 package whoacommunity.components;
 
+import java.time.LocalDate;
+
+import org.apache.cayenne.ObjectContext;
+
 import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
-import ng.appserver.templating.NGComponent;
+import whoacommunity.app.WCComponent;
+import whoacommunity.app.WCCore;
+import whoacommunity.components.admin.WCAdminPage;
+import whoacommunity.data.Article;
 import whoacommunity.data.SlackUser;
 
-public class WCLook extends NGComponent {
+public class WCLook extends WCComponent {
 
 	public String searchString;
 
@@ -43,14 +50,20 @@ public class WCLook extends NGComponent {
 		return nextPage;
 	}
 
-	/**
-	 * FIXME: A hack to determine whether we show the admin page. Will eventually be controlled through login/access privileges // Hugi 2025-07-06
-	 */
-	public boolean isLocal() {
-		return application().isDevelopmentMode();
-	}
-
 	public NGActionResults admin() {
 		return pageWithName( WCAdminPage.class );
+	}
+
+	public NGActionResults createArticle() {
+		final ObjectContext oc = WCCore.newContext();
+
+		final Article a = oc.newObject( Article.class );
+		a.setDate( LocalDate.now() );
+		a.setTitle( "New article" );
+		a.setContent( "" );
+
+		oc.commitChanges();
+
+		return null;
 	}
 }

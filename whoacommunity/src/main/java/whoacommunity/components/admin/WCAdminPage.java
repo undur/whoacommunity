@@ -1,4 +1,4 @@
-package whoacommunity.components;
+package whoacommunity.components.admin;
 
 import ng.appserver.NGContext;
 import ng.appserver.templating.NGComponent;

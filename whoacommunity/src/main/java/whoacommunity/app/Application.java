@@ -18,7 +18,8 @@ public class Application extends NGApplication {
 	public Elements elements() {
 		return Elements
 				.create()
-				.elementPackage( "whoacommunity.components" );
+				.elementPackage( "whoacommunity.components" )
+				.elementPackage( "whoacommunity.components.admin" );
 	}
 
 	@Override
