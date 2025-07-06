@@ -12,9 +12,9 @@ import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
 import ng.appserver.templating.NGComponent;
 import whoacommunity.app.WCCore;
-import whoacommunity.data.Channel;
-import whoacommunity.data.Message;
-import whoacommunity.data.User;
+import whoacommunity.data.SlackChannel;
+import whoacommunity.data.SlackMessage;
+import whoacommunity.data.SlackUser;
 
 public class WCSearchPage extends NGComponent {
 
@@ -22,14 +22,14 @@ public class WCSearchPage extends NGComponent {
 
 	public String searchString;
 
-	public List<Message> messages;
-	public Message currentMessage;
+	public List<SlackMessage> messages;
+	public SlackMessage currentMessage;
 
-	public Channel currentChannel;
-	public Channel selectedChannel;
+	public SlackChannel currentChannel;
+	public SlackChannel selectedChannel;
 
-	public User currentUser;
-	public User selectedUser;
+	public SlackUser currentUser;
+	public SlackUser selectedUser;
 
 	public WCSearchPage( NGContext context ) {
 		super( context );
@@ -47,23 +47,23 @@ public class WCSearchPage extends NGComponent {
 		final List<Expression> l = new ArrayList<>();
 
 		if( StringUtilities.hasValue( searchString ) ) {
-			l.add( Message.TEXT.containsIgnoreCase( searchString ) );
+			l.add( SlackMessage.TEXT.containsIgnoreCase( searchString ) );
 		}
 
 		if( selectedUser != null ) {
-			l.add( Message.USER.eq( selectedUser ) );
+			l.add( SlackMessage.USER.eq( selectedUser ) );
 		}
 
 		if( selectedChannel != null ) {
-			l.add( Message.CHANNEL.eq( selectedChannel ) );
+			l.add( SlackMessage.CHANNEL.eq( selectedChannel ) );
 		}
 
 		messages = ObjectSelect
-				.query( Message.class )
+				.query( SlackMessage.class )
 				.where( ExpressionFactory.and( l ) )
-				.orderBy( Message.DATE_TIME.asc() )
-				.prefetch( Message.USER.joint() )
-				.prefetch( Message.CHANNEL.joint() )
+				.orderBy( SlackMessage.DATE_TIME.asc() )
+				.prefetch( SlackMessage.USER.joint() )
+				.prefetch( SlackMessage.CHANNEL.joint() )
 				.select( WCCore.newContext() );
 
 		messages = WCSlackArchivePage.filterMessages( messages );
@@ -71,17 +71,17 @@ public class WCSearchPage extends NGComponent {
 		return null;
 	}
 
-	public List<User> users() {
+	public List<SlackUser> users() {
 		return ObjectSelect
-				.query( User.class )
-				.orderBy( User.NAME.ascInsensitive() )
+				.query( SlackUser.class )
+				.orderBy( SlackUser.NAME.ascInsensitive() )
 				.select( WCCore.newContext() );
 	}
 
-	public List<Channel> channels() {
+	public List<SlackChannel> channels() {
 		return ObjectSelect
-				.query( Channel.class )
-				.orderBy( Channel.NAME.ascInsensitive() )
+				.query( SlackChannel.class )
+				.orderBy( SlackChannel.NAME.ascInsensitive() )
 				.select( WCCore.newContext() );
 	}
 }

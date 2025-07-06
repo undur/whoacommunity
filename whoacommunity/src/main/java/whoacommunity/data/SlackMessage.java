@@ -3,9 +3,9 @@ package whoacommunity.data;
 import jambalaya.interfaces.DateTimeStamped;
 import jambalaya.interfaces.UUIDStamped;
 import ng.appserver.privates.NGHTMLUtilities;
-import whoacommunity.data.auto._Message;
+import whoacommunity.data.auto._SlackMessage;
 
-public class Message extends _Message implements DateTimeStamped, UUIDStamped {
+public class SlackMessage extends _SlackMessage implements DateTimeStamped, UUIDStamped {
 
 	/**
 	 * @return The text for HTML display

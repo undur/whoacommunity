@@ -3,7 +3,7 @@ package whoacommunity.components;
 import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
 import ng.appserver.templating.NGComponent;
-import whoacommunity.data.User;
+import whoacommunity.data.SlackUser;
 
 public class WCLook extends NGComponent {
 
@@ -24,7 +24,7 @@ public class WCLook extends NGComponent {
 	/**
 	 * FIXME: We currently don't allow logins so this always returns null
 	 */
-	public User user() {
+	public SlackUser user() {
 		return null;
 	}
 

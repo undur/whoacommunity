@@ -10,16 +10,16 @@ import ng.appserver.NGContext;
 import ng.appserver.templating.NGComponent;
 import whoacommunity.app.Session;
 import whoacommunity.app.WCCore;
-import whoacommunity.data.Channel;
-import whoacommunity.data.Message;
+import whoacommunity.data.SlackChannel;
+import whoacommunity.data.SlackMessage;
 
 public class WCSlackArchivePage extends NGComponent {
 
 	public String password;
 
-	public Channel currentChannel;
-	public Channel selectedChannel;
-	public Message currentMessage;
+	public SlackChannel currentChannel;
+	public SlackChannel selectedChannel;
+	public SlackMessage currentMessage;
 
 	public WCSlackArchivePage( NGContext context ) {
 		super( context );
@@ -33,10 +33,10 @@ public class WCSlackArchivePage extends NGComponent {
 		return null;
 	}
 
-	public List<Channel> channels() {
+	public List<SlackChannel> channels() {
 		return ObjectSelect
-				.query( Channel.class )
-				.orderBy( Channel.NAME.ascInsensitive() )
+				.query( SlackChannel.class )
+				.orderBy( SlackChannel.NAME.ascInsensitive() )
 				.select( WCCore.newContext() );
 	}
 
@@ -52,17 +52,17 @@ public class WCSlackArchivePage extends NGComponent {
 		return currentMessage.dateTime().toString();
 	}
 
-	public List<Message> messages() {
+	public List<SlackMessage> messages() {
 
 		if( selectedChannel == null ) {
 			return Collections.emptyList();
 		}
 
-		final List<Message> messages = ObjectSelect
-				.query( Message.class )
-				.where( Message.CHANNEL.eq( selectedChannel ) )
-				.orderBy( Message.DATE_TIME.asc() )
-				.prefetch( Message.USER.joint() )
+		final List<SlackMessage> messages = ObjectSelect
+				.query( SlackMessage.class )
+				.where( SlackMessage.CHANNEL.eq( selectedChannel ) )
+				.orderBy( SlackMessage.DATE_TIME.asc() )
+				.prefetch( SlackMessage.USER.joint() )
 				.select( WCCore.newContext() );
 
 		return filterMessages( messages );
@@ -71,7 +71,7 @@ public class WCSlackArchivePage extends NGComponent {
 	/**
 	 * @return The cleaned up message list
 	 */
-	public static List<Message> filterMessages( final List<Message> messages ) {
+	public static List<SlackMessage> filterMessages( final List<SlackMessage> messages ) {
 		return messages
 				.stream()
 				.filter( f -> !"channel_join".equals( f.slackSubtype() ) )

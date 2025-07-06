@@ -35,14 +35,14 @@
 		<db-attribute name="slack_username" type="VARCHAR" length="1024"/>
 		<db-attribute name="unique_id" type="OTHER" isMandatory="true"/>
 	</db-entity>
-	<obj-entity name="Channel" className="whoacommunity.data.Channel" dbEntityName="wc_channel">
+	<obj-entity name="SlackChannel" className="whoacommunity.data.SlackChannel" dbEntityName="wc_channel">
 		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
 		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 		<obj-attribute name="slackID" type="java.lang.String" db-attribute-path="slack_id"/>
 		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
 	</obj-entity>
-	<obj-entity name="Message" className="whoacommunity.data.Message" dbEntityName="wc_message">
+	<obj-entity name="SlackMessage" className="whoacommunity.data.SlackMessage" dbEntityName="wc_message">
 		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
 		<obj-attribute name="dateTime" type="java.time.LocalDateTime" db-attribute-path="date_time"/>
 		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
@@ -51,7 +51,7 @@
 		<obj-attribute name="text" type="java.lang.String" db-attribute-path="text"/>
 		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
 	</obj-entity>
-	<obj-entity name="User" className="whoacommunity.data.User" dbEntityName="wc_user">
+	<obj-entity name="SlackUser" className="whoacommunity.data.SlackUser" dbEntityName="wc_user">
 		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
 		<obj-attribute name="emailAddress" type="java.lang.String" db-attribute-path="email_address"/>
 		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
@@ -73,10 +73,10 @@
 	<db-relationship name="messages" source="wc_user" target="wc_message" toMany="true">
 		<db-attribute-pair source="id" target="user_id"/>
 	</db-relationship>
-	<obj-relationship name="messages" source="Channel" target="Message" deleteRule="Deny" db-relationship-path="messages"/>
-	<obj-relationship name="channel" source="Message" target="Channel" deleteRule="Nullify" db-relationship-path="channel"/>
-	<obj-relationship name="user" source="Message" target="User" deleteRule="Nullify" db-relationship-path="user"/>
-	<obj-relationship name="messages" source="User" target="Message" deleteRule="Deny" db-relationship-path="messages"/>
+	<obj-relationship name="messages" source="SlackChannel" target="SlackMessage" deleteRule="Deny" db-relationship-path="messages"/>
+	<obj-relationship name="channel" source="SlackMessage" target="SlackChannel" deleteRule="Nullify" db-relationship-path="channel"/>
+	<obj-relationship name="user" source="SlackMessage" target="SlackUser" deleteRule="Nullify" db-relationship-path="user"/>
+	<obj-relationship name="messages" source="SlackUser" target="SlackMessage" deleteRule="Deny" db-relationship-path="messages"/>
 	<dbImport xmlns="http://cayenne.apache.org/schema/11/dbimport">
 		<tableTypes>
 			<tableType>TABLE</tableType>
