@@ -10,7 +10,6 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import jambalaya.listeners.DateTimestampedListener;
 import jambalaya.listeners.UUIDStampedListener;
-import jambalaya.listeners.UniqueIDStampedListener;
 
 /**
  * The basics for accessing the DB through Cayenne
@@ -47,7 +46,6 @@ public class WCCore {
 			_serverRuntime = b.build();
 
 			_serverRuntime.getDataDomain().addListener( new DateTimestampedListener() );
-			_serverRuntime.getDataDomain().addListener( new UniqueIDStampedListener() );
 			_serverRuntime.getDataDomain().addListener( new UUIDStampedListener() );
 		}
 

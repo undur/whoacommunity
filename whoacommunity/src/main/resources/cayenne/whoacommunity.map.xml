@@ -4,6 +4,24 @@
 	 xsi:schemaLocation="http://cayenne.apache.org/schema/11/modelMap https://cayenne.apache.org/schema/11/modelMap.xsd"
 	 project-version="11">
 	<property name="defaultPackage" value="whoacommunity.data"/>
+	<db-entity name="wc_article">
+		<db-attribute name="content" type="VARCHAR" isMandatory="true" length="1000000"/>
+		<db-attribute name="creation_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="date" type="DATE" isMandatory="true"/>
+		<db-attribute name="format_code" type="VARCHAR" isMandatory="true" length="1024"/>
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isGenerated="true" isMandatory="true"/>
+		<db-attribute name="modification_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="title" type="VARCHAR" isMandatory="true" length="1024"/>
+		<db-attribute name="unique_id" type="OTHER" isMandatory="true"/>
+	</db-entity>
+	<db-entity name="wc_article_tag">
+		<db-attribute name="article_id" type="INTEGER" isMandatory="true"/>
+		<db-attribute name="creation_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isGenerated="true" isMandatory="true"/>
+		<db-attribute name="modification_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="tag_id" type="INTEGER" isMandatory="true"/>
+		<db-attribute name="unique_id" type="OTHER" isMandatory="true"/>
+	</db-entity>
 	<db-entity name="wc_channel">
 		<db-attribute name="creation_date" type="TIMESTAMP" isMandatory="true"/>
 		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isGenerated="true" isMandatory="true"/>
@@ -24,6 +42,13 @@
 		<db-attribute name="unique_id" type="OTHER" isMandatory="true"/>
 		<db-attribute name="user_id" type="INTEGER"/>
 	</db-entity>
+	<db-entity name="wc_tag">
+		<db-attribute name="creation_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isGenerated="true" isMandatory="true"/>
+		<db-attribute name="modification_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="name" type="VARCHAR" isMandatory="true" length="1024"/>
+		<db-attribute name="unique_id" type="OTHER" isMandatory="true"/>
+	</db-entity>
 	<db-entity name="wc_user">
 		<db-attribute name="creation_date" type="TIMESTAMP" isMandatory="true"/>
 		<db-attribute name="email_address" type="VARCHAR" length="1024"/>
@@ -35,6 +60,20 @@
 		<db-attribute name="slack_username" type="VARCHAR" length="1024"/>
 		<db-attribute name="unique_id" type="OTHER" isMandatory="true"/>
 	</db-entity>
+	<obj-entity name="Article" className="whoacommunity.data.Article" dbEntityName="wc_article">
+		<obj-attribute name="content" type="java.lang.String" db-attribute-path="content"/>
+		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
+		<obj-attribute name="date" type="java.time.LocalDate" db-attribute-path="date"/>
+		<obj-attribute name="formatCode" type="java.lang.String" db-attribute-path="format_code"/>
+		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
+		<obj-attribute name="title" type="java.lang.String" db-attribute-path="title"/>
+		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
+	</obj-entity>
+	<obj-entity name="ArticleTag" className="whoacommunity.data.ArticleTag" dbEntityName="wc_article_tag">
+		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
+		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
+		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
+	</obj-entity>
 	<obj-entity name="SlackChannel" className="whoacommunity.data.SlackChannel" dbEntityName="wc_channel">
 		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
 		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
@@ -61,6 +100,21 @@
 		<obj-attribute name="slackUsername" type="java.lang.String" db-attribute-path="slack_username"/>
 		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
 	</obj-entity>
+	<obj-entity name="Tag" className="whoacommunity.data.Tag" dbEntityName="wc_tag">
+		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
+		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
+	</obj-entity>
+	<db-relationship name="articleTags" source="wc_article" target="wc_article_tag" toMany="true">
+		<db-attribute-pair source="id" target="article_id"/>
+	</db-relationship>
+	<db-relationship name="article" source="wc_article_tag" target="wc_article">
+		<db-attribute-pair source="article_id" target="id"/>
+	</db-relationship>
+	<db-relationship name="tag" source="wc_article_tag" target="wc_tag">
+		<db-attribute-pair source="tag_id" target="id"/>
+	</db-relationship>
 	<db-relationship name="messages" source="wc_channel" target="wc_message" toMany="true">
 		<db-attribute-pair source="id" target="channel_id"/>
 	</db-relationship>
@@ -70,13 +124,20 @@
 	<db-relationship name="user" source="wc_message" target="wc_user">
 		<db-attribute-pair source="user_id" target="id"/>
 	</db-relationship>
+	<db-relationship name="articleTags" source="wc_tag" target="wc_article_tag" toMany="true">
+		<db-attribute-pair source="id" target="tag_id"/>
+	</db-relationship>
 	<db-relationship name="messages" source="wc_user" target="wc_message" toMany="true">
 		<db-attribute-pair source="id" target="user_id"/>
 	</db-relationship>
+	<obj-relationship name="articleTags" source="Article" target="ArticleTag" deleteRule="Deny" db-relationship-path="articleTags"/>
+	<obj-relationship name="article" source="ArticleTag" target="Article" deleteRule="Nullify" db-relationship-path="article"/>
+	<obj-relationship name="tag" source="ArticleTag" target="Tag" deleteRule="Nullify" db-relationship-path="tag"/>
 	<obj-relationship name="messages" source="SlackChannel" target="SlackMessage" deleteRule="Deny" db-relationship-path="messages"/>
 	<obj-relationship name="channel" source="SlackMessage" target="SlackChannel" deleteRule="Nullify" db-relationship-path="channel"/>
 	<obj-relationship name="user" source="SlackMessage" target="SlackUser" deleteRule="Nullify" db-relationship-path="user"/>
 	<obj-relationship name="messages" source="SlackUser" target="SlackMessage" deleteRule="Deny" db-relationship-path="messages"/>
+	<obj-relationship name="articleTags" source="Tag" target="ArticleTag" deleteRule="Deny" db-relationship-path="articleTags"/>
 	<dbImport xmlns="http://cayenne.apache.org/schema/11/dbimport">
 		<tableTypes>
 			<tableType>TABLE</tableType>
