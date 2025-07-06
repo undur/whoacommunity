@@ -49,4 +49,8 @@ public class WCLook extends NGComponent {
 	public boolean isLocal() {
 		return application().isDevelopmentMode();
 	}
+
+	public NGActionResults admin() {
+		return pageWithName( WCAdminPage.class );
+	}
 }
