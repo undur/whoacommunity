@@ -4,6 +4,7 @@ import ng.appserver.NGApplication;
 import ng.plugins.Elements;
 import ng.plugins.Routes;
 import whoacommunity.components.WCDeploymentPage;
+import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCMain;
 import whoacommunity.components.WCSlackArchivePage;
 import whoacommunity.components.WCSlackClientPage;
@@ -29,6 +30,7 @@ public class Application extends NGApplication {
 				.map( "/", WCMain.class )
 				.map( "/slack-archive", WCSlackArchivePage.class )
 				.map( "/slack-client", WCSlackClientPage.class )
+				.map( "/dev-feed", WCFeedPage.class )
 				.map( "/deployment-config", WCDeploymentPage.class );
 	}
 }

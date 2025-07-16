@@ -102,5 +102,10 @@
 			<artifactId>flexmark-all</artifactId>
 			<version>0.64.8</version>
 		</dependency>
+		<dependency>
+			<groupId>com.apptasticsoftware</groupId>
+			<artifactId>rssreader</artifactId>
+			<version>3.9.3</version>
+		</dependency>
 	</dependencies>
 </project>
