@@ -1,5 +1,7 @@
 package whoacommunity.components.admin;
 
+import java.time.LocalDate;
+
 import org.apache.cayenne.ObjectContext;
 
 import ng.appserver.NGActionResults;
@@ -44,5 +46,13 @@ public class WCArticleEditPage extends WCComponent {
 		response.setHeader( "location", url );
 		response.setHeader( "content-type", "text/html" );
 		return response;
+	}
+
+	public String stringDate() {
+		return selectedObject.date().toString();
+	}
+
+	public void setStringDate( String stringDate ) {
+		selectedObject.setDate( LocalDate.parse( stringDate ) );
 	}
 }
