@@ -29,6 +29,7 @@ public class Article extends _Article implements DateTimeStamped, UUIDStamped {
 
 	@Override
 	protected void onPostAdd() {
+		setPublished( false );
 		setFormatCode( ArticleFormat.markdown.toString() );
 	}
 

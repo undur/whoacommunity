@@ -40,6 +40,7 @@ public abstract class _Article extends PersistentObject {
     public static final DateProperty<LocalDate> DATE = PropertyFactory.createDate("date", LocalDate.class);
     public static final StringProperty<String> FORMAT_CODE = PropertyFactory.createString("formatCode", String.class);
     public static final DateProperty<LocalDateTime> MODIFICATION_DATE = PropertyFactory.createDate("modificationDate", LocalDateTime.class);
+    public static final BaseProperty<Boolean> PUBLISHED = PropertyFactory.createBase("published", Boolean.class);
     public static final StringProperty<String> TITLE = PropertyFactory.createString("title", String.class);
     public static final BaseProperty<UUID> UNIQUE_ID = PropertyFactory.createBase("uniqueID", UUID.class);
     public static final ListProperty<ArticleTag> ARTICLE_TAGS = PropertyFactory.createList("articleTags", ArticleTag.class);
@@ -49,6 +50,7 @@ public abstract class _Article extends PersistentObject {
     protected LocalDate date;
     protected String formatCode;
     protected LocalDateTime modificationDate;
+    protected boolean published;
     protected String title;
     protected UUID uniqueID;
 
@@ -104,6 +106,16 @@ public abstract class _Article extends PersistentObject {
         return this.modificationDate;
     }
 
+    public void setPublished(boolean published) {
+        beforePropertyWrite("published", this.published, published);
+        this.published = published;
+    }
+
+	public boolean published() {
+        beforePropertyRead("published");
+        return this.published;
+    }
+
     public void setTitle(String title) {
         beforePropertyWrite("title", this.title, title);
         this.title = title;
@@ -156,6 +168,8 @@ public abstract class _Article extends PersistentObject {
                 return this.formatCode;
             case "modificationDate":
                 return this.modificationDate;
+            case "published":
+                return this.published;
             case "title":
                 return this.title;
             case "uniqueID":
@@ -189,6 +203,9 @@ public abstract class _Article extends PersistentObject {
             case "modificationDate":
                 this.modificationDate = (LocalDateTime)val;
                 break;
+            case "published":
+                this.published = val == null ? false : (boolean)val;
+                break;
             case "title":
                 this.title = (String)val;
                 break;
@@ -219,6 +236,7 @@ public abstract class _Article extends PersistentObject {
         out.writeObject(this.date);
         out.writeObject(this.formatCode);
         out.writeObject(this.modificationDate);
+        out.writeBoolean(this.published);
         out.writeObject(this.title);
         out.writeObject(this.uniqueID);
         out.writeObject(this.articleTags);
@@ -232,6 +250,7 @@ public abstract class _Article extends PersistentObject {
         this.date = (LocalDate)in.readObject();
         this.formatCode = (String)in.readObject();
         this.modificationDate = (LocalDateTime)in.readObject();
+        this.published = in.readBoolean();
         this.title = (String)in.readObject();
         this.uniqueID = (UUID)in.readObject();
         this.articleTags = in.readObject();

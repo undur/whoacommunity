@@ -11,6 +11,7 @@
 		<db-attribute name="format_code" type="VARCHAR" isMandatory="true" length="1024"/>
 		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isGenerated="true" isMandatory="true"/>
 		<db-attribute name="modification_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="published" type="BOOLEAN" isMandatory="true"/>
 		<db-attribute name="title" type="VARCHAR" isMandatory="true" length="1024"/>
 		<db-attribute name="unique_id" type="OTHER" isMandatory="true"/>
 	</db-entity>
@@ -66,6 +67,7 @@
 		<obj-attribute name="date" type="java.time.LocalDate" db-attribute-path="date"/>
 		<obj-attribute name="formatCode" type="java.lang.String" db-attribute-path="format_code"/>
 		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
+		<obj-attribute name="published" type="boolean" db-attribute-path="published"/>
 		<obj-attribute name="title" type="java.lang.String" db-attribute-path="title"/>
 		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
 		<post-add method-name="onPostAdd"/>

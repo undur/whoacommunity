@@ -48,11 +48,25 @@ public class WCArticleEditPage extends WCComponent {
 		return response;
 	}
 
+	/**
+	 * FIXME: Hmmm... KVC should really just handle ISO-8601 string/date conversion automatically, much like numeric conversions // Hugi 2025-07-16
+	 */
 	public String stringDate() {
 		return selectedObject.date().toString();
 	}
 
-	public void setStringDate( String stringDate ) {
-		selectedObject.setDate( LocalDate.parse( stringDate ) );
+	public void setStringDate( String string ) {
+		selectedObject.setDate( LocalDate.parse( string ) );
+	}
+
+	/**
+	 * FIXME: Sigh... Spend those couple of minutes and add an NGChecbox element. This is embarrassing // Hugi 2025-07-16
+	 */
+	public String stringPublished() {
+		return selectedObject.published() ? "1" : "0";
+	}
+
+	public void setStringPublished( String string ) {
+		selectedObject.setPublished( string.equals( "1" ) );
 	}
 }
