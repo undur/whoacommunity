@@ -12,7 +12,12 @@ public abstract class WCComponent extends NGComponent {
 	/**
 	 * FIXME: A hack to determine whether we show the admin page. Will eventually be controlled through login/access privileges // Hugi 2025-07-06
 	 */
+	@Deprecated
 	public boolean isLocal() {
 		return application().isDevelopmentMode();
+	}
+
+	public boolean showAdminStuff() {
+		return isLocal();
 	}
 }
