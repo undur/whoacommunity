@@ -21,9 +21,15 @@ public class WCMain extends WCComponent {
 	}
 
 	public List<Article> articles() {
-		return ObjectSelect
+		final ObjectSelect<Article> query = ObjectSelect
 				.query( Article.class )
-				.orderBy( Article.DATE.desc() )
+				.orderBy( Article.DATE.desc() );
+
+		if( !showAdminStuff() ) {
+			query.where( Article.PUBLISHED.isTrue() );
+		}
+
+		return query
 				.select( WCCore.newContext() );
 	}
 
