@@ -5,7 +5,7 @@
 				<div class="card mb-3">
 					<div class="card-header">
 						<h3 class="card-title">
-							<wo:str value="$currentArticle.title" /><br>
+							<wo:link href="$currentArticleURL"><wo:str value="$currentArticle.title" /></wo:link><br>
 							<small style="display; inline-block; margin-left: 0px; color: gray"><wo:str value="$currentArticle.formattedDate" /></small>
 						</h3>
 						<wo:if condition="$isLocal">

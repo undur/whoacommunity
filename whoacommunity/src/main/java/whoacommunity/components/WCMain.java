@@ -37,4 +37,8 @@ public class WCMain extends WCComponent {
 		nextPage.selectedObject = currentArticle;
 		return nextPage;
 	}
+
+	public String currentArticleURL() {
+		return "/article/%s".formatted( currentArticle.uniqueID() );
+	}
 }
