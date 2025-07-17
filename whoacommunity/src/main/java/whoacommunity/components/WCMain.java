@@ -1,6 +1,5 @@
 package whoacommunity.components;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.apache.cayenne.query.ObjectSelect;
@@ -37,9 +36,5 @@ public class WCMain extends WCComponent {
 		final WCArticleEditPage nextPage = pageWithName( WCArticleEditPage.class );
 		nextPage.selectedObject = currentArticle;
 		return nextPage;
-	}
-
-	public String formattedDate() {
-		return currentArticle.date().format( DateTimeFormatter.ofPattern( "MMMM d, YYYY" ) );
 	}
 }

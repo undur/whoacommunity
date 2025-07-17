@@ -1,5 +1,6 @@
 package whoacommunity.data;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import com.vladsch.flexmark.ext.aside.AsideExtension;
@@ -54,6 +55,10 @@ public class Article extends _Article implements DateTimeStamped, UUIDStamped {
 		final HtmlRenderer renderer = HtmlRenderer.builder( options ).build();
 		final Node document = parser.parse( markdownString );
 		return renderer.render( document );
+	}
+
+	public String formattedDate() {
+		return date().format( DateTimeFormatter.ofPattern( "MMMM d, YYYY" ) );
 	}
 
 	public ArticleFormat format() {
