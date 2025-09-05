@@ -33,7 +33,12 @@ public class Repos {
 
 					// WOCommunity repos
 					new Repo( Org.wocommunity, "🛠️", "wolips", "https://github.com/wocommunity/wolips" ),
-					new Repo( Org.wocommunity, "📜", "wonder", "https://github.com/wocommunity/wonder" ) );
+					new Repo( Org.wocommunity, "📜", "wonder", "https://github.com/wocommunity/wonder" ),
+
+					// ng
+					new Repo( Org.ng, "🚀", "ng-objects", "https://github.com/ngobjects/ng-objects" )
+
+			);
 		}
 
 		return _repos;
@@ -42,7 +47,8 @@ public class Repos {
 	public enum Org {
 		undur,
 		wocommunity,
-		cayenne;
+		cayenne,
+		ng;
 
 		public List<Repo> repos() {
 			return Repos
