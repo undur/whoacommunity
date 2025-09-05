@@ -1,17 +1,47 @@
 <wo:WCLook>
+	<style>
+		.commit-table td {
+			padding: 3px 10px;
+		}
+	</style>
 	<div class="row">
-		<div class="col-md-6">
+		<div class="col-md-8">
 			<div class="card">
 				<div class="card-header">
-					<h3 class="card-title">What's happenin'</h3>
+					<h3 class="card-title">What's new</h3>
+				</div>
+				<div class="card-body p-0">
+					<table class="table table-condensed commit-table">
+						<wo:repetition list="$items" item="$current">
+							<tr>
+								<td><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
+								<td><wo:str value="$current.dateFormatted" /></td>
+								<td><wo:link href="$current.link"><wo:str value="$current.title" /></wo:link></td>
+								<td><wo:str value="$current.author" /></td>
+							</tr>
+						</wo:repetition>
+					</table>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Monitored repositories</h3>
 				</div>
 				<div class="card-body">
-					<ul>
-						<wo:repetition list="$items" item="$currentItem">
-							<li><wo:link href="$currentItem.link.get"><wo:str value="$currentItem.title.get" /></wo:link></li>
+					<wo:repetition list="$orgs" item="$currentOrg">
+						<h4><wo:str value="$currentOrg" /></h4>
+						<ul>
+						<wo:repetition list="$currentOrg.repos" item="$currentRepo">
+							<li><wo:link href="$currentRepo.url"><wo:str value="$currentRepo.emoji" /> <wo:str value="$currentRepo.name" /></wo:link></li>
 						</wo:repetition>
-					</ul>
+						</ul>
+					</wo:repetition>
 				</div>
+			</div>
+			<div class="alert alert-info mt-3">
+				This page shows the development/commit activity in several selected repositories
 			</div>
 		</div>
 	</div>
