@@ -49,7 +49,7 @@ public class WCFeedPage extends WCComponent {
 		 */
 		public Repo repo() {
 			for( Repo repo : Repos.repos() ) {
-				if( item.getLink().get().startsWith( repo.url() ) ) {
+				if( item.getLink().get().startsWith( repo.url() + "/" ) ) {
 					return repo;
 				}
 			}

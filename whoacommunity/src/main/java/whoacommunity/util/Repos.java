@@ -23,7 +23,7 @@ public class Repos {
 					new Repo( Org.undur, "🤸‍♀️", "wonder-slim", "https://github.com/undur/wonder-slim" ),
 					new Repo( Org.undur, "🌿", "parsley", "https://github.com/undur/Parsley" ),
 					new Repo( Org.undur, "🤖", "modulo", "https://github.com/undur/modulo" ),
-					new Repo( Org.undur, "🎛️", "wonder-slim-deployment", "https://github.com/undur/wonder-slim-deployment" ),
+					new Repo( Org.undur, "⚙️️", "wonder-slim-deployment", "https://github.com/undur/wonder-slim-deployment" ),
 					new Repo( Org.undur, "🦡", "vermilingua", "https://github.com/undur/vermilingua-maven-plugin" ),
 					new Repo( Org.undur, "📚", "whoacommunity.com", "https://github.com/undur/whoacommunity" ),
 					new Repo( Org.undur, "👨‍⚕️", "examiner", "https://github.com/undur/examiner" ),
