@@ -14,22 +14,26 @@ import whoacommunity.data.Article;
 public class WCMain extends WCComponent {
 
 	public Article currentArticle;
+	private List<Article> _articles;
 
 	public WCMain( NGContext context ) {
 		super( context );
 	}
 
 	public List<Article> articles() {
-		final ObjectSelect<Article> query = ObjectSelect
-				.query( Article.class )
-				.orderBy( Article.DATE.desc() );
+		if( _articles == null ) {
+			final ObjectSelect<Article> query = ObjectSelect
+					.query( Article.class )
+					.orderBy( Article.DATE.desc() );
 
-		if( !showAdminStuff() ) {
-			query.where( Article.PUBLISHED.isTrue() );
+			if( !showAdminStuff() ) {
+				query.where( Article.PUBLISHED.isTrue() );
+			}
+
+			_articles = query.select( WCCore.newContext() );
 		}
 
-		return query
-				.select( WCCore.newContext() );
+		return _articles;
 	}
 
 	public NGActionResults editArticle() {

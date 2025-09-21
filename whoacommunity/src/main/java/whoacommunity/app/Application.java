@@ -19,6 +19,11 @@ import whoacommunity.data.Article;
 
 public class Application extends NGApplication {
 
+	static {
+		// FIXME: We really need to support a nicer way to set and change java properties (at least WRT logging) // Hugi 2025-09-21
+		System.setProperty( "org.slf4j.simpleLogger.log.org.apache.cayenne", "warn" );
+	}
+
 	public static void main( String[] args ) {
 		NGApplication.run( args, Application.class );
 	}
