@@ -40,6 +40,19 @@
 					<ul>
 						<li><a href="https://github.com/wocommunity">WOCommunity</a></li>
 						<li><a href="https://github.com/undur">Undur</a></li>
+						<li><a href="https://github.com/ngobjects">ng-objects</a></li>
+					</ul>
+				</div>
+			</div>
+			<div class="card mt-3">
+				<div class="card-header">
+					<h3 class="card-title">Recent articles</h3>
+				</div>
+				<div class="card-body">
+					<ul>
+						<wo:repetition list="$articles" item="$currentArticle">
+							<li><wo:link href="$currentArticleURL"><wo:str value="$currentArticle.title" /></wo:link></li>
+						</wo:repetition>
 					</ul>
 				</div>
 			</div>
