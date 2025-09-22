@@ -3,7 +3,6 @@ package whoacommunity.app;
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.reflect.NonPrefixedBeanAccessor;
 import org.apache.cayenne.runtime.CayenneRuntime;
-import org.apache.cayenne.runtime.CayenneRuntimeBuilder;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -21,35 +20,35 @@ public class WCCore {
 		NonPrefixedBeanAccessor.register();
 	}
 
-	private static CayenneRuntime _serverRuntime;
+	private static CayenneRuntime _runtime;
 
 	/**
 	 * @return A newly constructed ObjectContext
 	 */
 	public static ObjectContext newContext() {
-		return serverRuntime().newContext();
+		return runtime().newContext();
 	}
 
-	public static CayenneRuntime serverRuntime() {
-		if( _serverRuntime == null ) {
-			CayenneRuntimeBuilder b = CayenneRuntime.builder( "WhoaCommunity" );
-			b.addConfig( "cayenne/cayenne-project.xml" );
-
-			HikariConfig config = new HikariConfig();
+	public static CayenneRuntime runtime() {
+		if( _runtime == null ) {
+			final HikariConfig config = new HikariConfig();
 			config.setJdbcUrl( jdbcURL() );
 			config.setUsername( username() );
 			config.setPassword( password() );
 			config.setMaximumPoolSize( 4 );
-			HikariDataSource dataSource = new HikariDataSource( config );
-			b = b.dataSource( dataSource );
+			final HikariDataSource dataSource = new HikariDataSource( config );
 
-			_serverRuntime = b.build();
+			_runtime = CayenneRuntime
+					.builder( "WhoaCommunity" )
+					.addConfig( "cayenne/cayenne-project.xml" )
+					.dataSource( dataSource )
+					.build();
 
-			_serverRuntime.getDataDomain().addListener( new DateTimestampedListener() );
-			_serverRuntime.getDataDomain().addListener( new UUIDStampedListener() );
+			_runtime.getDataDomain().addListener( new DateTimestampedListener() );
+			_runtime.getDataDomain().addListener( new UUIDStampedListener() );
 		}
 
-		return _serverRuntime;
+		return _runtime;
 	}
 
 	/**
@@ -60,14 +59,14 @@ public class WCCore {
 	}
 
 	/**
-	 * @return The jdbcURL property
+	 * @return The username property
 	 */
 	private static String username() {
 		return System.getProperty( "wc.username" );
 	}
 
 	/**
-	 * @return The jdbcURL property
+	 * @return The password property
 	 */
 	private static String password() {
 		return System.getProperty( "wc.password" );
