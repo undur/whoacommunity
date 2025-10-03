@@ -3,19 +3,20 @@
 		<div class="col-md-8">
 			<wo:repetition list="$articles" item="$currentArticle">
 				<div class="card mb-3">
-					<div class="card-header">
-						<h3 class="card-title">
-							<wo:link href="$currentArticleURL"><wo:str value="$currentArticle.title" /></wo:link><br>
-							<small style="display; inline-block; margin-left: 0px; color: gray"><wo:str value="$currentArticle.formattedDate" /></small>
+					<div class="card-header" style="background-color: rgb(80,80,115); color: white">
+						<h3 class="card-title" style="font-size: 18px; color: white">
+							<wo:link href="$currentArticleURL"><wo:str value="$currentArticle.title" /></wo:link>
 						</h3>
-						<wo:if condition="$isLocal">
-							<div class="card-actions">
-								<wo:link action="$editArticle" class="btn btn-primary">Edit</wo:link>
-							</div>
-						</wo:if>
+						<div class="card-actions">
+							<small><wo:str value="$currentArticle.formattedDate" /></small>
+						</div>
 					</div>
 					<div class="card-body">
 						<wo:str value="$currentArticle.contentAsHTML" escapeHTML="$false" />
+						<wo:if condition="$isLocal">
+							<hr />
+							<wo:link action="$editArticle" class="btn btn-primary">Edit</wo:link>
+						</wo:if>
 					</div>
 				</div>
 			</wo:repetition>
