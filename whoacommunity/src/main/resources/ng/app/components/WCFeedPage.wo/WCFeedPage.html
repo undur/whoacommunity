@@ -20,7 +20,7 @@
 				</div>
 				<div class="card-body p-0">
 					<table class="table table-condensed commit-table table-striped">
-						<wo:repetition list="$items" item="$current">
+						<wo:repetition list="$feed.items" item="$current">
 							<tr>
 								<td><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
 								<td><wo:str value="$current.dateFormatted" /></td>
