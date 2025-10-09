@@ -1,4 +1,13 @@
 <wo:WCLook>
+	<style>
+		.feed-table {
+			font-size: 12px;
+		}
+		
+		.feed-table td {
+			padding: 4px 7px;
+		}
+	</style>
 	<div class="row">
 		<div class="col-md-8">
 			<wo:repetition list="$articles" item="$currentArticle">
@@ -70,12 +79,12 @@
 					</div>
 				</div>
 				<div class="card-body p-0">
-					<table class="table table-sm commit-table table-striped" style="font-size: 12px">
+					<table class="feed-table table table-sm commit-table table-striped">
 						<wo:repetition list="$items" item="$current">
 							<tr>
-								<td><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
+								<td nowrap><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
 								<td><wo:link href="$current.link"><wo:str value="$current.title" /></wo:link></td>
-								<td><wo:str value="$current.shortDateFormatted" /></td>
+								<td nowrap><wo:str value="$current.shortDateFormatted" /></td>
 							</tr>
 						</wo:repetition>
 					</table>
