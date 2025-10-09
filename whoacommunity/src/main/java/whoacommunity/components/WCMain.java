@@ -8,6 +8,7 @@ import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
 import whoacommunity.app.WCCore;
+import whoacommunity.components.WCFeedPage.OurFeed.OurItem;
 import whoacommunity.components.admin.WCArticleEditPage;
 import whoacommunity.data.Article;
 
@@ -15,6 +16,7 @@ public class WCMain extends WCComponent {
 
 	public Article currentArticle;
 	private List<Article> _articles;
+	public OurItem current;
 
 	public WCMain( NGContext context ) {
 		super( context );
@@ -44,5 +46,13 @@ public class WCMain extends WCComponent {
 
 	public String currentArticleURL() {
 		return "/article/%s".formatted( currentArticle.uniqueID() );
+
+	}
+
+	/**
+	 * FIXME: Yeah, we shouldn't be storing that feed in the dev page. Lazy // Hugi 2025-10-09
+	 */
+	public List<OurItem> items() {
+		return WCFeedPage.feed.items().subList( 0, 10 );
 	}
 }

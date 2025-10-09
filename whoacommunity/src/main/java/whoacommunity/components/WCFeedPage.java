@@ -21,7 +21,7 @@ public class WCFeedPage extends WCComponent {
 	public Org currentOrg;
 	public Repo currentRepo;
 
-	public static OurFeed feed = new OurFeed( Duration.ofSeconds( 5 ) );
+	public static OurFeed feed = new OurFeed( Duration.ofMinutes( 1 ) );
 
 	public WCFeedPage( NGContext context ) {
 		super( context );
@@ -110,6 +110,13 @@ public class WCFeedPage extends WCComponent {
 			 */
 			public String dateFormatted() {
 				return item().getPubDateZonedDateTime().get().format( DateTimeFormatter.ofPattern( "yyyy-MM-dd" ) );
+			}
+
+			/**
+			 * @return Date for display
+			 */
+			public String shortDateFormatted() {
+				return item().getPubDateZonedDateTime().get().format( DateTimeFormatter.ofPattern( "MMM d" ) );
 			}
 
 			/**
