@@ -1,0 +1,59 @@
+<div class="card">
+	<div class="card-header">
+		<h3 class="card-title">Stuff and things</h3>
+	</div>
+	<div class="card-body">
+		<ul>
+			<li><a href="https://wiki.wocommunity.org/">WOCommunity wiki</a></li>
+		</ul>
+
+		<strong>Mailinglists</strong>
+		<ul>
+			<li><a href="https://lists.wocommunity.org/Lists/webobjects-dev/List.html">WOCommunity mailinglist archives</a></li>
+			<li><a href="https://lists.apple.com/archives/Webobjects-dev">Apple mailinglist archives</a></li>
+		</ul>
+
+		<strong>Development on GitHub</strong>
+		<ul>
+			<li><a href="https://github.com/wocommunity">WOCommunity</a></li>
+			<li><a href="https://github.com/undur">Undur</a></li>
+			<li><a href="https://github.com/ngobjects">ng-objects</a></li>
+		</ul>
+	</div>
+</div>
+<div class="card mt-3">
+	<div class="card-header">
+		<h3 class="card-title">Recent articles</h3>
+	</div>
+	<div class="card-body">
+		<ul>
+			<wo:repetition list="$articles" item="$currentArticle">
+				<li><wo:link href="$currentArticleURL"><wo:str value="$currentArticle.title" /></wo:link></li>
+			</wo:repetition>
+		</ul>
+	</div>
+</div>
+<div class="card mt-3">
+	<div class="card-header">
+		<h3 class="card-title">What's happenin'</h3>
+		<div class="card-actions">
+			<wo:link href="/dev-feed" class="btn btn-sm">
+				<span class="nav-link-icon d-md-none d-lg-inline-block">
+					<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-rss"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M4 4a16 16 0 0 1 16 16" /><path d="M4 11a9 9 0 0 1 9 9" /></svg>
+				</span>
+				<span class="nav-link-title">Dev feed</span>
+			</wo:link>
+		</div>
+	</div>
+	<div class="card-body p-0">
+		<table class="feed-table table table-sm commit-table table-striped">
+			<wo:repetition list="$items" item="$current">
+				<tr>
+					<td nowrap><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
+					<td><wo:link href="$current.link"><wo:str value="$current.title" /></wo:link></td>
+					<td nowrap><wo:str value="$current.shortDateFormatted" /></td>
+				</tr>
+			</wo:repetition>
+		</table>
+	</div>
+</div>
