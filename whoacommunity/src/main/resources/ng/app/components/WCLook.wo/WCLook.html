@@ -26,6 +26,19 @@
 				font-size: 18px;	
 			}
 		</style>
+		<!-- FIXME: Hack for header width bug in tabler, see https://github.com/tabler/tabler/issues/2271 -->
+		<style>
+			@media (min-width: 992px) {
+			  :host,
+			  :root {
+			    margin-left: 0;
+			  }
+			}
+			
+			body {
+			  overflow-y: scroll;
+			}
+		</style>
 	</head>
 	<wo:container elementName="body" class="$bodyClass"> <!-- body class="layout-fluid" Þurfum aðeins að skoða þetta -->
 		<div class="page">
