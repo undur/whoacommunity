@@ -107,5 +107,10 @@
 			<artifactId>rssreader</artifactId>
 			<version>3.9.3</version>
 		</dependency>
+		<dependency>
+			<groupId>com.rometools</groupId>
+			<artifactId>rome</artifactId>
+			<version>2.1.0</version>
+		</dependency>
 	</dependencies>
 </project>
