@@ -57,3 +57,18 @@
 		</table>
 	</div>
 </div>
+<div class="card mt-3">
+	<div class="card-header">
+		<h3 class="card-title">What's happenin' with Java</h3>
+	</div>
+	<div class="card-body p-0">
+		<table class="feed-table table table-sm commit-table table-striped">
+			<wo:repetition list="$javaItems" item="$javaItem">
+				<tr>
+					<td><wo:link href="$javaItem.link"><wo:str value="$javaItem.title" /></wo:link></td>
+					<td nowrap><wo:str value="$current.shortDateFormatted" /></td>
+				</tr>
+			</wo:repetition>
+		</table>
+	</div>
+</div>
