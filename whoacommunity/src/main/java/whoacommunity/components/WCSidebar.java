@@ -1,6 +1,7 @@
 package whoacommunity.components;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import com.apptasticsoftware.rssreader.Item;
@@ -40,8 +41,11 @@ public class WCSidebar extends WCComponent {
 			return item.getLink().get();
 		}
 
+		/**
+		 * @return Date for display
+		 */
 		public String shortDateFormatted() {
-			return "heh";
+			return item().getPubDateZonedDateTime().get().format( DateTimeFormatter.ofPattern( "MMM d" ) );
 		}
 	}
 }
