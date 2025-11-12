@@ -26,6 +26,7 @@ public class Repos {
 					new Repo( Org.undur, "⚙️️", "wonder-slim-deployment", "https://github.com/undur/wonder-slim-deployment" ),
 					new Repo( Org.undur, "🦡", "vermilingua", "https://github.com/undur/vermilingua-maven-plugin" ),
 					new Repo( Org.undur, "📚", "whoacommunity.com", "https://github.com/undur/whoacommunity" ),
+					new Repo( Org.undur, "🔌", "wo-jetty-adaptor", "https://github.com/undur/wo-jetty-adaptor" ),
 					new Repo( Org.undur, "👨‍⚕️", "examiner", "https://github.com/undur/examiner" ),
 
 					// Cayenne repos
