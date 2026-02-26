@@ -28,6 +28,7 @@ public class Repos {
 					new Repo( Org.undur, "📚", "whoacommunity.com", "https://github.com/undur/whoacommunity" ),
 					new Repo( Org.undur, "🔌", "wo-adaptor-jetty", "https://github.com/undur/wo-adaptor-jetty" ),
 					new Repo( Org.undur, "👨‍⚕️", "examiner", "https://github.com/undur/examiner" ),
+					new Repo( Org.undur, "🍳️", "parslips", "https://github.com/undur/parslips" ),
 
 					// Cayenne repos
 					new Repo( Org.cayenne, "🌶", "cayenne", "https://github.com/apache/cayenne" ),
