@@ -1,8 +1,8 @@
 <wo:WCLook>
 	<div class="row">
-		<div class="col-md-8">
+		<div class="col-md-8 article-list">
 			<wo:repetition list="$articles" item="$currentArticle">
-				<div class="card mb-3">
+				<div class="card article-card">
 					<div class="card-header dark-card-header">
 						<h3 class="card-title">
 							<wo:link href="$currentArticleURL"><wo:str value="$currentArticle.title" /></wo:link>
@@ -21,7 +21,7 @@
 				</div>
 			</wo:repetition>
 		</div>
-		<div class="col-md-4">
+		<div class="col-md-4 sidebar">
 			<wo:WCSidebar />
 		</div>
 	</div>

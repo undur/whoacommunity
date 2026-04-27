@@ -1,0 +1,620 @@
+/* ============================================================
+   Whoa! Community — custom theme on top of Tabler v1.4.0
+   ============================================================ */
+
+:root {
+  --whoa-purple: rgb(80, 80, 115);
+  --whoa-purple-deep: rgb(58, 58, 92);
+  --whoa-purple-soft: rgb(120, 120, 155);
+  --whoa-coral: #ff6b6b;
+  --whoa-coral-deep: #e8484f;
+  --whoa-cream: #fbf8f3;
+  --whoa-paper: #ffffff;
+  --whoa-ink: #1f1f2e;
+  --whoa-muted: #6e6e85;
+  --whoa-rule: rgba(80, 80, 115, 0.12);
+
+  /* Override Tabler's primary so links / buttons / focus rings match */
+  --tblr-primary: rgb(80, 80, 115);
+  --tblr-primary-rgb: 80, 80, 115;
+  --tblr-primary-fg: #ffffff;
+  --tblr-link-color: rgb(80, 80, 115);
+  --tblr-link-color-rgb: 80, 80, 115;
+  --tblr-link-hover-color: var(--whoa-coral-deep);
+}
+
+/* ----- Page surface ----- */
+
+body {
+  background-color: var(--whoa-cream);
+  background-image:
+    radial-gradient(circle at 12% -5%, rgba(255, 107, 107, 0.08), transparent 40%),
+    radial-gradient(circle at 90% 0%, rgba(80, 80, 115, 0.08), transparent 45%);
+  background-attachment: fixed;
+  color: var(--whoa-ink);
+  font-feature-settings: "ss01", "cv11";
+}
+
+/* ============================================================
+   Navbar / brand
+   ============================================================ */
+
+.page > header.navbar {
+  background: linear-gradient(135deg, var(--whoa-purple) 0%, var(--whoa-purple-deep) 100%);
+  border-bottom: 3px solid var(--whoa-coral);
+  box-shadow: 0 2px 12px rgba(58, 58, 92, 0.18);
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+}
+
+.page > header.navbar .navbar-brand {
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.55rem;
+  letter-spacing: -0.02em;
+  color: #ffffff !important;
+}
+
+.page > header.navbar .navbar-brand a,
+.page > header.navbar .navbar-brand a:hover {
+  color: #ffffff;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+}
+
+.page > header.navbar .navbar-brand-image {
+  height: 4rem;
+  width: auto;
+  max-height: none;
+  filter: drop-shadow(0 0 6px rgba(255, 107, 107, 0.45));
+  transition: transform .25s ease;
+}
+
+.page > header.navbar .navbar-brand:hover .navbar-brand-image {
+  transform: rotate(-8deg) scale(1.08);
+}
+
+/* "Styrkja" support button on the navbar */
+.page > header.navbar .btn-list .btn {
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  backdrop-filter: blur(4px);
+  font-weight: 500;
+  transition: all .18s ease;
+}
+
+.page > header.navbar .btn-list .btn:hover {
+  background: var(--whoa-coral);
+  border-color: var(--whoa-coral);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.page > header.navbar .btn-list .btn .icon {
+  color: var(--whoa-coral) !important;
+  transition: color .18s ease;
+}
+
+.page > header.navbar .btn-list .btn:hover .icon {
+  color: #ffffff !important;
+}
+
+/* ----- Secondary nav (Home / Slack / Dev feed) ----- */
+
+.page > header.navbar-expand-md .navbar {
+  background: var(--whoa-paper);
+  border-bottom: 1px solid var(--whoa-rule);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+
+.page > header.navbar-expand-md .nav-link {
+  font-weight: 500;
+  color: var(--whoa-ink);
+  border-radius: 8px;
+  padding: .5rem .85rem;
+  transition: all .15s ease;
+}
+
+.page > header.navbar-expand-md .nav-link:hover {
+  background: rgba(80, 80, 115, 0.06);
+  color: var(--whoa-purple-deep);
+}
+
+.page > header.navbar-expand-md .nav-link-icon .icon {
+  color: var(--whoa-purple-soft);
+}
+
+/* ============================================================
+   Article cards
+   ============================================================ */
+
+.page-body {
+  padding-top: 2.25rem;
+}
+
+/* Card baseline: softer, more print-like */
+.card {
+  border: 1px solid var(--whoa-rule);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(58, 58, 92, 0.04), 0 4px 14px rgba(58, 58, 92, 0.04);
+  background: var(--whoa-paper);
+  overflow: hidden;
+}
+
+/* Keep the original signature dark header — but refined. */
+.dark-card-header {
+  background: linear-gradient(135deg, var(--whoa-purple) 0%, var(--whoa-purple-deep) 100%);
+  color: #ffffff;
+  border-bottom: none;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.dark-card-header h3.card-title {
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.dark-card-header h3.card-title a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.dark-card-header h3.card-title a:hover {
+  color: var(--whoa-coral);
+}
+
+.dark-card-header .card-actions {
+  margin-left: auto;
+}
+
+.dark-card-header .card-actions small {
+  color: rgba(255, 255, 255, 0.7);
+  font-variant-numeric: tabular-nums;
+  font-size: .78rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* ----- Article column: lead article + standard articles ----- */
+
+.article-list .article-card {
+  margin-bottom: 1.75rem;
+}
+
+/* The lead (first) article gets a celebratory treatment */
+.article-list .article-card:first-child {
+  border-top: 4px solid var(--whoa-coral);
+  box-shadow: 0 2px 4px rgba(58, 58, 92, 0.05), 0 12px 32px rgba(58, 58, 92, 0.07);
+}
+
+.article-list .article-card:first-child .dark-card-header {
+  padding: 1.25rem 1.5rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 107, 107, 0.18), transparent 55%),
+    linear-gradient(135deg, var(--whoa-purple) 0%, var(--whoa-purple-deep) 100%);
+}
+
+.article-list .article-card:first-child .dark-card-header h3.card-title {
+  font-size: 1.5rem;
+  letter-spacing: -0.015em;
+}
+
+.article-list .article-card:first-child .card-body {
+  padding: 1.75rem 1.75rem 2rem;
+}
+
+/* ----- Long-form reading typography for article bodies -----
+   Optimized for screen reading: Inter at a comfortable size, tuned
+   tracking, generous leading, and a measure capped near 68ch so
+   the eye doesn't have to traverse long lines. */
+
+.article-list .card-body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 1.075rem;
+  line-height: 1.72;
+  letter-spacing: -0.003em;
+  color: #2c2c3d;
+  padding: 1.75rem 2rem 2rem;
+  font-feature-settings: "ss01", "cv11", "cv05", "cv02";
+}
+
+.article-list .card-body > * {
+  max-width: 80ch;
+}
+
+/* Full-bleed elements that look better wide than measure-capped */
+.article-list .card-body > pre,
+.article-list .card-body > figure,
+.article-list .card-body > table,
+.article-list .card-body > img,
+.article-list .card-body > .table-responsive,
+.article-list .card-body > hr {
+  max-width: none;
+}
+
+.article-list .card-body p {
+  margin-bottom: 1.6rem;
+}
+
+.article-list .card-body h1,
+.article-list .card-body h2,
+.article-list .card-body h3,
+.article-list .card-body h4 {
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  letter-spacing: -0.015em;
+  color: var(--whoa-purple-deep);
+  line-height: 1.25;
+}
+
+.article-list .card-body h1 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  margin-top: 2.75rem;
+  margin-bottom: .85rem;
+  padding: .5rem .9rem .55rem;
+  margin-left: -.9rem;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(80, 80, 115, 0.13) 0%,
+    rgba(80, 80, 115, 0.05) 40%,
+    rgba(80, 80, 115, 0) 80%
+  );
+  border-left: 3px solid var(--whoa-purple);
+}
+
+/* h2: section heading — bold, larger, with a soft purple wash that
+   fades to the right so it never looks like a stranded rule on wide
+   monitors */
+.article-list .card-body h2 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  margin-top: 2.75rem;
+  margin-bottom: .85rem;
+  padding: .5rem .9rem .55rem;
+  margin-left: -.9rem;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(80, 80, 115, 0.13) 0%,
+    rgba(80, 80, 115, 0.05) 40%,
+    rgba(80, 80, 115, 0) 80%
+  );
+  border-left: 3px solid var(--whoa-purple);
+}
+
+/* First heading in the article doesn't need the dramatic top spacing */
+.article-list .card-body > h1:first-child,
+.article-list .card-body > h2:first-child,
+.article-list .card-body > h3:first-child {
+  margin-top: .25rem;
+}
+
+/* h3: subsection — same idea as h2 but quieter (thinner bar, no wash) */
+.article-list .card-body h3 {
+  font-size: 1.18rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  margin-top: 1.85rem;
+  margin-bottom: .35rem;
+  padding-left: .7rem;
+  margin-left: -.7rem;
+  border-left: 2px solid var(--whoa-purple-soft);
+}
+
+.article-list .card-body h4 {
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-top: 1.5rem;
+  margin-bottom: .3rem;
+}
+
+.article-list .card-body ul,
+.article-list .card-body ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1.15rem;
+}
+
+.article-list .card-body li {
+  margin-bottom: 0.35rem;
+}
+
+.article-list .card-body li::marker {
+  color: var(--whoa-coral);
+}
+
+.article-list .card-body strong {
+  font-weight: 600;
+  color: var(--whoa-ink);
+}
+
+.article-list .card-body a {
+  color: var(--whoa-purple);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 107, 107, 0.5);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+  transition: all .15s ease;
+}
+
+.article-list .card-body a:hover {
+  color: var(--whoa-coral-deep);
+  text-decoration-color: var(--whoa-coral);
+}
+
+.article-list .card-body code {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: rgba(80, 80, 115, 0.08);
+  color: var(--whoa-purple-deep);
+  padding: 0.12em 0.42em;
+  border-radius: 4px;
+  border: 1px solid rgba(80, 80, 115, 0.08);
+}
+
+.article-list .card-body pre,
+.article-list .card-body pre[class*="language-"] {
+  background: rgba(80, 80, 115, 0.05);
+  border-radius: 8px;
+  border: none;
+}
+
+.article-list .card-body pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+
+.article-list .card-body blockquote {
+  border-left: 3px solid var(--whoa-coral);
+  background: rgba(255, 107, 107, 0.05);
+  margin: 1.25rem 0;
+  padding: .75rem 1.25rem;
+  border-radius: 0 6px 6px 0;
+  color: var(--whoa-ink);
+  font-style: italic;
+}
+
+.article-list .card-body hr {
+  border: none;
+  border-top: 1px dashed var(--whoa-rule);
+  margin: 1.5rem 0;
+}
+
+.article-list .card-body img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--whoa-rule);
+}
+
+/* ============================================================
+   Sidebar
+   ============================================================ */
+
+.sidebar .card {
+  margin-bottom: 1.25rem;
+}
+
+.sidebar .card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--whoa-rule);
+  padding: .85rem 1.1rem;
+}
+
+.sidebar .card-header h3.card-title {
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--whoa-purple);
+  margin: 0;
+}
+
+.sidebar .card-body {
+  padding: 1rem 1.1rem;
+}
+
+.sidebar .card-body strong {
+  display: block;
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--whoa-muted);
+  margin-top: 1rem;
+  margin-bottom: .35rem;
+}
+
+.sidebar .card-body strong:first-child,
+.sidebar .card-body > ul:first-child + strong {
+  margin-top: 0;
+}
+
+.sidebar .card-body ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.sidebar .card-body > ul:first-child {
+  margin-top: .5rem;
+  margin-bottom: .5rem;
+}
+
+.sidebar .card-body ul li {
+  padding: .25rem 0;
+  border-bottom: 1px dashed var(--whoa-rule);
+}
+
+.sidebar .card-body ul li:last-child {
+  border-bottom: none;
+}
+
+.sidebar .card-body ul li a {
+  color: var(--whoa-ink);
+  text-decoration: none;
+  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.sidebar .card-body ul li a::before {
+  content: "→";
+  color: var(--whoa-coral);
+  font-weight: 700;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all .18s ease;
+}
+
+.sidebar .card-body ul li a:hover {
+  color: var(--whoa-purple-deep);
+}
+
+.sidebar .card-body ul li a:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* The "live" feed card gets a subtle highlight to feel alive */
+.sidebar .card.feed-card {
+  background: linear-gradient(180deg, var(--whoa-paper) 0%, #f7f4ee 100%);
+  border-color: rgba(80, 80, 115, 0.18);
+}
+
+.sidebar .card.feed-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.sidebar .card.feed-card .card-header::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--whoa-coral);
+  box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.6);
+  animation: whoa-pulse 2s infinite;
+}
+
+@keyframes whoa-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5); }
+  70%  { box-shadow: 0 0 0 8px rgba(255, 107, 107, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+}
+
+.sidebar .card.feed-card .card-actions .btn {
+  font-size: .7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: .25rem .6rem;
+  background: transparent;
+  color: var(--whoa-purple);
+  border: 1px solid var(--whoa-rule);
+}
+
+.sidebar .card.feed-card .card-actions .btn:hover {
+  background: var(--whoa-purple);
+  color: #ffffff;
+  border-color: var(--whoa-purple);
+}
+
+.sidebar .card.feed-card .card-actions .btn .icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Feed table — denser, more "live ticker" */
+.feed-table {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 12px;
+  margin-bottom: 0;
+}
+
+.feed-table td {
+  padding: 6px 10px;
+  vertical-align: top;
+  border-color: var(--whoa-rule) !important;
+}
+
+.feed-table tr:hover td {
+  background: rgba(80, 80, 115, 0.04);
+}
+
+.feed-table td:first-child {
+  font-weight: 600;
+  color: var(--whoa-purple-deep);
+  white-space: nowrap;
+}
+
+.feed-table td a {
+  color: var(--whoa-ink);
+  text-decoration: none;
+}
+
+.feed-table td a:hover {
+  color: var(--whoa-coral-deep);
+}
+
+.feed-table td:last-child {
+  color: var(--whoa-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Recent articles: slightly tighter, with a teaser dash */
+.sidebar .card.recent-card .card-body ul li a {
+  font-weight: 500;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+
+.footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--whoa-rule);
+  color: var(--whoa-muted);
+  font-size: .82rem;
+}
+
+.footer .list-inline-item {
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   Responsive niceties
+   ============================================================ */
+
+@media (max-width: 767.98px) {
+  .article-list .card-body {
+    padding: 1.25rem 1.25rem 1.5rem;
+    font-size: 1.02rem;
+    line-height: 1.65;
+  }
+  .article-list .card-body > * {
+    max-width: none;
+  }
+  .article-list .article-card:first-child .dark-card-header h3.card-title {
+    font-size: 1.25rem;
+  }
+}
