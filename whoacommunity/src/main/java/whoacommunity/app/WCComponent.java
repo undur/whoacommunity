@@ -9,6 +9,9 @@ import ng.appserver.templating.NGComponent;
 import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCFeedPage.OurFeed.OurItem;
 import whoacommunity.data.Article;
+import whoacommunity.github.GithubFeed;
+import whoacommunity.github.OpenIssue;
+import whoacommunity.github.Release;
 
 public abstract class WCComponent extends NGComponent {
 
@@ -59,5 +62,18 @@ public abstract class WCComponent extends NGComponent {
 	 */
 	public List<OurItem> items() {
 		return WCFeedPage.feed.items().subList( 0, 10 );
+	}
+
+	public OpenIssue currentIssue;
+	public Release currentRelease;
+
+	public List<OpenIssue> openIssues() {
+		final List<OpenIssue> all = GithubFeed.shared.issues();
+		return all.subList( 0, Math.min( 10, all.size() ) );
+	}
+
+	public List<Release> releases() {
+		final List<Release> all = GithubFeed.shared.releases();
+		return all.subList( 0, Math.min( 10, all.size() ) );
 	}
 }
