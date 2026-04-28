@@ -71,4 +71,11 @@ public class WCCore {
 	private static String password() {
 		return System.getProperty( "wc.password" );
 	}
+
+	/**
+	 * @return The GitHub API token used by the GitHub feed (classic PAT, public_repo scope is sufficient)
+	 */
+	public static String githubToken() {
+		return System.getProperty( "wc.githubToken" );
+	}
 }
