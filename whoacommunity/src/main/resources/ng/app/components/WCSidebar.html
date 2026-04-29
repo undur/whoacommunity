@@ -21,21 +21,9 @@
 		</ul>
 	</div>
 </div>
-<div class="card recent-card">
-	<div class="card-header">
-		<h3 class="card-title">Recent articles</h3>
-	</div>
-	<div class="card-body">
-		<ul>
-			<wo:repetition list="$articles" item="$currentArticle">
-				<li><wo:link href="$currentArticleURL"><wo:str value="$currentArticle.title" /></wo:link></li>
-			</wo:repetition>
-		</ul>
-	</div>
-</div>
 <div class="card feed-card">
 	<div class="card-header">
-		<h3 class="card-title">What's happenin'</h3>
+		<h3 class="card-title">Latest commits</h3>
 		<div class="card-actions">
 			<wo:link href="/dev-feed" class="btn btn-sm">
 				<span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -45,62 +33,67 @@
 			</wo:link>
 		</div>
 	</div>
-	<div class="card-body p-0">
-		<table class="feed-table table table-sm commit-table table-striped">
-			<wo:repetition list="$items" item="$current">
-				<tr>
-					<td nowrap><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
-					<td><wo:link href="$current.link"><wo:str value="$current.title" /></wo:link></td>
-					<td nowrap><wo:str value="$current.shortDateFormatted" /></td>
-				</tr>
-			</wo:repetition>
-		</table>
-	</div>
-</div>
-<div class="card feed-card">
-	<div class="card-header">
-		<h3 class="card-title">What's happenin' with Java</h3>
-	</div>
-	<div class="card-body p-0">
-		<table class="feed-table table table-sm commit-table table-striped">
-			<wo:repetition list="$javaItems" item="$javaItem">
-				<tr>
-					<td><wo:link href="$javaItem.link"><wo:str value="$javaItem.title" /></wo:link></td>
-					<td nowrap><wo:str value="$javaItem.shortDateFormatted" /></td>
-				</tr>
-			</wo:repetition>
-		</table>
-	</div>
+	<table class="card-table feed-table table table-sm commit-table table-striped">
+		<wo:repetition list="$items" item="$current">
+			<tr>
+				<td nowrap><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
+				<td><wo:link href="$current.link"><wo:str value="$current.title" /></wo:link></td>
+				<td nowrap><wo:str value="$current.shortDateFormatted" /></td>
+			</tr>
+		</wo:repetition>
+	</table>
 </div>
 <div class="card">
 	<div class="card-header">
 		<h3 class="card-title">Latest releases</h3>
 	</div>
-	<div class="card-body p-0">
-		<table class="feed-table table table-sm commit-table table-striped">
-			<wo:repetition list="$releases" item="$currentRelease">
-				<tr>
-					<td nowrap><wo:str value="$currentRelease.repo.emoji" /> <wo:str value="$currentRelease.repo.name" /></td>
-					<td><wo:link href="$currentRelease.url"><wo:str value="$currentRelease.displayName" /></wo:link></td>
-					<td nowrap><wo:str value="$currentRelease.shortDateFormatted" /></td>
-				</tr>
-			</wo:repetition>
-		</table>
-	</div>
+	<table class="card-table feed-table table table-sm commit-table table-striped">
+		<wo:repetition list="$releases" item="$currentRelease">
+			<tr>
+				<td nowrap><wo:str value="$currentRelease.repo.emoji" /> <wo:str value="$currentRelease.repo.name" /></td>
+				<td><wo:link href="$currentRelease.url"><wo:str value="$currentRelease.displayName" /></wo:link></td>
+				<td nowrap><wo:str value="$currentRelease.shortDateFormatted" /></td>
+			</tr>
+		</wo:repetition>
+	</table>
 </div>
 <div class="card">
 	<div class="card-header">
-		<h3 class="card-title">Latest open issues</h3>
+		<h3 class="card-title">New issues</h3>
 	</div>
-	<div class="card-body p-0">
-		<table class="feed-table table table-sm commit-table table-striped">
-			<wo:repetition list="$openIssues" item="$currentIssue">
-				<tr>
-					<td nowrap><wo:str value="$currentIssue.repo.emoji" /> <wo:str value="$currentIssue.repo.name" /></td>
-					<td><wo:link href="$currentIssue.url"><wo:str value="$currentIssue.title" /></wo:link></td>
-					<td nowrap><wo:str value="$currentIssue.shortDateFormatted" /></td>
-				</tr>
-			</wo:repetition>
-		</table>
+	<table class="card-table feed-table table table-sm commit-table table-striped">
+		<wo:repetition list="$openIssues" item="$currentIssue">
+			<tr>
+				<td nowrap><wo:str value="$currentIssue.repo.emoji" /> <wo:str value="$currentIssue.repo.name" /></td>
+				<td><wo:link href="$currentIssue.url"><wo:str value="$currentIssue.title" /></wo:link></td>
+				<td nowrap><wo:str value="$currentIssue.shortDateFormatted" /></td>
+			</tr>
+		</wo:repetition>
+	</table>
+</div>
+<div class="card recent-card">
+	<div class="card-header">
+		<h3 class="card-title">Latest articles</h3>
 	</div>
+	<table class="card-table feed-table table table-sm commit-table table-striped">
+		<wo:repetition list="$articles" item="$currentArticle">
+			<tr>
+				<td><wo:link href="$currentArticleURL"><wo:str value="$currentArticle.title" /></wo:link></td>
+				<td nowrap><wo:str value="$currentArticle.shortDateFormatted" /></td>
+			</tr>
+		</wo:repetition>
+	</table>
+</div>
+<div class="card">
+	<div class="card-header">
+		<h3 class="card-title">What's happenin' with Java</h3>
+	</div>
+	<table class="card-table feed-table table table-sm commit-table table-striped">
+		<wo:repetition list="$javaItems" item="$javaItem">
+			<tr>
+				<td><wo:link href="$javaItem.link"><wo:str value="$javaItem.title" /></wo:link></td>
+				<td nowrap><wo:str value="$javaItem.shortDateFormatted" /></td>
+			</tr>
+		</wo:repetition>
+	</table>
 </div>

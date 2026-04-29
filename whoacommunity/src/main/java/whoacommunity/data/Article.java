@@ -68,4 +68,8 @@ public class Article extends _Article implements DateTimeStamped, UUIDStamped {
 	public void setFormat( ArticleFormat value ) {
 		setFormatCode( value.code() );
 	}
+
+	public String shortDateFormatted() {
+		return date().format( DateTimeFormatter.ofPattern( "MMM d" ) );
+	}
 }
