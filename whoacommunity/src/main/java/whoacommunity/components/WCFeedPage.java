@@ -8,6 +8,7 @@ import java.util.List;
 import com.apptasticsoftware.rssreader.Item;
 import com.apptasticsoftware.rssreader.RssReader;
 
+import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
 import whoacommunity.github.Commit;
@@ -20,6 +21,12 @@ public class WCFeedPage extends WCComponent {
 
 	public Org currentOrg;
 	public Repo currentRepo;
+
+	/**
+	 * The repo the user has filtered the commit list down to, or null when
+	 * showing all commits.
+	 */
+	public Repo selectedRepo;
 
 	/**
 	 * Old RSS-backed feed kept around as fallback infrastructure; the live
@@ -36,11 +43,37 @@ public class WCFeedPage extends WCComponent {
 	}
 
 	/**
-	 * @return All commits across the tracked repos. The dev-feed page shows
-	 *         the full list, the sidebar (via WCComponent.items()) trims to 10.
+	 * @return All commits across the tracked repos, optionally filtered by
+	 *         the selected repo. The dev-feed page shows the full list, the
+	 *         sidebar (via WCComponent.items()) trims to 10.
 	 */
 	public List<Commit> allCommits() {
-		return GithubFeed.shared.commits();
+		final List<Commit> all = GithubFeed.shared.commits();
+
+		if( selectedRepo == null ) {
+			return all;
+		}
+
+		return all.stream().filter( c -> c.repo() == selectedRepo ).toList();
+	}
+
+	public NGActionResults selectRepo() {
+		// Clicking the funnel of the already-filtered repo clears the filter
+		selectedRepo = ( currentRepo == selectedRepo ) ? null : currentRepo;
+		return null;
+	}
+
+	public NGActionResults clearFilter() {
+		selectedRepo = null;
+		return null;
+	}
+
+	public boolean isCurrentRepoSelected() {
+		return currentRepo == selectedRepo;
+	}
+
+	public String currentRepoClass() {
+		return isCurrentRepoSelected() ? "is-active" : null;
 	}
 
 	public static class OurFeed {

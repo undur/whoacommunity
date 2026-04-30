@@ -3,13 +3,51 @@
 		.commit-table td {
 			padding: 3px 10px;
 		}
-		
-		ul {
+
+		.repo-list {
 			list-style-type: none;
+			padding-left: 0;
 		}
-		
-		li {
+
+		.repo-list li {
+			display: flex;
+			align-items: center;
+			gap: .4rem;
 			margin-bottom: 3px;
+			padding: 2px 6px;
+			border-radius: 4px;
+		}
+
+		.repo-list li.is-active {
+			background: rgba(80, 80, 115, 0.1);
+		}
+
+		.repo-list .repo-link {
+			flex-grow: 1;
+		}
+
+		.repo-list .filter-btn {
+			color: var(--whoa-purple-soft, #888);
+			padding: 0;
+			border: none;
+			background: none;
+			cursor: pointer;
+			line-height: 0;
+		}
+
+		.repo-list .filter-btn:hover {
+			color: var(--whoa-coral-deep, #e8484f);
+		}
+
+		.repo-list li.is-active .filter-btn {
+			color: var(--whoa-coral-deep, #e8484f);
+		}
+
+		.filter-indicator {
+			padding: .5rem .75rem;
+			border-bottom: 1px solid var(--whoa-rule, #eee);
+			font-size: .9rem;
+			color: var(--whoa-muted, #666);
 		}
 	</style>
 	<div class="row">
@@ -18,7 +56,13 @@
 				<div class="card-header">
 					<h3 class="card-title">What's new</h3>
 				</div>
-				<div class="card-body p-0">
+				<wo:auc id="commitsUC" class="card-body p-0">
+					<wo:if condition="$selectedRepo">
+						<div class="filter-indicator">
+							Showing only: <wo:str value="$selectedRepo.emoji" /> <strong><wo:str value="$selectedRepo.name" /></strong>
+							— <wo:aul action="$clearFilter" updateContainerID="commitsUC;reposUC">show all</wo:aul>
+						</div>
+					</wo:if>
 					<table class="table table-condensed commit-table table-striped">
 						<wo:repetition list="$allCommits" item="$current">
 							<tr>
@@ -29,7 +73,7 @@
 							</tr>
 						</wo:repetition>
 					</table>
-				</div>
+				</wo:auc>
 			</div>
 		</div>
 		<div class="col-md-4">
@@ -37,16 +81,26 @@
 				<div class="card-header">
 					<h3 class="card-title">Monitored repositories</h3>
 				</div>
-				<div class="card-body">
+				<wo:auc id="reposUC" class="card-body">
 					<wo:repetition list="$orgs" item="$currentOrg">
 						<h4><wo:str value="$currentOrg" /></h4>
-						<ul>
-						<wo:repetition list="$currentOrg.repos" item="$currentRepo">
-							<li><wo:link href="$currentRepo.url"><wo:str value="$currentRepo.emoji" /> <wo:str value="$currentRepo.name" /></wo:link></li>
-						</wo:repetition>
+						<ul class="repo-list">
+							<wo:repetition list="$currentOrg.repos" item="$currentRepo">
+								<wo:container elementName="li" class="$currentRepoClass">
+									<wo:link href="$currentRepo.url" class="repo-link"><wo:str value="$currentRepo.emoji" /> <wo:str value="$currentRepo.name" /></wo:link>
+									<wo:aul action="$selectRepo" updateContainerID="commitsUC;reposUC" class="filter-btn" title="Filter commits to this repo">
+										<wo:if condition="$isCurrentRepoSelected">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4h16a1 1 0 0 1 .78 1.625l-6.78 8.475v6.9a1 1 0 0 1 -1.447 .894l-4 -2a1 1 0 0 1 -.553 -.894v-5.9l-6.78 -8.475a1 1 0 0 1 .78 -1.625"/></svg>
+										</wo:if>
+										<wo:if condition="$isCurrentRepoSelected" negate="$true">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"/></svg>
+										</wo:if>
+									</wo:aul>
+								</wo:container>
+							</wo:repetition>
 						</ul>
 					</wo:repetition>
-				</div>
+				</wo:auc>
 			</div>
 			<div class="alert alert-info mt-3">
 				This page shows the development/commit activity in several selected repositories
