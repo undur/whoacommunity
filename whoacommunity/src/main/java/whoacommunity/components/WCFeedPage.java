@@ -10,17 +10,21 @@ import com.apptasticsoftware.rssreader.RssReader;
 
 import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
-import whoacommunity.components.WCFeedPage.OurFeed.OurItem;
+import whoacommunity.github.Commit;
+import whoacommunity.github.GithubFeed;
 import whoacommunity.util.Repos;
 import whoacommunity.util.Repos.Org;
 import whoacommunity.util.Repos.Repo;
 
 public class WCFeedPage extends WCComponent {
 
-	public OurItem current;
 	public Org currentOrg;
 	public Repo currentRepo;
 
+	/**
+	 * Old RSS-backed feed kept around as fallback infrastructure; the live
+	 * commit list is now served from {@link GithubFeed}.
+	 */
 	public static OurFeed feed = new OurFeed( Duration.ofMinutes( 1 ) );
 
 	public WCFeedPage( NGContext context ) {
@@ -29,6 +33,14 @@ public class WCFeedPage extends WCComponent {
 
 	public Org[] orgs() {
 		return Org.values();
+	}
+
+	/**
+	 * @return All commits across the tracked repos. The dev-feed page shows
+	 *         the full list, the sidebar (via WCComponent.items()) trims to 10.
+	 */
+	public List<Commit> allCommits() {
+		return GithubFeed.shared.commits();
 	}
 
 	public static class OurFeed {

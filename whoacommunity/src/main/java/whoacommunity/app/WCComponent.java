@@ -6,9 +6,8 @@ import org.apache.cayenne.query.ObjectSelect;
 
 import ng.appserver.NGContext;
 import ng.appserver.templating.NGComponent;
-import whoacommunity.components.WCFeedPage;
-import whoacommunity.components.WCFeedPage.OurFeed.OurItem;
 import whoacommunity.data.Article;
+import whoacommunity.github.Commit;
 import whoacommunity.github.GithubFeed;
 import whoacommunity.github.OpenIssue;
 import whoacommunity.github.Release;
@@ -35,7 +34,7 @@ public abstract class WCComponent extends NGComponent {
 
 	public Article currentArticle;
 	private List<Article> _articles;
-	public OurItem current;
+	public Commit current;
 
 	public List<Article> articles() {
 		if( _articles == null ) {
@@ -57,11 +56,9 @@ public abstract class WCComponent extends NGComponent {
 		return "/article/%s".formatted( currentArticle.uniqueID() );
 	}
 
-	/**
-	 * FIXME: Yeah, we shouldn't be storing that feed in the dev page. Lazy // Hugi 2025-10-09
-	 */
-	public List<OurItem> items() {
-		return WCFeedPage.feed.items().subList( 0, 10 );
+	public List<Commit> items() {
+		final List<Commit> all = GithubFeed.shared.commits();
+		return all.subList( 0, Math.min( 10, all.size() ) );
 	}
 
 	public OpenIssue currentIssue;
