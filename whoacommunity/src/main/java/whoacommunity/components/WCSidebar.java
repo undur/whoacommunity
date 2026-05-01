@@ -1,6 +1,6 @@
 package whoacommunity.components;
 
-import java.io.IOException;
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -9,34 +9,36 @@ import com.apptasticsoftware.rssreader.RssReader;
 
 import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
+import whoacommunity.util.CachedFeed;
 
 public class WCSidebar extends WCComponent {
 
 	public JavaItem javaItem;
-	private static List<JavaItem> _javaItems;
+
+	private static final CachedFeed<List<JavaItem>> _javaFeed = new CachedFeed<>(
+			Duration.ofMinutes( 15 ),
+			WCSidebar::fetchJavaItems,
+			List.of() );
 
 	public WCSidebar( NGContext context ) {
 		super( context );
 	}
 
-	/**
-	 * FIXME: We're temporarily caching this forever for performance, add a more intelligent cache // Hugi 2025-11-02
-	 */
 	public List<JavaItem> javaItems() {
-		if( _javaItems == null ) {
-			try {
-				_javaItems = new RssReader()
-						.read( "https://inside.java/feed.xml" )
-						.sorted()
-						.map( JavaItem::new )
-						.toList();
-			}
-			catch( IOException e ) {
-				_javaItems = List.of();
-			}
-		}
+		return _javaFeed.value();
+	}
 
-		return _javaItems;
+	private static List<JavaItem> fetchJavaItems() {
+		try {
+			return new RssReader()
+					.read( "https://inside.java/feed.xml" )
+					.sorted()
+					.map( JavaItem::new )
+					.toList();
+		}
+		catch( Exception e ) {
+			throw new RuntimeException( e );
+		}
 	}
 
 	/**

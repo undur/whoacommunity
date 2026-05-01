@@ -17,6 +17,7 @@ import whoacommunity.github.GithubResponse.CommitNode;
 import whoacommunity.github.GithubResponse.IssueNode;
 import whoacommunity.github.GithubResponse.ReleaseNode;
 import whoacommunity.github.GithubResponse.RepoNode;
+import whoacommunity.util.CachedFeed;
 import whoacommunity.util.Repos;
 import whoacommunity.util.Repos.Repo;
 
@@ -44,62 +45,42 @@ public class GithubFeed {
 	 */
 	private static final Gson GSON = buildGson();
 
-	private final Duration _cacheDuration;
-	private Instant _lastRefreshed;
-	private List<OpenIssue> _issues = List.of();
-	private List<Release> _releases = List.of();
-	private List<Commit> _commits = List.of();
+	/**
+	 * Empty payload returned before the first successful refresh and on
+	 * total fetch failure with no prior data to fall back to.
+	 */
+	private static final GithubData EMPTY = new GithubData( List.of(), List.of(), List.of() );
+
+	private final CachedFeed<GithubData> _feed;
 
 	public GithubFeed( final Duration cacheDuration ) {
-		_cacheDuration = cacheDuration;
+		_feed = new CachedFeed<>( cacheDuration, GithubFeed::fetch, EMPTY );
 	}
 
 	public List<OpenIssue> issues() {
-		ensureFresh();
-		return _issues;
+		return _feed.value().issues();
 	}
 
 	public List<Release> releases() {
-		ensureFresh();
-		return _releases;
+		return _feed.value().releases();
 	}
 
 	public List<Commit> commits() {
-		ensureFresh();
-		return _commits;
+		return _feed.value().commits();
 	}
 
-	private boolean shouldRefresh() {
-		if( _lastRefreshed == null || _cacheDuration == null ) {
-			return true;
-		}
-		return Duration.between( _lastRefreshed, Instant.now() ).compareTo( _cacheDuration ) > 0;
-	}
+	/**
+	 * The combined payload from a single GraphQL fetch — kept together so
+	 * one refresh repopulates all three lists atomically.
+	 */
+	public record GithubData( List<OpenIssue> issues, List<Release> releases, List<Commit> commits ) {}
 
-	private synchronized void ensureFresh() {
-		if( !shouldRefresh() ) {
-			return;
-		}
-
-		try {
-			refresh();
-		}
-		catch( Exception e ) {
-			// Keep stale data on failure rather than blanking the UI
-			System.err.println( "GithubFeed refresh failed: " + e.getMessage() );
-			e.printStackTrace();
-		}
-
-		// Even on failure, mark refreshed so we don't hammer GitHub on every page load
-		_lastRefreshed = Instant.now();
-	}
-
-	private void refresh() throws Exception {
+	private static GithubData fetch() {
 		final String token = WCCore.githubToken();
 
 		if( token == null || token.isBlank() ) {
 			System.err.println( "GithubFeed: wc.githubToken not set, skipping refresh" );
-			return;
+			return EMPTY;
 		}
 
 		final List<Repo> tracked = Repos.repos().stream()
@@ -107,21 +88,25 @@ public class GithubFeed {
 				.toList();
 
 		if( tracked.isEmpty() ) {
-			_issues = List.of();
-			_releases = List.of();
-			_commits = List.of();
-			return;
+			return EMPTY;
 		}
 
-		final GithubGraphQLClient client = new GithubGraphQLClient( token );
-		final String query = buildQuery( tracked );
-		final JsonObject data = client.query( query );
+		try {
+			final GithubGraphQLClient client = new GithubGraphQLClient( token );
+			final String query = buildQuery( tracked );
+			final JsonObject data = client.query( query );
 
-		final List<RepoNode> repoNodes = deserializeRepoNodes( data, tracked.size() );
+			final List<RepoNode> repoNodes = deserializeRepoNodes( data, tracked.size() );
 
-		_issues = collectIssues( tracked, repoNodes );
-		_releases = collectReleases( tracked, repoNodes );
-		_commits = collectCommits( tracked, repoNodes );
+			return new GithubData(
+					collectIssues( tracked, repoNodes ),
+					collectReleases( tracked, repoNodes ),
+					collectCommits( tracked, repoNodes ) );
+		}
+		catch( Exception e ) {
+			// Re-throw so CachedFeed logs it and keeps the previous value
+			throw new RuntimeException( e );
+		}
 	}
 
 	/**
