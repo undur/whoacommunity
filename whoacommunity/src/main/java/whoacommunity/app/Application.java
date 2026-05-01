@@ -19,6 +19,7 @@ import ng.appserver.NGActionResults;
 import ng.appserver.NGApplication;
 import ng.appserver.NGRequest;
 import ng.appserver.NGResponse;
+import ng.appserver.NGSessionRestorationException;
 import ng.plugins.Elements;
 import ng.plugins.Routes;
 import whoacommunity.components.WCArticleDetailPage;
@@ -46,6 +47,23 @@ public class Application extends NGApplication {
 				.create()
 				.elementPackage( "whoacommunity.components" )
 				.elementPackage( "whoacommunity.components.admin" );
+	}
+
+	/**
+	 * On session timeout, send the user back to where they were instead of
+	 * the default "session timed out" page. URLs containing /wo/ are
+	 * component-action URLs that embed session-specific element IDs and
+	 * can't be safely re-dispatched, so we fall back to "/" for those.
+	 */
+	@Override
+	public NGActionResults responseForSessionRestorationException( final NGSessionRestorationException exception ) {
+		final String urlToReturnTo = exception.request().uri();
+
+		if( urlToReturnTo != null && !urlToReturnTo.contains( "/no/" ) ) {
+			return resetSessionCookieWithRedirectToURL( urlToReturnTo );
+		}
+
+		return resetSessionCookieWithRedirectToURL( "/" );
 	}
 
 	@Override

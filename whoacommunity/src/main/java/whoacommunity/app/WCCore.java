@@ -1,8 +1,11 @@
 package whoacommunity.app;
 
 import org.apache.cayenne.ObjectContext;
+import org.apache.cayenne.access.dbsync.CreateIfNoSchemaStrategy;
+import org.apache.cayenne.access.dbsync.SchemaUpdateStrategy;
 import org.apache.cayenne.reflect.NonPrefixedBeanAccessor;
 import org.apache.cayenne.runtime.CayenneRuntime;
+import org.apache.cayenne.runtime.CayenneRuntimeBuilder;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -18,6 +21,7 @@ public class WCCore {
 
 	static {
 		NonPrefixedBeanAccessor.register();
+		//		System.clearProperty( "wc.jdbcURL" );
 	}
 
 	private static CayenneRuntime _runtime;
@@ -31,17 +35,28 @@ public class WCCore {
 
 	public static CayenneRuntime runtime() {
 		if( _runtime == null ) {
-			final HikariConfig config = new HikariConfig();
-			config.setJdbcUrl( jdbcURL() );
-			config.setUsername( username() );
-			config.setPassword( password() );
-			config.setMaximumPoolSize( 4 );
-			final HikariDataSource dataSource = new HikariDataSource( config );
+			final CayenneRuntimeBuilder builder = CayenneRuntime.builder();
 
-			_runtime = CayenneRuntime
-					.builder( "WhoaCommunity" )
+			final HikariConfig config = new HikariConfig();
+
+			if( jdbcURL() != null ) {
+				// If jdbcURL is set, use connection data from environment
+				config.setJdbcUrl( jdbcURL() );
+				config.setUsername( username() );
+				config.setPassword( password() );
+				config.setMaximumPoolSize( 4 );
+			}
+			else {
+				// If no jdbcURL is set, create and use a new in-memory h2 DB
+				// FIXME: Schema generation strategy doesn't seem to be taking effect. Check out // Hugi 2026-05-16
+				builder.addModule( b -> b.bind( SchemaUpdateStrategy.class ).to( CreateIfNoSchemaStrategy.class ) );
+				config.setDriverClassName( "org.h2.Driver" );
+				config.setJdbcUrl( "jdbc:h2:mem:testerbest" );
+			}
+
+			_runtime = builder
 					.addConfig( "cayenne/cayenne-project.xml" )
-					.dataSource( dataSource )
+					.dataSource( new HikariDataSource( config ) )
 					.build();
 
 			_runtime.getDataDomain().addListener( new DateTimestampedListener() );
