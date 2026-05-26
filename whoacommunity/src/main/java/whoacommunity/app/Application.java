@@ -66,6 +66,24 @@ public class Application extends NGApplication {
 		return resetSessionCookieWithRedirectToURL( "/" );
 	}
 
+	/**
+	 * The framework serves CSS resources as "text/css" with no charset, so browsers guess the encoding —
+	 * Firefox falls back to Latin-1 and mangles our UTF-8 stylesheet (em-dashes, arrows, etc.). Patch the
+	 * Content-Type on the way out to pin UTF-8. Drop this once the framework lets us set resource charsets.
+	 *
+	 * FIXME: This needs resolution in ng // Hugi 2026-05-26
+	 */
+	@Override
+	public NGResponse dispatchRequest( final NGRequest request ) {
+		final NGResponse response = super.dispatchRequest( request );
+
+		if( "text/css".equals( response.headerForKey( "Content-Type" ) ) ) {
+			response.setHeader( "Content-Type", "text/css; charset=utf-8" );
+		}
+
+		return response;
+	}
+
 	@Override
 	public Routes routes() {
 		return Routes
