@@ -64,6 +64,6 @@ public class WCLook extends WCComponent {
 
 		oc.commitChanges();
 
-		return null;
+		return pageWithName( WCMain.class );
 	}
 }
