@@ -398,6 +398,21 @@ body {
   border: 1px solid var(--whoa-rule);
 }
 
+/* The article-body link rules above also catch any .btn rendered inside the
+   body (e.g. the local-only Edit button, which is an <a class="btn">), giving
+   it purple text on our purple primary background — invisible — plus the
+   article underline. Defer to Tabler's own per-variant button text color
+   (--tblr-btn-color / --tblr-btn-hover-color) instead. */
+.article-list .card-body .btn {
+  color: var(--tblr-btn-color);
+  text-decoration: none;
+}
+
+.article-list .card-body .btn:hover {
+  color: var(--tblr-btn-hover-color);
+  text-decoration: none;
+}
+
 /* ============================================================
    Sidebar
    ============================================================ */
