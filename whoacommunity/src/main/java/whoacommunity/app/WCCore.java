@@ -37,7 +37,9 @@ public class WCCore {
 
 	public static CayenneRuntime runtime() {
 		if( _runtime == null ) {
-			final CayenneRuntimeBuilder builder = CayenneRuntime.builder();
+			final CayenneRuntimeBuilder builder = CayenneRuntime
+					.builder()
+					.addConfig( "cayenne/cayenne-project.xml" );
 
 			final HikariConfig config = new HikariConfig();
 
@@ -50,14 +52,14 @@ public class WCCore {
 			}
 			else {
 				// If no jdbcURL is set, create and use a new in-memory h2 DB
-				// FIXME: Schema generation strategy doesn't seem to be taking effect. Check out // Hugi 2026-05-16
+				// FIXME: Schema generation strategy take effect if set in code. Works if set on the model itself though. Check out // Hugi 2026-05-16
 				builder.addModule( b -> b.bind( SchemaUpdateStrategy.class ).to( CreateIfNoSchemaStrategy.class ) );
+
 				config.setDriverClassName( "org.h2.Driver" );
 				config.setJdbcUrl( "jdbc:h2:mem:testerbest" );
 			}
 
 			_runtime = builder
-					.addConfig( "cayenne/cayenne-project.xml" )
 					.dataSource( new HikariDataSource( config ) )
 					.build();
 
