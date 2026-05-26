@@ -27,6 +27,7 @@ public class WCCore {
 	static {
 		NonPrefixedBeanAccessor.register();
 		//		System.clearProperty( "wc.jdbcURL" );
+		//		System.clearProperty( "wc.githubToken" );
 		//		System.setProperty( "org.slf4j.simpleLogger.log.org.apache.cayenne.access.QueryLogger", "DEBUG" );
 		//		System.setProperty( "org.slf4j.simpleLogger.log.org.apache.cayenne", "DEBUG" );
 	}
