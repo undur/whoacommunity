@@ -5,8 +5,7 @@
 	 project-version="11">
 	<map name="whoacommunity"/>
 	<node name="whoacommunity"
-		 factory="org.apache.cayenne.configuration.runtime.XMLPoolingDataSourceFactory"
-		 schema-update-strategy="org.apache.cayenne.access.dbsync.SkipSchemaUpdateStrategy">
+		 factory="org.apache.cayenne.configuration.runtime.XMLPoolingDataSourceFactory">
 		<map-ref name="whoacommunity"/>
 		<data-source>
 			<driver/>

@@ -2,7 +2,7 @@ package whoacommunity.app;
 
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.access.dbsync.CreateIfNoSchemaStrategy;
-import org.apache.cayenne.access.dbsync.SchemaUpdateStrategy;
+import org.apache.cayenne.access.dbsync.SchemaUpdateStrategyFactory;
 import org.apache.cayenne.reflect.NonPrefixedBeanAccessor;
 import org.apache.cayenne.runtime.CayenneRuntime;
 import org.apache.cayenne.runtime.CayenneRuntimeBuilder;
@@ -21,7 +21,7 @@ public class WCCore {
 
 	static {
 		NonPrefixedBeanAccessor.register();
-		//		System.clearProperty( "wc.jdbcURL" );
+		System.clearProperty( "wc.jdbcURL" );
 		//		System.setProperty( "org.slf4j.simpleLogger.log.org.apache.cayenne.access.QueryLogger", "DEBUG" );
 		//		System.setProperty( "org.slf4j.simpleLogger.log.org.apache.cayenne", "DEBUG" );
 	}
@@ -51,9 +51,13 @@ public class WCCore {
 				config.setMaximumPoolSize( 4 );
 			}
 			else {
-				// If no jdbcURL is set, create and use a new in-memory h2 DB
-				// FIXME: Schema generation strategy take effect if set in code. Works if set on the model itself though. Check out // Hugi 2026-05-16
-				builder.addModule( b -> b.bind( SchemaUpdateStrategy.class ).to( CreateIfNoSchemaStrategy.class ) );
+				// If no jdbcURL is set, create and use a new in-memory h2 DB.
+				// We override the SchemaUpdateStrategyFactory rather than binding SchemaUpdateStrategy directly:
+				// DefaultSchemaUpdateStrategyFactory reads the strategy from the DataNodeDescriptor (the
+				// schema-update-strategy attribute in cayenne-project.xml) and instantiates it reflectively,
+				// never consulting a SchemaUpdateStrategy DI binding. Binding the factory is the only way to
+				// control the strategy from code. Hugi 2026-05-26
+				builder.addModule( b -> b.bind( SchemaUpdateStrategyFactory.class ).toInstance( _ -> new CreateIfNoSchemaStrategy() ) );
 
 				config.setDriverClassName( "org.h2.Driver" );
 				config.setJdbcUrl( "jdbc:h2:mem:testerbest" );
