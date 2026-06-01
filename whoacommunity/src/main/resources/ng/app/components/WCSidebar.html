@@ -37,7 +37,7 @@
 		<wo:repetition list="$items" item="$current">
 			<tr>
 				<td nowrap><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
-				<td><wo:link href="$current.link"><wo:str value="$current.title" /></wo:link></td>
+				<td><wo:link href="$current.link" class="row-link"><wo:str value="$current.title" /></wo:link></td>
 				<td nowrap><wo:str value="$current.shortDateFormatted" /></td>
 			</tr>
 		</wo:repetition>
@@ -51,7 +51,7 @@
 		<wo:repetition list="$releases" item="$currentRelease">
 			<tr>
 				<td nowrap><wo:str value="$currentRelease.repo.emoji" /> <wo:str value="$currentRelease.repo.name" /></td>
-				<td><wo:link href="$currentRelease.url"><wo:str value="$currentRelease.displayName" /></wo:link></td>
+				<td><wo:link href="$currentRelease.url" class="row-link"><wo:str value="$currentRelease.displayName" /></wo:link></td>
 				<td nowrap><wo:str value="$currentRelease.shortDateFormatted" /></td>
 			</tr>
 		</wo:repetition>
@@ -65,7 +65,7 @@
 		<wo:repetition list="$openIssues" item="$currentIssue">
 			<tr>
 				<td nowrap><wo:str value="$currentIssue.repo.emoji" /> <wo:str value="$currentIssue.repo.name" /></td>
-				<td><wo:link href="$currentIssue.url"><wo:str value="$currentIssue.title" /></wo:link></td>
+				<td><wo:link href="$currentIssue.url" class="row-link"><wo:str value="$currentIssue.title" /></wo:link></td>
 				<td nowrap><wo:str value="$currentIssue.shortDateFormatted" /></td>
 			</tr>
 		</wo:repetition>
@@ -78,7 +78,7 @@
 	<table class="card-table feed-table table table-sm commit-table table-striped">
 		<wo:repetition list="$articles" item="$currentArticle">
 			<tr>
-				<td><wo:link href="$currentArticleURL"><wo:str value="$currentArticle.title" /></wo:link></td>
+				<td><wo:link href="$currentArticleURL" class="row-link"><wo:str value="$currentArticle.title" /></wo:link></td>
 				<td nowrap><wo:str value="$currentArticle.shortDateFormatted" /></td>
 			</tr>
 		</wo:repetition>
@@ -91,7 +91,7 @@
 	<table class="card-table feed-table table table-sm commit-table table-striped">
 		<wo:repetition list="$javaItems" item="$javaItem">
 			<tr>
-				<td><wo:link href="$javaItem.link"><wo:str value="$javaItem.title" /></wo:link></td>
+				<td><wo:link href="$javaItem.link" class="row-link"><wo:str value="$javaItem.title" /></wo:link></td>
 				<td nowrap><wo:str value="$javaItem.shortDateFormatted" /></td>
 			</tr>
 		</wo:repetition>

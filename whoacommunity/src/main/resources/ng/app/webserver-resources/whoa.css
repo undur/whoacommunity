@@ -573,6 +573,20 @@ body {
   background: rgba(80, 80, 115, 0.04);
 }
 
+/* Full-row clickability: a single .row-link per row gets stretched over
+   the entire <tr> via a pseudo-element. Real anchor semantics
+   preserved (middle-click, right-click, keyboard focus). */
+.feed-table tr {
+  position: relative;
+  cursor: pointer;
+}
+
+.feed-table a.row-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
 .feed-table td:first-child {
   font-weight: 600;
   color: var(--whoa-purple-deep);
