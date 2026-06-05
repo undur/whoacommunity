@@ -575,9 +575,16 @@ body {
 
 /* Full-row clickability: a single .row-link per row gets stretched over
    the entire <tr> via a pseudo-element. Real anchor semantics
-   preserved (middle-click, right-click, keyboard focus). */
+   preserved (middle-click, right-click, keyboard focus).
+
+   Safari (WebKit) ignores `position: relative` on <tr>, so the pseudo-
+   element escapes its row and all rows' overlays stack — the last one
+   wins every click. `transform` forces WebKit to make the <tr> a
+   containing block for absolutely-positioned descendants, which fixes it
+   cross-browser. */
 .feed-table tr {
   position: relative;
+  transform: translateZ(0);
   cursor: pointer;
 }
 
