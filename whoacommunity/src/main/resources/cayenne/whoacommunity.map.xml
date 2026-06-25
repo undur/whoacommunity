@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<data-map xmlns="http://cayenne.apache.org/schema/11/modelMap"
+<data-map xmlns="http://cayenne.apache.org/schema/12/modelMap"
 	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:schemaLocation="http://cayenne.apache.org/schema/11/modelMap https://cayenne.apache.org/schema/11/modelMap.xsd"
-	 project-version="11">
+	 xsi:schemaLocation="http://cayenne.apache.org/schema/12/modelMap https://cayenne.apache.org/schema/12/modelMap.xsd"
+	 project-version="12">
 	<property name="defaultPackage" value="whoacommunity.data"/>
 	<db-entity name="wc_article">
 		<db-attribute name="content" type="VARCHAR" isMandatory="true" length="1000000"/>
@@ -141,7 +141,7 @@
 	<obj-relationship name="user" source="SlackMessage" target="SlackUser" deleteRule="Nullify" db-relationship-path="user"/>
 	<obj-relationship name="messages" source="SlackUser" target="SlackMessage" deleteRule="Deny" db-relationship-path="messages"/>
 	<obj-relationship name="articleTags" source="Tag" target="ArticleTag" deleteRule="Deny" db-relationship-path="articleTags"/>
-	<dbImport xmlns="http://cayenne.apache.org/schema/11/dbimport">
+	<dbImport xmlns="http://cayenne.apache.org/schema/12/dbimport">
 		<tableTypes>
 			<tableType>TABLE</tableType>
 			<tableType>VIEW</tableType>
