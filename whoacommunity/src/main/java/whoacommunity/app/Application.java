@@ -29,6 +29,7 @@ import whoacommunity.components.WCMain;
 import whoacommunity.components.WCSlackArchivePage;
 import whoacommunity.components.WCSlackClientPage;
 import whoacommunity.data.Article;
+import whoacommunity.util.CachedFeed;
 
 public class Application extends NGApplication {
 
@@ -94,7 +95,20 @@ public class Application extends NGApplication {
 				.map( "/dev-feed", WCFeedPage.class )
 				.map( "/article/*", this::viewArticle )
 				.map( "/atom.xml", this::atom )
+				.map( "/refresh-data", this::refreshData )
 				.map( "/deployment-config", WCDeploymentPage.class );
+	}
+
+	/**
+	 * Force-refresh every cached feed (GitHub + Java RSS) regardless of TTL,
+	 * then redirect home. Handy after publishing an article or pushing
+	 * commits you want surfaced immediately.
+	 */
+	public NGActionResults refreshData( NGRequest request ) {
+		CachedFeed.forceRefreshAll();
+		final NGResponse response = new NGResponse( "", 302 );
+		response.setHeader( "Location", "/" );
+		return response;
 	}
 
 	/**

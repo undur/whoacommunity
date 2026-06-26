@@ -120,9 +120,22 @@ public class CachedFeed<T> {
 	 * so a slow source can't hang a page render).
 	 */
 	private static void refreshAllStale() {
+		fanOut( false );
+	}
+
+	/**
+	 * Force-refresh <em>every</em> registered feed regardless of TTL, in
+	 * parallel. Intended for a manual "refresh now" trigger. Blocks until
+	 * all refreshes finish or the fan-out timeout elapses.
+	 */
+	public static void forceRefreshAll() {
+		fanOut( true );
+	}
+
+	private static void fanOut( final boolean force ) {
 		final List<CompletableFuture<Void>> futures = new ArrayList<>();
 		for( CachedFeed<?> feed : REGISTRY ) {
-			if( feed.isStale() ) {
+			if( force || feed.isStale() ) {
 				futures.add( CompletableFuture.runAsync( feed::doRefresh, EXECUTOR ) );
 			}
 		}
