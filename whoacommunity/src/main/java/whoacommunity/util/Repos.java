@@ -29,6 +29,7 @@ public class Repos {
 					new Repo( Org.undur, "🔌", "wo-adaptor-jetty", "https://github.com/undur/wo-adaptor-jetty", true ),
 					new Repo( Org.undur, "👨‍⚕️", "examiner", "https://github.com/undur/examiner", true ),
 					new Repo( Org.undur, "💋", "parslips", "https://github.com/undur/parslips", true ),
+					new Repo( Org.undur, "🧠", "parslips-dev-loop-skill", "https://github.com/undur/parslips-dev-loop-skill/", true ),
 					new Repo( Org.undur, "🧩", "apiext-format", "https://github.com/undur/apiext-format", true ),
 
 					// Cayenne repos
@@ -92,7 +93,7 @@ public class Repos {
 				throw new IllegalStateException( "Repo url is not a GitHub URL: " + url );
 			}
 			final String[] parts = url.substring( prefix.length() ).split( "/" );
-			return parts[ index ];
+			return parts[index];
 		}
 	}
 }
