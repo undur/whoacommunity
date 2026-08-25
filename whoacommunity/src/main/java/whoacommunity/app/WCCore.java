@@ -3,8 +3,7 @@ package whoacommunity.app;
 import java.sql.Types;
 
 import org.apache.cayenne.ObjectContext;
-import org.apache.cayenne.access.dbsync.CreateIfNoSchemaStrategy;
-import org.apache.cayenne.access.dbsync.SchemaUpdateStrategyFactory;
+import org.apache.cayenne.configuration.DataNodeDescriptor;
 import org.apache.cayenne.map.DataMap;
 import org.apache.cayenne.map.DbAttribute;
 import org.apache.cayenne.map.DbEntity;
@@ -43,14 +42,12 @@ public class WCCore {
 
 	public static CayenneRuntime runtime() {
 		if( _runtime == null ) {
-			final CayenneRuntimeBuilder builder = CayenneRuntime
-					.builder()
-					.addConfig( "cayenne/cayenne-project.xml" );
-
 			final HikariConfig config = new HikariConfig();
 
 			final boolean usingH2 = jdbcURL() == null;
 
+			final DataNodeDescriptor.Builder dnd = DataNodeDescriptor.of( "node1");
+			
 			if( !usingH2 ) {
 				// If jdbcURL is set, use connection data from environment
 				config.setJdbcUrl( jdbcURL() );
@@ -65,14 +62,18 @@ public class WCCore {
 				// schema-update-strategy attribute in cayenne-project.xml) and instantiates it reflectively,
 				// never consulting a SchemaUpdateStrategy DI binding. Binding the factory is the only way to
 				// control the strategy from code. Hugi 2026-05-26
-				builder.addModule( b -> b.bind( SchemaUpdateStrategyFactory.class ).toInstance( _ -> new CreateIfNoSchemaStrategy() ) );
+				dnd.createSchemaIfNeeded();
 
 				config.setDriverClassName( "org.h2.Driver" );
 				config.setJdbcUrl( "jdbc:h2:mem:testerbest" );
 			}
 
-			_runtime = builder
-					.dataSource( new HikariDataSource( config ) )
+			dnd.dataSource( new HikariDataSource( config ) );
+
+			_runtime = CayenneRuntime
+					.of()
+					.addConfig( "cayenne/cayenne-project.xml" )
+					.defaultDataNode( dnd.build() )
 					.build();
 
 			if( usingH2 ) {
