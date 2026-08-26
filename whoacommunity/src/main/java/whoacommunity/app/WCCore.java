@@ -9,7 +9,6 @@ import org.apache.cayenne.map.DbAttribute;
 import org.apache.cayenne.map.DbEntity;
 import org.apache.cayenne.reflect.NonPrefixedBeanAccessor;
 import org.apache.cayenne.runtime.CayenneRuntime;
-import org.apache.cayenne.runtime.CayenneRuntimeBuilder;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -27,8 +26,6 @@ public class WCCore {
 		NonPrefixedBeanAccessor.register();
 		//		System.clearProperty( "wc.jdbcURL" );
 		//		System.clearProperty( "wc.githubToken" );
-		//		System.setProperty( "org.slf4j.simpleLogger.log.org.apache.cayenne.access.QueryLogger", "DEBUG" );
-		//		System.setProperty( "org.slf4j.simpleLogger.log.org.apache.cayenne", "DEBUG" );
 	}
 
 	private static CayenneRuntime _runtime;
@@ -46,8 +43,8 @@ public class WCCore {
 
 			final boolean usingH2 = jdbcURL() == null;
 
-			final DataNodeDescriptor.Builder dnd = DataNodeDescriptor.of( "node1");
-			
+			final DataNodeDescriptor.Builder dnd = DataNodeDescriptor.of( "node1" );
+
 			if( !usingH2 ) {
 				// If jdbcURL is set, use connection data from environment
 				config.setJdbcUrl( jdbcURL() );
