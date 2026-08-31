@@ -1,46 +1,76 @@
 <wo:WCLook>
 	<style>
-		.setup-doc { max-width: 76rem; margin: 0 auto; }
-		.setup-doc > h1 { margin-bottom: .25rem; }
-		.setup-lead p { white-space: pre-line; margin: 0 0 .75rem; }
-		.setup-doc h2.setup-section { margin: 2.75rem 0 .5rem; padding-bottom: .3rem; border-bottom: 2px solid var(--tblr-border-color-active, #333); font-size: 1.25rem; }
-		.setup-row { display: grid; grid-template-columns: minmax(15rem, 5fr) 9fr; gap: 0 1.5rem; }
-		.setup-note { padding: .5rem 0 .25rem; }
-		.setup-note p { white-space: pre-line; color: var(--tblr-secondary, #5f6672); font-size: .9rem; line-height: 1.55; margin: 0 0 .6rem; }
-		.setup-code pre { margin: 0 0 .5rem; }
+		.setup-body { background: #1b2028; color: #e6e9ee; border-radius: 8px; padding: 1.1rem 1.4rem; }
+		.setup-row { display: grid; grid-template-columns: 8fr 4fr; gap: 0 1.5rem; padding: 0; }
+		.setup-row > div { min-width: 0; }
+		.setup-banner { border-top: 1px solid rgba(255,255,255,.09); margin-top: .65rem; padding-top: .65rem; }
+		.setup-code pre { background: transparent; color: inherit; border: 0; margin: 0; padding: 0; font-size: .85rem; line-height: 1.55; overflow-x: auto; }
+		.setup-code code { background: transparent; color: inherit; padding: 0; }
+		.setup-note { user-select: none; -webkit-user-select: none; border-left: 1px solid rgba(255,255,255,.09); background: rgba(255,255,255,.028); padding: .1rem 1rem; }
+		.cmt { color: #8fb573; }
+		.setup-heading { color: #dbe2ea; font-size: .95rem; font-weight: 600; margin: .1rem 0 .3rem; }
+		.setup-note p { color: #98a3b3; font-size: .85rem; line-height: 1.5; margin: 0 0 .5rem; }
+		.setup-lead pre { background: #1b2028; color: #e6e9ee; border: 0; border-radius: 6px; padding: .6rem .9rem; margin: 0; }
 		@media (max-width: 767px) { .setup-row { grid-template-columns: 1fr; } }
 	</style>
 
-	<div class="setup-doc">
-		<h1>Setting up a deployment server</h1>
-		<div class="setup-lead">
-			<p class="text-secondary">The guide below <em>is</em> the setup script — <code>setup-server.sh</code> from the
-			<a href="https://github.com/undur/modulo">modulo repository</a>, rendered with its comments as
-			the narrative. Running it from your workstation gives you a server running the whole stack —
-			wotaskd, JavaMonitor and modulo — serving its own admin dashboard over a real certificate,
-			ready for apps. Read it here; run it from there:</p>
-			<pre><code class="language-bash">curl -O https://raw.githubusercontent.com/undur/modulo/main/scripts/setup-server.sh
+	<div>
+		<div class="card mb-3">
+			<div class="card-body setup-lead">
+				<div class="d-flex justify-content-between align-items-start mb-2">
+					<h1 class="mb-0">Setting up a deployment server</h1>
+					<button type="button" class="btn btn-primary" id="copyScript">Copy the script</button>
+				</div>
+				<p class="text-secondary">The guide below <em>is</em> the setup script — <code>setup-server.sh</code> from the
+				<a href="https://github.com/undur/modulo">modulo repository</a>, with its comments as the
+				explanation column. It needs <code>git</code>, <code>maven</code> and a JDK on your workstation,
+				and root ssh access to the server. Run it against a fresh server and it:</p>
+				<ul class="text-secondary">
+					<li>builds the three bundles locally — wotaskd, JavaMonitor and modulo</li>
+					<li>installs a JDK on the server if missing, and creates the <code>/opt/webobjects</code> layout</li>
+					<li>creates a dedicated unprivileged <code>webobjects</code> user — the install runs as root over ssh,
+						but everything <em>runs</em> as this user (modulo binds 80/443 via
+						<code>AmbientCapabilities</code>, and apps launched by wotaskd inherit it too)</li>
+					<li>writes modulo's config with the server's own hostname as the first site</li>
+					<li>installs systemd units and log rotation, and starts the stack</li>
+				</ul>
+				<p class="text-secondary">A few minutes later the server serves its own admin dashboard over a real
+				certificate, ready for apps. The explanations beside the script aren't selectable, so copying the
+				left column (or using the button) gives you the runnable script.</p>
+				<pre>curl -O https://raw.githubusercontent.com/undur/modulo/main/scripts/setup-server.sh
 chmod +x setup-server.sh
-./setup-server.sh myserver.example you@example.com</code></pre>
-			<wo:repetition list="$intro" item="$currentParagraph">
-				<p class="text-secondary"><wo:str value="$currentParagraph" /></p>
+./setup-server.sh myserver.example you@example.com</pre>
+			</div>
+		</div>
+
+		<div class="setup-body">
+			<wo:repetition list="$steps" item="$currentStep">
+				<wo:if condition="$currentStep.isBanner">
+					<div class="setup-row setup-banner">
+						<div class="setup-code"></div>
+						<div class="setup-note"><h3 class="setup-heading"><wo:str value="$currentStep.bannerTitle" /></h3></div>
+					</div>
+				</wo:if>
+				<wo:if condition="$currentStep.isBanner" negate="true">
+					<div class="setup-row">
+						<div class="setup-code"><pre><code><wo:str value="$currentStep.codeHtml" escapeHTML="$false" /></code></pre></div>
+						<div class="setup-note">
+							<wo:repetition list="$currentStep.annotationParagraphs" item="$currentParagraph">
+								<p><wo:str value="$currentParagraph" /></p>
+							</wo:repetition>
+						</div>
+					</div>
+				</wo:if>
 			</wo:repetition>
 		</div>
 
-		<wo:repetition list="$sections" item="$currentSection">
-			<h2 class="setup-section"><wo:str value="$currentSection.title" /></h2>
-			<wo:repetition list="$currentSection.steps" item="$currentStep">
-				<div class="setup-row">
-					<div class="setup-note">
-						<wo:repetition list="$currentStep.annotationParagraphs" item="$currentParagraph">
-							<p><wo:str value="$currentParagraph" /></p>
-						</wo:repetition>
-					</div>
-					<div class="setup-code">
-						<pre><code class="language-bash"><wo:str value="$currentStep.code" /></code></pre>
-					</div>
-				</div>
-			</wo:repetition>
-		</wo:repetition>
+		<pre id="wholeScript" hidden><wo:str value="$fullScript" /></pre>
+		<script>
+			document.getElementById(\'copyScript\').addEventListener(\'click\', async (e) => {
+				await navigator.clipboard.writeText(document.getElementById(\'wholeScript\').textContent);
+				e.target.textContent = \'Copied!\';
+				setTimeout(() => e.target.textContent = \'Copy the script\', 1500);
+			});
+		</script>
 	</div>
 </wo:WCLook>
