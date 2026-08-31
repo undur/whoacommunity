@@ -1,5 +1,6 @@
 package whoacommunity.app;
 
+import java.time.Duration;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,6 +30,7 @@ import whoacommunity.components.WCMain;
 import whoacommunity.components.WCSlackArchivePage;
 import whoacommunity.components.WCSlackClientPage;
 import whoacommunity.data.Article;
+import whoacommunity.github.GithubFeed;
 import whoacommunity.util.CachedFeed;
 
 public class Application extends NGApplication {
@@ -40,6 +42,24 @@ public class Application extends NGApplication {
 
 	public static void main( String[] args ) {
 		NGApplication.run( args, Application.class );
+	}
+
+	public Application() {
+		// Feeds register with CachedFeed when their holding class loads, which
+		// normally happens lazily on first page render. Load them now so the
+		// boot-time sweep below warms every cache before the first visitor.
+		GithubFeed.shared.getClass();
+
+		try {
+			Class.forName( "whoacommunity.components.WCSidebar" );
+		}
+		catch( ClassNotFoundException e ) {
+			throw new RuntimeException( e );
+		}
+
+		// Keep all caches fresh off the request path: sweep for expired TTLs
+		// once a minute (each feed still refreshes at its own cadence).
+		CachedFeed.startBackgroundRefresh( Duration.ofMinutes( 1 ) );
 	}
 
 	@Override
