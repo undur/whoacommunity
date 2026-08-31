@@ -1,6 +1,10 @@
 <wo:WCLook>
 	<style>
-		.setup-body { background: #1b2028; color: #e6e9ee; border-radius: 8px; padding: 1.1rem 1.4rem; }
+		.setup-page { padding: 0 1rem; }
+		.setup-lead p, .setup-lead li { color: #4b5563; }
+		.setup-lead .setup-inset { background: #f3f4f6; color: #1f2937; border: 1px solid #e5e7eb; border-radius: 6px; padding: .7rem .9rem; margin: 0 0 1rem; font-size: .85rem; line-height: 1.5; overflow-x: auto; }
+		.setup-lead .setup-inset .cmt { color: #5b8a45; }
+		.setup-body { background: #232a34; color: #e6e9ee; border-radius: 8px; padding: 1.1rem 1.4rem; }
 		.setup-row { display: grid; grid-template-columns: 8fr 4fr; gap: 0 1.5rem; padding: 0; }
 		.setup-row > div { min-width: 0; }
 		.setup-banner { border-top: 1px solid rgba(255,255,255,.09); margin-top: 1rem; padding-top: .85rem; }
@@ -9,30 +13,27 @@
 		.setup-code code { background: transparent; color: inherit; padding: 0; }
 		.setup-note { user-select: none; -webkit-user-select: none; border-left: 1px solid rgba(255,255,255,.09); background: rgba(255,255,255,.028); padding: .1rem 1rem; }
 		.cmt { color: #8fb573; }
-		.setup-body ::selection, .setup-body::selection, .setup-lead pre::selection, .setup-lead pre ::selection { background: #4a6da7; color: #ffffff; }
+		.setup-body ::selection, .setup-body::selection { background: #4a6da7; color: #ffffff; }
 		.setup-heading { color: #dbe2ea; font-size: .95rem; font-weight: 600; margin: .1rem 0 .3rem; }
 		.setup-note p { color: #98a3b3; font-size: .85rem; line-height: 1.5; margin: 0 0 .5rem; }
-		.setup-lead pre { background: #1b2028; color: #e6e9ee; border: 0; border-radius: 6px; padding: .6rem .9rem; margin: 0; }
 		@media (max-width: 767px) { .setup-row { grid-template-columns: 1fr; } }
 	</style>
 
-	<div>
-		<div class="alert alert-warning mb-3" role="alert">
-			<strong>Work in progress</strong> — this guide and the script it renders are under active development
-			and change frequently. Expect rough edges.
-		</div>
-
-		<div class="card mb-3">
-			<div class="card-body setup-lead">
-				<div class="d-flex justify-content-between align-items-start mb-2">
-					<h1 class="mb-0">Setting up a deployment server</h1>
-					<button type="button" class="btn btn-primary" id="copyScript">Copy the script</button>
+	<div class="setup-page">
+		<div class="card mb-3 setup-lead">
+			<div class="card-body">
+				<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+					<h1 class="h2 mb-0">Setting up a deployment server
+						<span class="badge rounded-pill text-bg-warning fs-6 fw-normal align-middle ms-2">work in progress</span></h1>
+					<button type="button" class="btn btn-outline-secondary btn-sm" id="copyScript">Copy the script</button>
 				</div>
-				<p class="text-secondary">The guide below <em>is</em> the setup script — <code>setup-server.sh</code> from the
+				<p class="small mb-3">Under active development — the guide and the script it renders change frequently.</p>
+
+				<p>The guide below <em>is</em> the setup script — <code>setup-server.sh</code> from the
 				<a href="https://github.com/undur/modulo">modulo repository</a>, with its comments as the
-				explanation column. It needs <code>git</code>, <code>maven</code> and a JDK on your workstation,
+				explanation column. It requires <code>git</code>, <code>maven</code> and a JDK on your workstation,
 				and root ssh access to the server. Run it against a fresh server and it:</p>
-				<ul class="text-secondary">
+				<ul>
 					<li>builds the three bundles locally — wotaskd, JavaMonitor and modulo</li>
 					<li>installs a JDK on the server if missing, and creates the <code>/opt/webobjects</code> layout</li>
 					<li>creates a dedicated unprivileged <code>webobjects</code> user — the install runs as root over ssh,
@@ -41,8 +42,8 @@
 					<li>writes modulo's config with the server's own hostname as the first site</li>
 					<li>installs systemd units and log rotation, and starts the stack</li>
 				</ul>
-				<p class="text-secondary">What lands on the server:</p>
-				<pre class="mb-3">/opt
+				<p class="mb-2">What lands on the server:</p>
+				<pre class="setup-inset">/opt
 ├── jdk-&lt;version&gt;/     <span class="cmt">the JDK — distribution and version per your choice</span>
 └── webobjects/
     ├── apps/          <span class="cmt">the stack's own .woa bundles: wotaskd, JavaMonitor, modulo-runner</span>
@@ -51,10 +52,9 @@
     │   └── access/    <span class="cmt">…and per-site access logs</span>
     ├── acme/          <span class="cmt">ACME account key + issued certificates</span>
     └── modulo.toml    <span class="cmt">modulo's root config — sites, admin, wotaskd, certs</span></pre>
-				<p class="text-secondary">A few minutes later the server serves its own admin dashboard over a real
-				certificate, ready for apps. The explanations beside the script aren't selectable, so copying the
-				left column (or using the button) gives you the runnable script.</p>
-				<pre>curl -O https://raw.githubusercontent.com/undur/modulo/main/scripts/setup-server.sh
+				<p class="mb-2">A few minutes later the server serves its own admin dashboard over a real
+				certificate, ready for apps.</p>
+				<pre class="setup-inset mb-0">curl -O https://raw.githubusercontent.com/undur/modulo/main/scripts/setup-server.sh
 chmod +x setup-server.sh
 ./setup-server.sh myserver.example you@example.com</pre>
 			</div>
