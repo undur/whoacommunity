@@ -1,35 +1,58 @@
 <wo:WCLook>
+	<style>
+		.setup-annotation p { white-space: pre-line; color: var(--tblr-secondary, #666); }
+		.setup-step { border-bottom: 1px solid var(--tblr-border-color, #e6e7e9); padding: 1rem 0; }
+		.setup-step:last-child { border-bottom: none; }
+		.setup-step pre { margin: 0; }
+		.setup-intro p { white-space: pre-line; }
+	</style>
+
 	<div class="row">
-		<div class="col-md-4">
-			<div class="card">
-				<div class="card-header">
-					<h3>Deployment configuration builder</h3>
-				</div>
-				<div class="card-body">
-					<wo:form class="space-y">
-						<div class="form-group">
-							<label class="form-label">Platform</label>
-						</div>
-						<div class="form-group">
-							<label class="form-label">Java version</label>
-						</div>
-						<div class="form-group">
-							<label class="form-label">Wonder? Slim? No?</label>
-						</div>
-						<div class="form-group">
-							<label class="form-label">Modulo? WO Apache adaptor?</label>
-						</div>
-						<wo:submit action="$updateConfig" class="btn btn-primary" value="Update configuration" />
-					</wo:form>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="row mt-3">
 		<div class="col">
-			<div class="card">
-				<code><wo:str value="$configString" /></code>
+			<div class="card mb-3">
+				<div class="card-header">
+					<h2 class="mb-0">Setting up a deployment server — the whole stack, as a script</h2>
+				</div>
+				<div class="card-body setup-intro">
+					<p>The guide below <em>is</em> the setup script — <code>setup-server.sh</code> from the
+					<a href="https://github.com/undur/modulo">modulo repository</a>, rendered with its
+					comments as the narrative. Run it from your workstation and you get a server running
+					wotaskd, JavaMonitor and modulo, serving its own admin dashboard over a real
+					certificate, ready for apps. Read it here; run it from there:</p>
+					<pre><code class="language-bash">curl -O https://raw.githubusercontent.com/undur/modulo/main/scripts/setup-server.sh
+chmod +x setup-server.sh
+./setup-server.sh myserver.example you@example.com</code></pre>
+					<wo:repetition list="$intro" item="$currentParagraph">
+						<p><wo:str value="$currentParagraph" /></p>
+					</wo:repetition>
+				</div>
 			</div>
 		</div>
 	</div>
+
+	<wo:repetition list="$sections" item="$currentSection">
+		<div class="row">
+			<div class="col">
+				<div class="card mb-3">
+					<div class="card-header">
+						<h3 class="mb-0"><wo:str value="$currentSection.title" /></h3>
+					</div>
+					<div class="card-body">
+						<wo:repetition list="$currentSection.steps" item="$currentStep">
+							<div class="row setup-step">
+								<div class="col-md-4 setup-annotation">
+									<wo:repetition list="$currentStep.annotationParagraphs" item="$currentParagraph">
+										<p><wo:str value="$currentParagraph" /></p>
+									</wo:repetition>
+								</div>
+								<div class="col-md-8">
+									<pre><code class="language-bash"><wo:str value="$currentStep.code" /></code></pre>
+								</div>
+							</div>
+						</wo:repetition>
+					</div>
+				</div>
+			</div>
+		</div>
+	</wo:repetition>
 </wo:WCLook>
