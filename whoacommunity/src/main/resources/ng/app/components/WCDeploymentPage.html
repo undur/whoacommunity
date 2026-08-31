@@ -27,12 +27,19 @@
 						<span class="badge rounded-pill text-bg-warning fs-6 fw-normal align-middle ms-2">work in progress</span></h1>
 					<button type="button" class="btn btn-outline-secondary btn-sm" id="copyScript">Copy the script</button>
 				</div>
-				<p class="small mb-3">Under active development — the guide and the script it renders change frequently.</p>
+				<p class="small mb-3">Under active development — the guide and the script currently change frequently.</p>
 
-				<p>The guide below <em>is</em> the setup script — <code>setup-server.sh</code> from the
-				<a href="https://github.com/undur/modulo">modulo repository</a>, with its comments as the
-				explanation column. It requires <code>git</code>, <code>maven</code> and a JDK on your workstation,
-				and root ssh access to the server. Run it against a fresh server and it:</p>
+				<h3>Running the script</h3>
+				<pre class="setup-inset mb-0">curl -O https://raw.githubusercontent.com/undur/modulo/main/scripts/setup-server.sh
+chmod +x setup-server.sh
+./setup-server.sh myserver.example you@example.com</pre>
+
+				<p class="mt-2">This is the script — <code>setup-server.sh</code> from the
+				<a href="https://github.com/undur/modulo">modulo repository</a>. It's shown below with some comments and explanations on what it does.<br>
+				Running the script requires <code>git</code>, <code>mvn</code> and a JDK on your workstation — and root ssh access to the server.<br>
+				The e-mail address is used when ordering certificates from LetsEncrypt.<br>
+				</p>
+				<p>Run the script against a fresh server and it:</p>
 				<ul>
 					<li>builds the three bundles locally — wotaskd, JavaMonitor and modulo</li>
 					<li>installs a JDK on the server if missing, and creates the <code>/opt/webobjects</code> layout</li>
@@ -42,7 +49,8 @@
 					<li>writes modulo's config with the server's own hostname as the first site</li>
 					<li>installs systemd units and log rotation, and starts the stack</li>
 				</ul>
-				<p class="mb-2">What lands on the server:</p>
+				<p class="mb-2">A few minutes later the server serves its own admin dashboard over a real certificate, ready for apps.</p>
+				<h3>What lands on the server:</h3>
 				<pre class="setup-inset">/opt
 ├── jdk-&lt;version&gt;/     <span class="cmt">the JDK — distribution and version per your choice</span>
 └── webobjects/
@@ -55,11 +63,6 @@
 				<p class="small">A revised default layout — per-app homes, sites as files, a stack directory — is under design:
 				<a href="https://github.com/undur/modulo/blob/main/docs/DEFAULT-DIRECTORY-STRUCTURE.md">DEFAULT-DIRECTORY-STRUCTURE.md</a>.
 				Opinions welcome.</p>
-				<p class="mb-2">A few minutes later the server serves its own admin dashboard over a real
-				certificate, ready for apps.</p>
-				<pre class="setup-inset mb-0">curl -O https://raw.githubusercontent.com/undur/modulo/main/scripts/setup-server.sh
-chmod +x setup-server.sh
-./setup-server.sh myserver.example you@example.com</pre>
 			</div>
 		</div>
 
