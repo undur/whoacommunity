@@ -68,10 +68,15 @@ chmod +x setup-server.sh
 
 		<pre id="wholeScript" hidden><wo:str value="$fullScript" /></pre>
 		<script>
-			document.getElementById(\'copyScript\').addEventListener(\'click\', async (e) => {
-				await navigator.clipboard.writeText(document.getElementById(\'wholeScript\').textContent);
-				e.target.textContent = \'Copied!\';
-				setTimeout(() => e.target.textContent = \'Copy the script\', 1500);
+			document.getElementById("copyScript").addEventListener("click", async (e) => {
+				try {
+					await navigator.clipboard.writeText(document.getElementById("wholeScript").textContent);
+					e.target.textContent = "Copied!";
+				}
+				catch (err) {
+					e.target.textContent = "Copy failed";
+				}
+				setTimeout(() => e.target.textContent = "Copy the script", 1500);
 			});
 		</script>
 	</div>
