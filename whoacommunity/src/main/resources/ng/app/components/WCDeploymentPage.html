@@ -36,6 +36,16 @@
 					<li>writes modulo's config with the server's own hostname as the first site</li>
 					<li>installs systemd units and log rotation, and starts the stack</li>
 				</ul>
+				<p class="text-secondary">What lands on the server:</p>
+				<pre class="mb-3">/opt
+├── jdk-&lt;version&gt;/     <span class="cmt">the JDK — distribution and version per your choice</span>
+└── webobjects/
+    ├── apps/          <span class="cmt">the stack's own .woa bundles: wotaskd, JavaMonitor, modulo-runner</span>
+    ├── conf/          <span class="cmt">SiteConfig.xml — wotaskd's config store</span>
+    ├── log/           <span class="cmt">one log per service…</span>
+    │   └── access/    <span class="cmt">…and per-site access logs</span>
+    ├── acme/          <span class="cmt">ACME account key + issued certificates</span>
+    └── modulo.toml    <span class="cmt">modulo's root config — sites, admin, wotaskd, certs</span></pre>
 				<p class="text-secondary">A few minutes later the server serves its own admin dashboard over a real
 				certificate, ready for apps. The explanations beside the script aren't selectable, so copying the
 				left column (or using the button) gives you the runnable script.</p>
