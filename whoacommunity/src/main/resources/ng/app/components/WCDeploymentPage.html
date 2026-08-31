@@ -23,7 +23,7 @@
 		<div class="card mb-3 setup-lead">
 			<div class="card-body">
 				<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-					<h1 class="h2 mb-0">Setting up a deployment server
+					<h1 class="h2 mb-0">Setting up a deployment server with modulo
 						<span class="badge rounded-pill text-bg-warning fs-6 fw-normal align-middle ms-2">work in progress</span></h1>
 					<button type="button" class="btn btn-outline-secondary btn-sm" id="copyScript">Copy the script</button>
 				</div>
@@ -52,6 +52,9 @@
     │   └── access/    <span class="cmt">…and per-site access logs</span>
     ├── acme/          <span class="cmt">ACME account key + issued certificates</span>
     └── modulo.toml    <span class="cmt">modulo's root config — sites, admin, wotaskd, certs</span></pre>
+				<p class="small">A revised default layout — per-app homes, sites as files, a stack directory — is under design:
+				<a href="https://github.com/undur/modulo/blob/main/docs/DEFAULT-DIRECTORY-STRUCTURE.md">DEFAULT-DIRECTORY-STRUCTURE.md</a>.
+				Opinions welcome.</p>
 				<p class="mb-2">A few minutes later the server serves its own admin dashboard over a real
 				certificate, ready for apps.</p>
 				<pre class="setup-inset mb-0">curl -O https://raw.githubusercontent.com/undur/modulo/main/scripts/setup-server.sh
