@@ -194,7 +194,7 @@ public class Application extends NGApplication {
 
 	public NGActionResults viewProject( NGRequest request ) {
 		final String name = request.parsedURI().getString( 1 );
-		final Repo repo = Repos.repoNamed( name ).orElse( null );
+		final Repo repo = Repos.projectRepoNamed( name ).orElse( null );
 
 		if( repo == null ) {
 			return new NGResponse( "No such project", 404 );

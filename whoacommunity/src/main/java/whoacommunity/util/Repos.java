@@ -2,6 +2,7 @@ package whoacommunity.util;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * For keeping track of github repositories we follow
@@ -50,17 +51,26 @@ public class Repos {
 	}
 
 	/**
+	 * Repos in our own orgs that don't (yet) warrant a project page
+	 */
+	private static final Set<String> NOT_PROJECTS = Set.of( "whoacommunity.com", "examiner" );
+
+	/**
 	 * @return The repos that get a project page: our own orgs, not the ones we merely follow
 	 */
 	public static List<Repo> projectRepos() {
 		return repos()
 				.stream()
 				.filter( r -> r.organization() == Org.undur || r.organization() == Org.ng )
+				.filter( r -> !NOT_PROJECTS.contains( r.name() ) )
 				.toList();
 	}
 
-	public static Optional<Repo> repoNamed( final String name ) {
-		return repos()
+	/**
+	 * @return The project repo with the given name — only repos that have a project page resolve
+	 */
+	public static Optional<Repo> projectRepoNamed( final String name ) {
+		return projectRepos()
 				.stream()
 				.filter( r -> r.name().equals( name ) )
 				.findFirst();
