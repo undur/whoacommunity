@@ -1,0 +1,26 @@
+<wo:WCLook>
+	<div class="row">
+		<div class="col-md-8 article-list">
+			<div class="card article-card video-detail">
+				<div class="card-header dark-card-header">
+					<h3 class="card-title"><wo:str value="$video.title" /></h3>
+					<div class="card-actions">
+						<small><wo:str value="$video.formattedDate" /></small>
+					</div>
+				</div>
+				<div class="video-embed">
+					<wo:container elementName="iframe" src="$video.embedURL" title="$video.title" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="allowfullscreen" referrerpolicy="strict-origin-when-cross-origin"></wo:container>
+				</div>
+				<div class="card-body video-detail-footer">
+					<wo:if condition="$playlist">
+						<span class="video-playlist-label">From the playlist <wo:link href="/videos"><wo:str value="$playlist.title" /></wo:link></span>
+					</wo:if>
+					<wo:link href="$video.youtubeURL" class="video-youtube-link" target="_blank" rel="noopener">Watch on YouTube ↗</wo:link>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4 sidebar">
+			<wo:WCSidebar />
+		</div>
+	</div>
+</wo:WCLook>

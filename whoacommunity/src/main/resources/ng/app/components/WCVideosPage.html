@@ -1,0 +1,31 @@
+<wo:WCLook>
+	<div class="row">
+		<div class="col-md-8 article-list">
+			<wo:repetition list="$playlists" item="$currentPlaylist">
+				<div class="card article-card video-playlist">
+					<div class="card-header dark-card-header">
+						<h3 class="card-title"><wo:str value="$currentPlaylist.title" /></h3>
+						<div class="card-actions">
+							<wo:link href="$currentPlaylist.url" class="playlist-youtube-link" target="_blank" rel="noopener">Playlist on YouTube ↗</wo:link>
+						</div>
+					</div>
+					<div class="video-list">
+						<wo:repetition list="$currentPlaylist.videos" item="$currentVideo">
+							<wo:link href="$currentVideo.pageURL" class="video-row">
+								<wo:element elementName="img" src="$currentVideo.thumbnailURL" alt="" class="video-thumb" loading="lazy" width="160" height="90" />
+								<span class="video-text">
+									<span class="video-title"><wo:str value="$currentVideo.title" /></span>
+									<span class="video-date"><wo:str value="$currentVideo.formattedDate" /></span>
+								</span>
+								<span class="video-play">▶</span>
+							</wo:link>
+						</wo:repetition>
+					</div>
+				</div>
+			</wo:repetition>
+		</div>
+		<div class="col-md-4 sidebar">
+			<wo:WCSidebar />
+		</div>
+	</div>
+</wo:WCLook>

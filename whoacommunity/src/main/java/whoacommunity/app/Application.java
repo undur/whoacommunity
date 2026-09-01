@@ -31,9 +31,13 @@ import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCMain;
 import whoacommunity.components.WCSlackArchivePage;
 import whoacommunity.components.WCSlackClientPage;
+import whoacommunity.components.WCVideoDetailPage;
+import whoacommunity.components.WCVideosPage;
 import whoacommunity.data.Article;
 import whoacommunity.github.GithubFeed;
 import whoacommunity.util.CachedFeed;
+import whoacommunity.util.Videos;
+import whoacommunity.util.Videos.Video;
 
 public class Application extends NGApplication {
 
@@ -122,6 +126,8 @@ public class Application extends NGApplication {
 				.map( "/slack-client", WCSlackClientPage.class )
 				.map( "/dev-feed", WCFeedPage.class )
 				.map( "/article/*", this::viewArticle )
+				.map( "/videos", WCVideosPage.class )
+				.map( "/video/*", this::viewVideo )
 				.map( "/atom.xml", this::atom )
 				.map( "/refresh-data", this::refreshData )
 				.map( "/deployment-config", WCDeploymentPage.class )
@@ -180,6 +186,19 @@ public class Application extends NGApplication {
 		catch( FeedException e ) {
 			throw new RuntimeException( e );
 		}
+	}
+
+	public NGActionResults viewVideo( NGRequest request ) {
+		final String youtubeID = request.parsedURI().getString( 1 );
+		final Video video = Videos.videoWithID( youtubeID ).orElse( null );
+
+		if( video == null ) {
+			return new NGResponse( "No such video", 404 );
+		}
+
+		final WCVideoDetailPage page = pageWithName( WCVideoDetailPage.class, request.context() );
+		page.video = video;
+		return page;
 	}
 
 	public NGActionResults viewArticle( NGRequest request ) {
