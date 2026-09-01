@@ -102,6 +102,12 @@ public class Application extends NGApplication {
 			response.setHeader( "Content-Type", "text/css; charset=utf-8" );
 		}
 
+		// Font files never change (a changed font gets a new filename), so let
+		// browsers cache them for a year instead of the default hour.
+		if( request.uri().endsWith( ".woff2" ) ) {
+			response.setHeader( "Cache-Control", "public, max-age=31536000, immutable" );
+		}
+
 		return response;
 	}
 

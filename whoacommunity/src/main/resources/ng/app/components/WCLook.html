@@ -5,6 +5,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 		<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
 		<link rel="alternate" type="application/atom+xml" title="whoacommunity.com articles" href="https://www.whoacommunity.com/atom.xml" />
+		<!-- Preload the faces every page needs, so they start downloading before CSS parsing.
+		     Note: font preloads require the crossorigin attribute even same-origin. -->
+		<link rel="preload" href="/nr/app/fonts/inter-400-normal-latin.woff2" as="font" type="font/woff2" crossorigin />
+		<link rel="preload" href="/nr/app/fonts/space-grotesk-700-normal-latin.woff2" as="font" type="font/woff2" crossorigin />
 		<wo:stylesheet filename="tabler/css/tabler.min.css" />
 		<wo:stylesheet filename="prism.css" />
 		<wo:stylesheet filename="whoa-fonts.css" />
