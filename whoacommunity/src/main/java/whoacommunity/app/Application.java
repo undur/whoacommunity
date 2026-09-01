@@ -24,6 +24,8 @@ import ng.appserver.NGSessionRestorationException;
 import ng.plugins.Elements;
 import ng.plugins.Routes;
 import whoacommunity.components.WCArticleDetailPage;
+import whoacommunity.components.WCDeploymentApacheClassicPage;
+import whoacommunity.components.WCDeploymentApacheModuloPage;
 import whoacommunity.components.WCDeploymentPage;
 import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCMain;
@@ -122,7 +124,9 @@ public class Application extends NGApplication {
 				.map( "/article/*", this::viewArticle )
 				.map( "/atom.xml", this::atom )
 				.map( "/refresh-data", this::refreshData )
-				.map( "/deployment-config", WCDeploymentPage.class );
+				.map( "/deployment-config", WCDeploymentPage.class )
+				.map( "/deployment-apache-modulo", WCDeploymentApacheModuloPage.class )
+				.map( "/deployment-apache-mod-webobjects", WCDeploymentApacheClassicPage.class );
 	}
 
 	/**

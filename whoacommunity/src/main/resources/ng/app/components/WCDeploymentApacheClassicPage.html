@@ -23,48 +23,29 @@
 		<div class="card mb-3 setup-lead">
 			<div class="card-body">
 				<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-					<h1 class="h2 mb-0">Setting up a deployment server with modulo
-						<span class="badge rounded-pill text-bg-warning fs-6 fw-normal align-middle ms-2">work in progress</span></h1>
+					<h1 class="h2 mb-0">Deploying with Apache and mod_WebObjects
+						<span class="badge rounded-pill text-bg-secondary fs-6 fw-normal align-middle ms-2">reference draft</span></h1>
 					<button type="button" class="btn btn-outline-secondary btn-sm" id="copyScript">Copy the script</button>
 				</div>
-				<p class="small mb-3">Under active development — the guide and the script currently change frequently.
-				For comparison: <wo:link href="/deployment-apache-modulo">Apache with modulo</wo:link> (the hybrid) and
-				<wo:link href="/deployment-apache-mod-webobjects">Apache with mod_WebObjects</wo:link> (the classic).</p>
+				<p class="small mb-3">The classic, published for comparison — the field-tested guide is
+				<wo:link href="/deployment-config">Pure Modulo</wo:link>. See also
+				<wo:link href="/deployment-apache-modulo">Apache with modulo</wo:link>, the hybrid.</p>
 
-				<h3>Running the script</h3>
-				<pre class="setup-inset mb-0">curl -O https://raw.githubusercontent.com/undur/modulo/main/scripts/setup-server.sh
-chmod +x setup-server.sh
-./setup-server.sh myserver.example you@example.com</pre>
-
-				<p class="mt-2">This is the script — <code>setup-server.sh</code> from the
-				<a href="https://github.com/undur/modulo">modulo repository</a>. It's shown below with some comments and explanations on what it does.<br>
-				Running the script requires <code>git</code>, <code>mvn</code> and a JDK on your workstation — and root ssh access to the server.<br>
-				The e-mail address is used when ordering certificates from LetsEncrypt.<br>
-				</p>
-				<p>Run the script against a fresh server and it:</p>
+				<p>WebObjects deployment as it has been done since the last century: Apache on 80/443
+				with a <strong>compiled mod_WebObjects module</strong>, certbot certificates, wotaskd
+				and JavaMonitor managing instances. Read it beside the pure-stack guide and notice
+				what appears here that doesn't exist there:</p>
 				<ul>
-					<li>builds the three bundles locally — wotaskd, JavaMonitor and modulo</li>
-					<li>installs a JDK on the server if missing, and creates the <code>/opt/webobjects</code> layout</li>
-					<li>creates a dedicated unprivileged <code>webobjects</code> user — the install runs as root over ssh,
-						but everything <em>runs</em> as this user (modulo binds 80/443 via
-						<code>AmbientCapabilities</code>, and apps launched by wotaskd inherit it too)</li>
-					<li>writes modulo's config with the server's own hostname as the first site</li>
-					<li>installs systemd units and log rotation, and starts the stack</li>
+					<li>a C toolchain and an Apache module build, on a production server</li>
+					<li>the split install — every app's (and framework's) WebServerResources copied
+						into Apache's docroot, again on every deploy</li>
+					<li>per-vhost rewrite maintenance, applied by reload</li>
+					<li>one certbot run per hostname, now and forever, plus a second renewal
+						machinery with its own timer</li>
 				</ul>
-				<p class="mb-2">A few minutes later the server serves its own admin dashboard over a real certificate, ready for apps.</p>
-				<h3>What lands on the server:</h3>
-				<pre class="setup-inset">/opt
-├── jdk-&lt;version&gt;/     <span class="cmt">the JDK — distribution and version per your choice</span>
-└── webobjects/
-    ├── apps/          <span class="cmt">the stack's own .woa bundles: wotaskd, JavaMonitor, modulo-runner</span>
-    ├── conf/          <span class="cmt">SiteConfig.xml — wotaskd's config store (the daemon writes here)</span>
-    ├── log/           <span class="cmt">one log per service…</span>
-    │   └── access/    <span class="cmt">…and per-site access logs</span>
-    ├── acme/          <span class="cmt">ACME account key + issued certificates</span>
-    └── modulo.toml    <span class="cmt">modulo's root config — sites, admin, wotaskd, certs</span></pre>
-				<p class="small">A revised default layout — per-app homes, sites as files, a stack directory — is under design:
-				<a href="https://github.com/undur/modulo/blob/main/docs/DEFAULT-DIRECTORY-STRUCTURE.md">DEFAULT-DIRECTORY-STRUCTURE.md</a>.
-				Opinions welcome.</p>
+				<p>And what doesn't appear because it can't: WebSocket proxying (mod_WebObjects
+				predates WebSockets), hot config reload, or a certificate that arrives because you
+				added a hostname to a file.</p>
 			</div>
 		</div>
 
