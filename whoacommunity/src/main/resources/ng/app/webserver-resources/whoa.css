@@ -856,15 +856,6 @@ body {
   color: var(--whoa-ink);
 }
 
-.video-thumb {
-  flex: 0 0 160px;
-  width: 160px;
-  height: 90px;
-  object-fit: cover;
-  border-radius: 6px;
-  background: rgba(80, 80, 115, 0.1);
-}
-
 .video-text {
   display: flex;
   flex-direction: column;
@@ -950,8 +941,6 @@ body {
 
 @media (max-width: 575.98px) {
   .video-row { padding: .75rem 1rem; gap: .75rem; }
-  .video-thumb { flex-basis: 112px; width: 112px; height: 63px; }
-  .video-play { display: none; }
 }
 
 /* ============================================================

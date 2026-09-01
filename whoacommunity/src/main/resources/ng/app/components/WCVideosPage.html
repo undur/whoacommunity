@@ -12,12 +12,11 @@
 					<div class="video-list">
 						<wo:repetition list="$currentPlaylist.videos" item="$currentVideo">
 							<wo:link href="$currentVideo.pageURL" class="video-row">
-								<wo:element elementName="img" src="$currentVideo.thumbnailURL" alt="" class="video-thumb" loading="lazy" width="160" height="90" />
+								<span class="video-play">▶</span>
 								<span class="video-text">
 									<span class="video-title"><wo:str value="$currentVideo.title" /></span>
 									<span class="video-date"><wo:str value="$currentVideo.formattedDate" /></span>
 								</span>
-								<span class="video-play">▶</span>
 							</wo:link>
 						</wo:repetition>
 					</div>

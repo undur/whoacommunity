@@ -81,10 +81,6 @@ public class Videos {
 			return "https://www.youtube-nocookie.com/embed/" + youtubeID();
 		}
 
-		public String thumbnailURL() {
-			return "https://i.ytimg.com/vi/" + youtubeID() + "/mqdefault.jpg";
-		}
-
 		public String formattedDate() {
 			return published().format( DateTimeFormatter.ofPattern( "MMMM d, yyyy" ) );
 		}
