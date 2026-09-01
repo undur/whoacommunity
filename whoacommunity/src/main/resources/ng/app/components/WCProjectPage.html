@@ -1,0 +1,73 @@
+<wo:WCLook>
+	<div class="row">
+		<div class="col-md-8 article-list">
+			<div class="card article-card project-card">
+				<div class="card-header dark-card-header">
+					<h3 class="card-title"><span class="project-emoji"><wo:str value="$repo.emoji" /></span> <wo:str value="$repo.name" /></h3>
+					<div class="card-actions">
+						<wo:link href="$repo.url" class="project-github-link" target="_blank" rel="noopener">Repository on GitHub ↗</wo:link>
+					</div>
+				</div>
+				<div class="card-body">
+					<wo:if condition="$readmeAsHTML">
+						<wo:str value="$readmeAsHTML" escapeHTML="$false" />
+					</wo:if>
+					<wo:if condition="$readmeAsHTML" negate="$true">
+						<p class="project-empty">No README.md found in this repository (or the GitHub feed hasn't loaded yet).</p>
+					</wo:if>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4 sidebar">
+			<div class="card feed-card">
+				<div class="card-header">
+					<h3 class="card-title">Latest commits</h3>
+				</div>
+				<table class="card-table feed-table table table-sm commit-table table-striped">
+					<wo:repetition list="$projectCommits" item="$current">
+						<tr>
+							<td><wo:link href="$current.link" class="row-link"><wo:str value="$current.title" /></wo:link></td>
+							<td nowrap><wo:str value="$current.shortDateFormatted" /></td>
+						</tr>
+					</wo:repetition>
+				</table>
+			</div>
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Releases</h3>
+				</div>
+				<wo:if condition="$projectReleases">
+					<table class="card-table feed-table table table-sm commit-table table-striped">
+						<wo:repetition list="$projectReleases" item="$currentRelease">
+							<tr>
+								<td><wo:link href="$currentRelease.url" class="row-link"><wo:str value="$currentRelease.displayName" /></wo:link></td>
+								<td nowrap><wo:str value="$currentRelease.shortDateFormatted" /></td>
+							</tr>
+						</wo:repetition>
+					</table>
+				</wo:if>
+				<wo:if condition="$projectReleases" negate="$true">
+					<div class="card-body project-empty">No releases yet.</div>
+				</wo:if>
+			</div>
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Open issues</h3>
+				</div>
+				<wo:if condition="$projectIssues">
+					<table class="card-table feed-table table table-sm commit-table table-striped">
+						<wo:repetition list="$projectIssues" item="$currentIssue">
+							<tr>
+								<td><wo:link href="$currentIssue.url" class="row-link"><wo:str value="$currentIssue.title" /></wo:link></td>
+								<td nowrap><wo:str value="$currentIssue.shortDateFormatted" /></td>
+							</tr>
+						</wo:repetition>
+					</table>
+				</wo:if>
+				<wo:if condition="$projectIssues" negate="$true">
+					<div class="card-body project-empty">No open issues.</div>
+				</wo:if>
+			</div>
+		</div>
+	</div>
+</wo:WCLook>

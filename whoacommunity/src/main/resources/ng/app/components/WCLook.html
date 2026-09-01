@@ -226,6 +226,21 @@
 									<span class="nav-link-title">Videos</span>
 								</wo:link>
 							</li>
+							<wo:if condition="$isLocal"> <!-- Projects: admin-only while the pages are taking shape -->
+							<li class="nav-item dropdown">
+								<a data-bs-auto-close="outside" data-bs-toggle="dropdown" class="nav-link dropdown-toggle" href="#projects">
+									<span class="nav-link-icon d-md-none d-lg-inline-block">
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-folder-code"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M11 19h-6a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v4" /><path d="M20 21l2 -2l-2 -2" /><path d="M17 17l-2 2l2 2" /></svg>
+									</span>
+									<span class="nav-link-title">Projects</span>
+								</a>
+								<div class="dropdown-menu projects-menu">
+									<wo:repetition list="$projectRepos" item="$currentProjectRepo">
+										<wo:link class="dropdown-item" href="$currentProjectRepoURL"><span class="project-menu-emoji"><wo:str value="$currentProjectRepo.emoji" /></span> <wo:str value="$currentProjectRepo.name" /></wo:link>
+									</wo:repetition>
+								</div>
+							</li>
+							</wo:if>
 							<li class="nav-item dropdown">
 								<a data-bs-auto-close="outside" data-bs-toggle="dropdown" class="nav-link dropdown-toggle" href="#deployment">
 									<span class="nav-link-icon d-md-none d-lg-inline-block">

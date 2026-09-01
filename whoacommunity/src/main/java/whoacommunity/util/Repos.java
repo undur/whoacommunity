@@ -1,6 +1,7 @@
 package whoacommunity.util;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * For keeping track of github repositories we follow
@@ -46,6 +47,23 @@ public class Repos {
 		}
 
 		return _repos;
+	}
+
+	/**
+	 * @return The repos that get a project page: our own orgs, not the ones we merely follow
+	 */
+	public static List<Repo> projectRepos() {
+		return repos()
+				.stream()
+				.filter( r -> r.organization() == Org.undur || r.organization() == Org.ng )
+				.toList();
+	}
+
+	public static Optional<Repo> repoNamed( final String name ) {
+		return repos()
+				.stream()
+				.filter( r -> r.name().equals( name ) )
+				.findFirst();
 	}
 
 	public enum Org {

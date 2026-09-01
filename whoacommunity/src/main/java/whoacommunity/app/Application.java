@@ -29,6 +29,7 @@ import whoacommunity.components.WCDeploymentApacheModuloPage;
 import whoacommunity.components.WCDeploymentPage;
 import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCMain;
+import whoacommunity.components.WCProjectPage;
 import whoacommunity.components.WCSlackArchivePage;
 import whoacommunity.components.WCSlackClientPage;
 import whoacommunity.components.WCVideoDetailPage;
@@ -36,6 +37,8 @@ import whoacommunity.components.WCVideosPage;
 import whoacommunity.data.Article;
 import whoacommunity.github.GithubFeed;
 import whoacommunity.util.CachedFeed;
+import whoacommunity.util.Repos;
+import whoacommunity.util.Repos.Repo;
 import whoacommunity.util.Videos;
 import whoacommunity.util.Videos.Video;
 
@@ -127,6 +130,7 @@ public class Application extends NGApplication {
 				.map( "/dev-feed", WCFeedPage.class )
 				.map( "/article/*", this::viewArticle )
 				.map( "/videos", WCVideosPage.class )
+				.map( "/project/*", this::viewProject )
 				.map( "/video/*", this::viewVideo )
 				.map( "/atom.xml", this::atom )
 				.map( "/refresh-data", this::refreshData )
@@ -186,6 +190,19 @@ public class Application extends NGApplication {
 		catch( FeedException e ) {
 			throw new RuntimeException( e );
 		}
+	}
+
+	public NGActionResults viewProject( NGRequest request ) {
+		final String name = request.parsedURI().getString( 1 );
+		final Repo repo = Repos.repoNamed( name ).orElse( null );
+
+		if( repo == null ) {
+			return new NGResponse( "No such project", 404 );
+		}
+
+		final WCProjectPage page = pageWithName( WCProjectPage.class, request.context() );
+		page.repo = repo;
+		return page;
 	}
 
 	public NGActionResults viewVideo( NGRequest request ) {

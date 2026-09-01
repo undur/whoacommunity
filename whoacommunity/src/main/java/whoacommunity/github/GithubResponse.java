@@ -18,7 +18,11 @@ final class GithubResponse {
 	record RepoNode(
 			IssueConnection issues,
 			ReleaseConnection releases,
-			DefaultBranchRef defaultBranchRef ) {}
+			DefaultBranchRef defaultBranchRef,
+			Readme readme ) {}
+
+	/** The "readme" alias: the README.md blob at HEAD, or null if the repo has none */
+	record Readme( String text ) {}
 
 	record IssueConnection( List<IssueNode> nodes ) {}
 

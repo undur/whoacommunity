@@ -1,6 +1,7 @@
 package whoacommunity.components;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.apache.cayenne.ObjectContext;
 
@@ -11,13 +12,26 @@ import whoacommunity.app.WCCore;
 import whoacommunity.components.admin.WCAdminPage;
 import whoacommunity.data.Article;
 import whoacommunity.data.SlackUser;
+import whoacommunity.util.Repos;
+import whoacommunity.util.Repos.Repo;
 
 public class WCLook extends WCComponent {
 
 	public String searchString;
 
+	/** Iteration variable for the Projects menu */
+	public Repo currentProjectRepo;
+
 	public WCLook( NGContext context ) {
 		super( context );
+	}
+
+	public List<Repo> projectRepos() {
+		return Repos.projectRepos();
+	}
+
+	public String currentProjectRepoURL() {
+		return "/project/" + currentProjectRepo.name();
 	}
 
 	/**

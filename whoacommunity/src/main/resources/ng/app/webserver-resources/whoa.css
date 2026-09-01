@@ -944,6 +944,40 @@ body {
 }
 
 /* ============================================================
+   Projects
+   ============================================================ */
+
+.projects-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.project-menu-emoji,
+.project-emoji {
+  display: inline-block;
+  width: 1.5em;
+  text-align: center;
+}
+
+.dark-card-header .card-actions .project-github-link {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: .8rem;
+  text-decoration: none;
+}
+
+.dark-card-header .card-actions .project-github-link:hover {
+  color: var(--whoa-coral);
+}
+
+.project-empty {
+  color: var(--whoa-muted);
+  font-style: italic;
+  font-size: .9rem;
+  margin: 0;
+}
+
+/* ============================================================
    Footer
    ============================================================ */
 

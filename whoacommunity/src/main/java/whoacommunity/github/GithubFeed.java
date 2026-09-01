@@ -4,7 +4,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -49,7 +51,7 @@ public class GithubFeed {
 	 * Empty payload returned before the first successful refresh and on
 	 * total fetch failure with no prior data to fall back to.
 	 */
-	private static final GithubData EMPTY = new GithubData( List.of(), List.of(), List.of() );
+	private static final GithubData EMPTY = new GithubData( List.of(), List.of(), List.of(), Map.of() );
 
 	private final CachedFeed<GithubData> _feed;
 
@@ -70,10 +72,29 @@ public class GithubFeed {
 	}
 
 	/**
-	 * The combined payload from a single GraphQL fetch — kept together so
-	 * one refresh repopulates all three lists atomically.
+	 * @return The repo's README.md rendered from HEAD, or null if it has none
 	 */
-	public record GithubData( List<OpenIssue> issues, List<Release> releases, List<Commit> commits ) {}
+	public String readmeFor( final Repo repo ) {
+		return _feed.value().readmes().get( repo );
+	}
+
+	public List<Commit> commitsFor( final Repo repo ) {
+		return commits().stream().filter( c -> c.repo() == repo ).toList();
+	}
+
+	public List<Release> releasesFor( final Repo repo ) {
+		return releases().stream().filter( r -> r.repo() == repo ).toList();
+	}
+
+	public List<OpenIssue> issuesFor( final Repo repo ) {
+		return issues().stream().filter( i -> i.repo() == repo ).toList();
+	}
+
+	/**
+	 * The combined payload from a single GraphQL fetch — kept together so
+	 * one refresh repopulates everything atomically.
+	 */
+	public record GithubData( List<OpenIssue> issues, List<Release> releases, List<Commit> commits, Map<Repo, String> readmes ) {}
 
 	private static GithubData fetch() {
 		final String token = WCCore.githubToken();
@@ -101,7 +122,8 @@ public class GithubFeed {
 			return new GithubData(
 					collectIssues( tracked, repoNodes ),
 					collectReleases( tracked, repoNodes ),
-					collectCommits( tracked, repoNodes ) );
+					collectCommits( tracked, repoNodes ),
+					collectReadmes( tracked, repoNodes ) );
 		}
 		catch( Exception e ) {
 			// Re-throw so CachedFeed logs it and keeps the previous value
@@ -135,6 +157,9 @@ public class GithubFeed {
 								}
 							}
 						}
+					}
+					readme: object(expression: "HEAD:README.md") {
+						... on Blob { text }
 					}
 				}
 				""";
@@ -229,6 +254,16 @@ public class GithubFeed {
 		}
 		out.sort( Comparator.comparing( Commit::committedAt, Comparator.nullsLast( Comparator.reverseOrder() ) ) );
 		return List.copyOf( out );
+	}
+
+	private static Map<Repo, String> collectReadmes( final List<Repo> repos, final List<RepoNode> repoNodes ) {
+		final Map<Repo, String> out = new HashMap<>();
+		for( int i = 0; i < repos.size(); i++ ) {
+			final RepoNode rn = repoNodes.get( i );
+			if( rn == null || rn.readme() == null || rn.readme().text() == null ) continue;
+			out.put( repos.get( i ), rn.readme().text() );
+		}
+		return Map.copyOf( out );
 	}
 
 	private static String commitAuthor( final CommitNode n ) {
