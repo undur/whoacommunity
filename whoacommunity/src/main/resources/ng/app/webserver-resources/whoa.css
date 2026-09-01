@@ -362,9 +362,13 @@ body {
   border: 1px solid rgba(80, 80, 115, 0.08);
 }
 
+/* Tabler sets pre { color: var(--tblr-light) } for its own dark code boxes;
+   on our light background that's unreadable whenever Prism doesn't step in
+   (i.e. any fence without a language tag), so pin the ink colour here. */
 .article-list .card-body pre,
 .article-list .card-body pre[class*="language-"] {
   background: rgba(80, 80, 115, 0.05);
+  color: var(--whoa-ink);
   border-radius: 8px;
   border: none;
 }
