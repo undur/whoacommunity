@@ -31,6 +31,16 @@
 		<db-attribute name="slack_id" type="VARCHAR" length="1024"/>
 		<db-attribute name="unique_id" type="OTHER"/>
 	</db-entity>
+	<db-entity name="wc_comment">
+		<db-attribute name="article_id" type="INTEGER" isMandatory="true"/>
+		<db-attribute name="content" type="VARCHAR" isMandatory="true" length="1000000"/>
+		<db-attribute name="creation_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="date_time" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isGenerated="true" isMandatory="true"/>
+		<db-attribute name="modification_date" type="TIMESTAMP" isMandatory="true"/>
+		<db-attribute name="name" type="VARCHAR" isMandatory="true" length="1024"/>
+		<db-attribute name="unique_id" type="OTHER" isMandatory="true"/>
+	</db-entity>
 	<db-entity name="wc_message">
 		<db-attribute name="channel_id" type="INTEGER"/>
 		<db-attribute name="creation_date" type="TIMESTAMP" isMandatory="true"/>
@@ -77,6 +87,14 @@
 		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
 		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
 	</obj-entity>
+	<obj-entity name="Comment" className="whoacommunity.data.Comment" dbEntityName="wc_comment">
+		<obj-attribute name="content" type="java.lang.String" db-attribute-path="content"/>
+		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
+		<obj-attribute name="dateTime" type="java.time.LocalDateTime" db-attribute-path="date_time"/>
+		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+		<obj-attribute name="uniqueID" type="java.util.UUID" db-attribute-path="unique_id"/>
+	</obj-entity>
 	<obj-entity name="SlackChannel" className="whoacommunity.data.SlackChannel" dbEntityName="wc_channel">
 		<obj-attribute name="creationDate" type="java.time.LocalDateTime" db-attribute-path="creation_date"/>
 		<obj-attribute name="modificationDate" type="java.time.LocalDateTime" db-attribute-path="modification_date"/>
@@ -112,7 +130,13 @@
 	<db-relationship name="articleTags" source="wc_article" target="wc_article_tag" toMany="true">
 		<db-attribute-pair source="id" target="article_id"/>
 	</db-relationship>
+	<db-relationship name="comments" source="wc_article" target="wc_comment" toMany="true">
+		<db-attribute-pair source="id" target="article_id"/>
+	</db-relationship>
 	<db-relationship name="article" source="wc_article_tag" target="wc_article">
+		<db-attribute-pair source="article_id" target="id"/>
+	</db-relationship>
+	<db-relationship name="article" source="wc_comment" target="wc_article">
 		<db-attribute-pair source="article_id" target="id"/>
 	</db-relationship>
 	<db-relationship name="tag" source="wc_article_tag" target="wc_tag">
@@ -134,6 +158,8 @@
 		<db-attribute-pair source="id" target="user_id"/>
 	</db-relationship>
 	<obj-relationship name="articleTags" source="Article" target="ArticleTag" deleteRule="Deny" db-relationship-path="articleTags"/>
+	<obj-relationship name="comments" source="Article" target="Comment" deleteRule="Cascade" db-relationship-path="comments"/>
+	<obj-relationship name="article" source="Comment" target="Article" deleteRule="Nullify" db-relationship-path="article"/>
 	<obj-relationship name="article" source="ArticleTag" target="Article" deleteRule="Nullify" db-relationship-path="article"/>
 	<obj-relationship name="tag" source="ArticleTag" target="Tag" deleteRule="Nullify" db-relationship-path="tag"/>
 	<obj-relationship name="messages" source="SlackChannel" target="SlackMessage" deleteRule="Deny" db-relationship-path="messages"/>

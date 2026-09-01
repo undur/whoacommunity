@@ -1,6 +1,7 @@
 package whoacommunity.data;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 
 import com.vladsch.flexmark.ext.aside.AsideExtension;
@@ -71,5 +72,31 @@ public class Article extends _Article implements DateTimeStamped, UUIDStamped {
 
 	public String shortDateFormatted() {
 		return date().format( DateTimeFormatter.ofPattern( "MMM d" ) );
+	}
+
+	/**
+	 * @return Comments in the order they were posted
+	 */
+	public List<Comment> sortedComments() {
+		return comments()
+				.stream()
+				.sorted( Comparator.comparing( Comment::dateTime ) )
+				.toList();
+	}
+
+	public int commentCount() {
+		return comments().size();
+	}
+
+	public boolean hasComments() {
+		return commentCount() > 0;
+	}
+
+	/**
+	 * @return "1 comment" / "5 comments" for display
+	 */
+	public String commentCountString() {
+		final int count = commentCount();
+		return count == 1 ? "1 comment" : count + " comments";
 	}
 }

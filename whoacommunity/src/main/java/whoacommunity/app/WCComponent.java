@@ -56,6 +56,10 @@ public abstract class WCComponent extends NGComponent {
 		return "/article/%s".formatted( currentArticle.uniqueID() );
 	}
 
+	public String currentArticleCommentsURL() {
+		return currentArticleURL() + "#comments";
+	}
+
 	public List<Commit> items() {
 		final List<Commit> all = GithubFeed.shared.commits();
 		return all.subList( 0, Math.min( 10, all.size() ) );

@@ -624,6 +624,152 @@ body {
 }
 
 /* ============================================================
+   Comments
+   ============================================================ */
+
+/* Count badge in article card headers */
+.dark-card-header .card-actions {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+}
+
+.dark-card-header .card-actions .comment-count {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+  padding: .1rem .5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background .15s ease;
+}
+
+.dark-card-header .card-actions .comment-count:hover {
+  background: var(--whoa-coral);
+  color: #ffffff;
+}
+
+.comments-card {
+  margin-top: 1.75rem;
+}
+
+.comments-card .card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--whoa-rule);
+}
+
+.comments-card .card-header h3.card-title {
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--whoa-purple-deep);
+  margin: 0;
+}
+
+.comment {
+  padding: 1rem 0;
+  border-bottom: 1px dashed var(--whoa-rule);
+}
+
+.comment:first-child {
+  padding-top: .25rem;
+}
+
+.comment-meta {
+  display: flex;
+  align-items: baseline;
+  gap: .6rem;
+  margin-bottom: .35rem;
+  font-size: .85rem;
+}
+
+.comment-name {
+  color: var(--whoa-purple-deep);
+  font-weight: 600;
+}
+
+.comment-date {
+  color: var(--whoa-muted);
+  font-size: .78rem;
+}
+
+.comment-delete {
+  margin-left: auto;
+  font-size: .72rem;
+  color: var(--whoa-muted);
+  text-decoration: none;
+}
+
+.comment-delete:hover {
+  color: var(--whoa-coral-deep);
+}
+
+/* Rendered Markdown; never let a long token blow the layout open */
+.comment-content {
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+  color: #2c2c3d;
+}
+
+.comment-content > :last-child {
+  margin-bottom: 0;
+}
+
+.comment-content p {
+  margin-bottom: .75rem;
+}
+
+.comment-content pre {
+  font-size: .82rem;
+  margin: .5rem 0 .75rem;
+}
+
+.comments-empty {
+  color: var(--whoa-muted);
+  font-style: italic;
+  margin: .25rem 0 0;
+}
+
+.comment-form {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--whoa-rule);
+}
+
+.comment-form-title {
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--whoa-purple-deep);
+  margin-bottom: 1rem;
+}
+
+.comment-form .form-label {
+  font-weight: 500;
+}
+
+.comment-answer {
+  max-width: 20rem;
+}
+
+.comment-alert {
+  margin-bottom: 1rem;
+}
+
+/* Honeypot: moved out of view and out of the tab order, but present in
+   the DOM for bots that fill every text field they find. Using
+   positioning rather than display:none, which many bots skip. */
+.hp-field {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ============================================================
    Footer
    ============================================================ */
 
