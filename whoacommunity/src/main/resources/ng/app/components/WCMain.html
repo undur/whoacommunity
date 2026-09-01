@@ -14,6 +14,18 @@
 					</div>
 					<div class="card-body">
 						<wo:str value="$currentArticle.contentAsHTML" escapeHTML="$false" />
+						<div class="article-footer">
+							<wo:link href="$currentArticleCommentsURL" class="article-comments-link">
+								<span class="bubble">💬</span>
+								<wo:if condition="$currentArticle.hasComments">
+									<span><strong><wo:str value="$currentArticle.commentCountString" /></strong> — join the discussion</span>
+								</wo:if>
+								<wo:if condition="$currentArticle.hasComments" negate="$true">
+									<span>No comments yet — be the first</span>
+								</wo:if>
+								<span class="arrow">→</span>
+							</wo:link>
+						</div>
 						<wo:if condition="$isLocal">
 							<hr />
 							<wo:link action="$editArticle" class="btn btn-primary">Edit</wo:link>

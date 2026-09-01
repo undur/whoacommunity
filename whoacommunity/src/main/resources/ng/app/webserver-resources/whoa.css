@@ -654,6 +654,50 @@ body {
   color: #ffffff;
 }
 
+/* Call to action under each article on the front page */
+.article-list .card-body .article-footer {
+  margin-top: 2rem;
+  padding-top: 1.1rem;
+  border-top: 1px dashed var(--whoa-rule);
+}
+
+.article-list .card-body .article-comments-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .45rem 1rem .45rem .8rem;
+  border: 1px solid var(--whoa-rule);
+  border-radius: 999px;
+  background: rgba(80, 80, 115, 0.04);
+  color: var(--whoa-purple-deep);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: .9rem;
+  text-decoration: none;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
+}
+
+.article-list .card-body .article-comments-link strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+.article-list .card-body .article-comments-link .arrow {
+  color: var(--whoa-coral);
+  transition: transform .18s ease;
+}
+
+.article-list .card-body .article-comments-link:hover {
+  background: var(--whoa-purple);
+  border-color: var(--whoa-purple);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.article-list .card-body .article-comments-link:hover .arrow {
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
 .comments-card {
   margin-top: 1.75rem;
 }
