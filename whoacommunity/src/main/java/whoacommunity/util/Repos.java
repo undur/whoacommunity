@@ -39,7 +39,7 @@ public class Repos {
 
 					// WOCommunity repos
 					new Repo( Org.wocommunity, "🛠️", "wolips", "https://github.com/wocommunity/wolips", true ),
-					new Repo( Org.wocommunity, "📜", "wonder", "https://github.com/wocommunity/wonder", true ),
+					new Repo( Org.wocommunity, "🗿", "wonder", "https://github.com/wocommunity/wonder", true ),
 
 					// ng
 					new Repo( Org.ng, "🚀", "ng-objects", "https://github.com/ngobjects/ng-objects", true )
@@ -61,9 +61,24 @@ public class Repos {
 	public static List<Repo> projectRepos() {
 		return repos()
 				.stream()
-				.filter( r -> r.organization() == Org.undur || r.organization() == Org.ng )
+				.filter( Repos::isOurs )
 				.filter( r -> !NOT_PROJECTS.contains( r.name() ) )
 				.toList();
+	}
+
+	/**
+	 * @return true for repos in our own orgs (undur, ng), as opposed to projects we merely follow
+	 */
+	public static boolean isOurs( final Repo repo ) {
+		return repo.organization() == Org.undur || repo.organization() == Org.ng;
+	}
+
+	public static List<Repo> ourRepos() {
+		return repos().stream().filter( Repos::isOurs ).toList();
+	}
+
+	public static List<Repo> otherRepos() {
+		return repos().stream().filter( r -> !isOurs( r ) ).toList();
 	}
 
 	/**

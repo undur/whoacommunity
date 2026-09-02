@@ -1,40 +1,64 @@
 <wo:WCLook>
-	<div class="row">
-		<div class="col-md-8 article-list">
-			<wo:repetition list="$articles" item="$currentArticle">
-				<div class="card article-card">
-					<div class="card-header dark-card-header">
-						<h3 class="card-title">
-							<wo:link href="$currentArticleURL"><wo:str value="$currentArticle.title" /></wo:link>
-						</h3>
-						<div class="card-actions">
-							<small><wo:str value="$currentArticle.formattedDate" /></small>
-							<wo:link href="$currentArticleCommentsURL" class="comment-count" title="Comments">💬 <wo:str value="$currentArticle.commentCount" /></wo:link>
-						</div>
+	<wo:if condition="$hasLatestRelease">
+		<div class="whoa-status">
+			<div>
+				<div class="k">Latest release</div>
+				<div class="v"><wo:str value="$latestRelease.repo.name" /> <span class="unit"><wo:str value="$latestRelease.tagName" /></span></div>
+				<div class="s"><wo:str value="$latestRelease.shortDateFormatted" /></div>
+			</div>
+			<div>
+				<div class="k">Commits this week</div>
+				<div class="v"><wo:str value="$commitCountThisWeek" /></div>
+				<div class="s"><wo:str value="$activeRepoCountString" /></div>
+			</div>
+			<div>
+				<div class="k">Open issues</div>
+				<div class="v"><wo:str value="$openIssueCount" /></div>
+				<div class="s"><wo:str value="$issuesOpenedThisMonthString" /></div>
+			</div>
+		</div>
+	</wo:if>
+
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Writing<wo:link href="/writing">All <wo:str value="$articleCount" /> articles →</wo:link></div>
+
+			<wo:if condition="$hasLeadArticle">
+				<article class="lead">
+					<div class="lead-top">
+						<span class="post-date"><wo:str value="$leadArticle.formattedDate" /></span>
+						<wo:if condition="$leadArticle.published" negate="$true"><span class="post-tag">draft</span></wo:if>
 					</div>
-					<div class="card-body">
-						<wo:str value="$currentArticle.contentAsHTML" escapeHTML="$false" />
-						<div class="article-footer">
-							<wo:link href="$currentArticleCommentsURL" class="article-comments-link">
-								<span class="bubble">💬</span>
-								<wo:if condition="$currentArticle.hasComments">
-									<span><strong><wo:str value="$currentArticle.commentCountString" /></strong> — join the discussion</span>
-								</wo:if>
-								<wo:if condition="$currentArticle.hasComments" negate="$true">
-									<span>No comments yet — be the first</span>
-								</wo:if>
-								<span class="arrow">→</span>
-							</wo:link>
-						</div>
+					<h1 class="lead-title">
+						<wo:link href="$leadArticleURL"><wo:str value="$leadArticle.title" /></wo:link>
+					</h1>
+					<div class="article-body">
+						<wo:str value="$leadArticle.contentAsHTML" escapeHTML="$false" />
+					</div>
+					<div class="lead-foot">
+						<wo:link href="$leadArticleCommentsURL" class="lead-more">Discuss this article <span class="arrow">→</span></wo:link>
 						<wo:if condition="$isLocal">
-							<hr />
-							<wo:link action="$editArticle" class="btn btn-primary">Edit</wo:link>
+							<wo:link action="$editArticle" class="lead-edit">edit</wo:link>
 						</wo:if>
+						<wo:link href="$leadArticleCommentsURL" class="lead-comments"><wo:str value="$leadArticle.commentCountString" /></wo:link>
 					</div>
-				</div>
+				</article>
+			</wo:if>
+
+			<wo:repetition list="$olderArticles" item="$currentArticle">
+				<wo:link href="$currentArticleURL" class="post">
+					<div class="post-top">
+						<span class="post-date"><wo:str value="$currentArticle.formattedDate" /></span>
+						<wo:if condition="$currentArticle.published" negate="$true"><span class="post-tag">draft</span></wo:if>
+						<span class="post-comments"><wo:str value="$currentArticle.commentCountString" /></span>
+					</div>
+					<div class="post-title"><wo:str value="$currentArticle.title" /></div>
+					<p class="post-teaser"><wo:str value="$currentArticle.teaser" /></p>
+				</wo:link>
 			</wo:repetition>
 		</div>
-		<div class="col-md-4 sidebar">
+
+		<div>
 			<wo:WCSidebar />
 		</div>
 	</div>

@@ -24,9 +24,10 @@ import whoacommunity.util.Repos;
 import whoacommunity.util.Repos.Repo;
 
 /**
- * Fetches open issues, published releases, and recent commits across all
- * repos flagged with {@code includeInGithubFeed} via a single GitHub
- * GraphQL request, and caches the result for a configurable duration.
+ * Fetches open issues, published releases, recent commits, READMEs and
+ * descriptions across all repos flagged with {@code includeInGithubFeed}
+ * via a single GitHub GraphQL request, cached and refreshed in the
+ * background by {@link CachedFeed}.
  */
 public class GithubFeed {
 
@@ -51,7 +52,7 @@ public class GithubFeed {
 	 * Empty payload returned before the first successful refresh and on
 	 * total fetch failure with no prior data to fall back to.
 	 */
-	private static final GithubData EMPTY = new GithubData( List.of(), List.of(), List.of(), Map.of() );
+	private static final GithubData EMPTY = new GithubData( List.of(), List.of(), List.of(), Map.of(), Map.of(), Map.of() );
 
 	private final CachedFeed<GithubData> _feed;
 
@@ -78,6 +79,27 @@ public class GithubFeed {
 		return _feed.value().readmes().get( repo );
 	}
 
+	/**
+	 * @return The repo's one-line description on GitHub, or null
+	 */
+	public String descriptionFor( final Repo repo ) {
+		return _feed.value().descriptions().get( repo );
+	}
+
+	/**
+	 * @return The repo's total number of open issues (not just the ones we list)
+	 */
+	public int openIssueCountFor( final Repo repo ) {
+		return _feed.value().openIssueCounts().getOrDefault( repo, 0 );
+	}
+
+	/**
+	 * @return Open issues across all tracked repos, from GitHub's totals
+	 */
+	public int openIssueCountTotal() {
+		return _feed.value().openIssueCounts().values().stream().mapToInt( Integer::intValue ).sum();
+	}
+
 	public List<Commit> commitsFor( final Repo repo ) {
 		return commits().stream().filter( c -> c.repo() == repo ).toList();
 	}
@@ -91,10 +113,24 @@ public class GithubFeed {
 	}
 
 	/**
+	 * @return The most recent release for the repo, or null
+	 */
+	public Release latestReleaseFor( final Repo repo ) {
+		final List<Release> list = releasesFor( repo );
+		return list.isEmpty() ? null : list.get( 0 );
+	}
+
+	/**
 	 * The combined payload from a single GraphQL fetch — kept together so
 	 * one refresh repopulates everything atomically.
 	 */
-	public record GithubData( List<OpenIssue> issues, List<Release> releases, List<Commit> commits, Map<Repo, String> readmes ) {}
+	public record GithubData(
+			List<OpenIssue> issues,
+			List<Release> releases,
+			List<Commit> commits,
+			Map<Repo, String> readmes,
+			Map<Repo, String> descriptions,
+			Map<Repo, Integer> openIssueCounts ) {}
 
 	private static GithubData fetch() {
 		final String token = WCCore.githubToken();
@@ -123,7 +159,9 @@ public class GithubFeed {
 					collectIssues( tracked, repoNodes ),
 					collectReleases( tracked, repoNodes ),
 					collectCommits( tracked, repoNodes ),
-					collectReadmes( tracked, repoNodes ) );
+					collectReadmes( tracked, repoNodes ),
+					collectDescriptions( tracked, repoNodes ),
+					collectOpenIssueCounts( tracked, repoNodes ) );
 		}
 		catch( Exception e ) {
 			// Re-throw so CachedFeed logs it and keeps the previous value
@@ -138,8 +176,10 @@ public class GithubFeed {
 	private static String buildQuery( final List<Repo> repos ) {
 		final String repoFragmentTemplate = """
 				r%d: repository(owner: "%s", name: "%s") {
-					issues(states: OPEN, first: 5, orderBy: {field: UPDATED_AT, direction: DESC}) {
-						nodes { number title url updatedAt author { login } }
+					description
+					issues(states: OPEN, first: 6, orderBy: {field: UPDATED_AT, direction: DESC}) {
+						totalCount
+						nodes { number title url createdAt updatedAt author { login } }
 					}
 					releases(first: 3, orderBy: {field: CREATED_AT, direction: DESC}) {
 						nodes { name tagName url createdAt isPrerelease isDraft }
@@ -205,6 +245,7 @@ public class GithubFeed {
 						n.number(),
 						n.title(),
 						n.url(),
+						n.createdAt(),
 						n.updatedAt(),
 						n.author() == null ? null : n.author().login() ) );
 			}
@@ -262,6 +303,26 @@ public class GithubFeed {
 			final RepoNode rn = repoNodes.get( i );
 			if( rn == null || rn.readme() == null || rn.readme().text() == null ) continue;
 			out.put( repos.get( i ), rn.readme().text() );
+		}
+		return Map.copyOf( out );
+	}
+
+	private static Map<Repo, String> collectDescriptions( final List<Repo> repos, final List<RepoNode> repoNodes ) {
+		final Map<Repo, String> out = new HashMap<>();
+		for( int i = 0; i < repos.size(); i++ ) {
+			final RepoNode rn = repoNodes.get( i );
+			if( rn == null || rn.description() == null || rn.description().isBlank() ) continue;
+			out.put( repos.get( i ), rn.description() );
+		}
+		return Map.copyOf( out );
+	}
+
+	private static Map<Repo, Integer> collectOpenIssueCounts( final List<Repo> repos, final List<RepoNode> repoNodes ) {
+		final Map<Repo, Integer> out = new HashMap<>();
+		for( int i = 0; i < repos.size(); i++ ) {
+			final RepoNode rn = repoNodes.get( i );
+			if( rn == null || rn.issues() == null ) continue;
+			out.put( repos.get( i ), rn.issues().totalCount() );
 		}
 		return Map.copyOf( out );
 	}

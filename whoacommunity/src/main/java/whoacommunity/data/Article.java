@@ -23,6 +23,8 @@ public class Article extends _Article implements DateTimeStamped, UUIDStamped {
 		}
 	}
 
+	private static final int TEASER_LENGTH = 220;
+
 	@Override
 	protected void onPostAdd() {
 		setPublished( false );
@@ -37,6 +39,32 @@ public class Article extends _Article implements DateTimeStamped, UUIDStamped {
 			case html -> content();
 			case markdown -> Markdown.render( content() );
 		};
+	}
+
+	/**
+	 * @return The first couple of sentences of the article as plain text, for teaser rows
+	 */
+	public String teaser() {
+		final String text = Markdown.plainText( contentAsHTML() );
+
+		if( text.length() <= TEASER_LENGTH ) {
+			return text;
+		}
+
+		int cut = text.lastIndexOf( ' ', TEASER_LENGTH );
+
+		if( cut < TEASER_LENGTH / 2 ) {
+			cut = TEASER_LENGTH;
+		}
+
+		return text.substring( 0, cut ).strip() + "…";
+	}
+
+	/**
+	 * FIXME: Articles don't carry an author yet; there's exactly one. Make it a field when that changes // Hugi 2026-09-02
+	 */
+	public String authorName() {
+		return "Hugi Thordarson";
 	}
 
 	public String formattedDate() {

@@ -1,0 +1,15 @@
+<wo:WCLook>
+	<div style="max-width: 74ch">
+		<div class="whoa-section">Writing<span><wo:str value="$articleCount" /> articles</span></div>
+		<div class="writing-list">
+			<wo:repetition list="$articles" item="$currentArticle">
+				<wo:link href="$currentArticleURL" class="writing-row">
+					<span class="d"><wo:str value="$currentArticle.formattedDate" /></span>
+					<wo:if condition="$currentArticle.published" negate="$true"><span class="post-tag">draft</span></wo:if>
+					<span class="t"><wo:str value="$currentArticle.title" /></span>
+					<span class="c"><wo:str value="$currentArticle.commentCountString" /></span>
+				</wo:link>
+			</wo:repetition>
+		</div>
+	</div>
+</wo:WCLook>

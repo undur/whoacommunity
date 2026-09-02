@@ -30,10 +30,12 @@ import whoacommunity.components.WCDeploymentPage;
 import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCMain;
 import whoacommunity.components.WCProjectPage;
+import whoacommunity.components.WCProjectPage.SubPage;
 import whoacommunity.components.WCSlackArchivePage;
 import whoacommunity.components.WCSlackClientPage;
 import whoacommunity.components.WCVideoDetailPage;
 import whoacommunity.components.WCVideosPage;
+import whoacommunity.components.WCWritingPage;
 import whoacommunity.data.Article;
 import whoacommunity.github.GithubFeed;
 import whoacommunity.util.CachedFeed;
@@ -81,7 +83,7 @@ public class Application extends NGApplication {
 
 	/**
 	 * On session timeout, send the user back to where they were instead of
-	 * the default "session timed out" page. URLs containing /wo/ are
+	 * the default "session timed out" page. URLs containing /no/ are
 	 * component-action URLs that embed session-specific element IDs and
 	 * can't be safely re-dispatched, so we fall back to "/" for those.
 	 */
@@ -125,13 +127,14 @@ public class Application extends NGApplication {
 		return Routes
 				.create()
 				.map( "/", WCMain.class )
+				.map( "/writing", WCWritingPage.class )
 				.map( "/slack-archive", WCSlackArchivePage.class )
 				.map( "/slack-client", WCSlackClientPage.class )
 				.map( "/dev-feed", WCFeedPage.class )
 				.map( "/article/*", this::viewArticle )
 				.map( "/videos", WCVideosPage.class )
-				.map( "/project/*", this::viewProject )
 				.map( "/video/*", this::viewVideo )
+				.map( "/project/*", this::viewProject )
 				.map( "/atom.xml", this::atom )
 				.map( "/refresh-data", this::refreshData )
 				.map( "/deployment-config", WCDeploymentPage.class )
@@ -192,16 +195,34 @@ public class Application extends NGApplication {
 		}
 	}
 
+	/**
+	 * /project/{name} → overview; /project/{name}/{commits|releases|issues} → that sub-page
+	 */
 	public NGActionResults viewProject( NGRequest request ) {
-		final String name = request.parsedURI().getString( 1 );
+		final String path = request.uri().split( "\\?" )[ 0 ];
+		final String[] parts = path.split( "/" ); // "", "project", name, [sub]
+
+		final String name = parts.length > 2 ? parts[ 2 ] : "";
 		final Repo repo = Repos.projectRepoNamed( name ).orElse( null );
 
 		if( repo == null ) {
 			return new NGResponse( "No such project", 404 );
 		}
 
+		SubPage subPage = SubPage.overview;
+
+		if( parts.length > 3 && !parts[ 3 ].isBlank() ) {
+			try {
+				subPage = SubPage.valueOf( parts[ 3 ] );
+			}
+			catch( IllegalArgumentException e ) {
+				return new NGResponse( "No such project page", 404 );
+			}
+		}
+
 		final WCProjectPage page = pageWithName( WCProjectPage.class, request.context() );
 		page.repo = repo;
+		page.subPage = subPage;
 		return page;
 	}
 

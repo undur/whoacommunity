@@ -1,73 +1,140 @@
 <wo:WCLook>
-	<div class="row">
-		<div class="col-md-8 article-list">
-			<div class="card article-card project-card">
-				<div class="card-header dark-card-header">
-					<h3 class="card-title"><span class="project-emoji"><wo:str value="$repo.emoji" /></span> <wo:str value="$repo.name" /></h3>
-					<div class="card-actions">
-						<wo:link href="$repo.url" class="project-github-link" target="_blank" rel="noopener">Repository on GitHub ↗</wo:link>
-					</div>
-				</div>
-				<div class="card-body">
-					<wo:if condition="$readmeAsHTML">
-						<wo:str value="$readmeAsHTML" escapeHTML="$false" />
+	<header class="project-head">
+		<span class="project-emoji"><wo:str value="$repo.emoji" /></span>
+		<div>
+			<h1 class="project-name"><wo:str value="$repo.name" /></h1>
+			<wo:if condition="$description">
+				<p class="project-blurb"><wo:str value="$description" /></p>
+			</wo:if>
+		</div>
+		<div class="project-facts">
+			<wo:if condition="$hasLatestRelease">
+				<div><div class="k">Version</div><div class="v"><wo:str value="$latestRelease.tagName" /></div></div>
+			</wo:if>
+			<wo:if condition="$hasLatestCommit">
+				<div><div class="k">Updated</div><div class="v"><wo:str value="$latestCommit.shortDateFormatted" /></div></div>
+			</wo:if>
+			<div><div class="k">Source</div><div class="v"><wo:link href="$repo.url" target="_blank" rel="noopener">GitHub ↗</wo:link></div></div>
+		</div>
+	</header>
+
+	<wo:if condition="$isOverview">
+		<div class="whoa-grid">
+			<div>
+				<div class="whoa-section">Overview<wo:link class="doc-source" href="$readmeOnGithubURL" target="_blank" rel="noopener">README.md · synced from GitHub</wo:link></div>
+				<div class="whoa-panel">
+					<wo:if condition="$hasReadme">
+						<div class="article-body">
+							<wo:str value="$readmeAsHTML" escapeHTML="$false" />
+						</div>
 					</wo:if>
-					<wo:if condition="$readmeAsHTML" negate="$true">
+					<wo:if condition="$hasReadme" negate="$true">
 						<p class="project-empty">No README.md found in this repository (or the GitHub feed hasn't loaded yet).</p>
 					</wo:if>
 				</div>
 			</div>
-		</div>
-		<div class="col-md-4 sidebar">
-			<div class="card feed-card">
-				<div class="card-header">
-					<h3 class="card-title">Latest commits</h3>
-				</div>
-				<table class="card-table feed-table table table-sm commit-table table-striped">
-					<wo:repetition list="$projectCommits" item="$current">
-						<tr>
-							<td><wo:link href="$current.link" class="row-link"><wo:str value="$current.title" /></wo:link></td>
-							<td nowrap><wo:str value="$current.shortDateFormatted" /></td>
-						</tr>
+
+			<div>
+				<wo:if condition="$hasHeadings">
+					<nav class="toc">
+						<div class="toc-head">On this page</div>
+						<wo:repetition list="$headings" item="$currentHeading">
+							<wo:link href="$currentHeadingHref"><wo:str value="$currentHeading.title" /></wo:link>
+						</wo:repetition>
+					</nav>
+				</wo:if>
+				<div class="rail-block" style="margin-top: 1.6rem">
+					<div class="rail-head"><span class="live"></span>Recent commits<wo:link href="$projectCommitsURL">all →</wo:link></div>
+					<wo:repetition list="$recentCommits" item="$current">
+						<wo:link href="$current.link" class="rail-row"><span class="rail-text"><wo:str value="$current.title" /></span><span class="rail-when"><wo:str value="$current.shortDateFormatted" /></span></wo:link>
 					</wo:repetition>
-				</table>
-			</div>
-			<div class="card">
-				<div class="card-header">
-					<h3 class="card-title">Releases</h3>
 				</div>
-				<wo:if condition="$projectReleases">
-					<table class="card-table feed-table table table-sm commit-table table-striped">
-						<wo:repetition list="$projectReleases" item="$currentRelease">
-							<tr>
-								<td><wo:link href="$currentRelease.url" class="row-link"><wo:str value="$currentRelease.displayName" /></wo:link></td>
-								<td nowrap><wo:str value="$currentRelease.shortDateFormatted" /></td>
-							</tr>
-						</wo:repetition>
-					</table>
-				</wo:if>
-				<wo:if condition="$projectReleases" negate="$true">
-					<div class="card-body project-empty">No releases yet.</div>
-				</wo:if>
-			</div>
-			<div class="card">
-				<div class="card-header">
-					<h3 class="card-title">Open issues</h3>
-				</div>
-				<wo:if condition="$projectIssues">
-					<table class="card-table feed-table table table-sm commit-table table-striped">
-						<wo:repetition list="$projectIssues" item="$currentIssue">
-							<tr>
-								<td><wo:link href="$currentIssue.url" class="row-link"><wo:str value="$currentIssue.title" /></wo:link></td>
-								<td nowrap><wo:str value="$currentIssue.shortDateFormatted" /></td>
-							</tr>
-						</wo:repetition>
-					</table>
-				</wo:if>
-				<wo:if condition="$projectIssues" negate="$true">
-					<div class="card-body project-empty">No open issues.</div>
-				</wo:if>
 			</div>
 		</div>
-	</div>
+	</wo:if>
+
+	<wo:if condition="$isCommits">
+		<div class="feed-layout">
+			<div>
+				<div class="whoa-section">Commits<wo:link href="$commitsOnGithubURL" target="_blank" rel="noopener">On GitHub ↗</wo:link></div>
+				<div class="feed-table-wrap">
+					<table class="feed-table">
+						<thead><tr><th>When</th><th>Message</th><th>Author</th></tr></thead>
+						<tbody>
+							<wo:repetition list="$projectCommits" item="$current">
+								<tr>
+									<td class="c-when"><wo:str value="$current.shortDateFormatted" /></td>
+									<td class="c-msg"><wo:link href="$current.link"><wo:str value="$current.title" /></wo:link></td>
+									<td class="c-who"><wo:str value="$current.author" /></td>
+								</tr>
+							</wo:repetition>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div>
+				<div class="rail-block">
+					<div class="rail-head">Releases</div>
+					<wo:repetition list="$projectReleases" item="$currentRelease">
+						<wo:link href="$currentRelease.url" class="rail-row"><span class="rail-text rail-version"><wo:str value="$currentRelease.tagName" /></span><span class="rail-when"><wo:str value="$currentRelease.shortDateFormatted" /></span></wo:link>
+					</wo:repetition>
+				</div>
+				<div class="rail-block">
+					<div class="rail-head">Open issues</div>
+					<wo:repetition list="$projectIssues" item="$currentIssue">
+						<wo:link href="$currentIssue.url" class="rail-row"><span class="rail-text-wrap"><wo:str value="$currentIssue.title" /></span><span class="rail-when"><wo:str value="$currentIssue.shortDateFormatted" /></span></wo:link>
+					</wo:repetition>
+				</div>
+			</div>
+		</div>
+	</wo:if>
+
+	<wo:if condition="$isReleases">
+		<div class="feed-layout">
+			<div>
+				<div class="whoa-section">Releases<wo:link href="$releasesOnGithubURL" target="_blank" rel="noopener">On GitHub ↗</wo:link></div>
+				<div class="feed-table-wrap">
+					<table class="feed-table">
+						<thead><tr><th>When</th><th>Release</th></tr></thead>
+						<tbody>
+							<wo:repetition list="$projectReleases" item="$currentRelease">
+								<tr>
+									<td class="c-when"><wo:str value="$currentRelease.shortDateFormatted" /></td>
+									<td class="c-msg"><wo:link href="$currentRelease.url"><wo:str value="$currentRelease.displayName" /></wo:link></td>
+								</tr>
+							</wo:repetition>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div>
+				<div class="note">Only the three most recent published releases are fetched per repository.</div>
+			</div>
+		</div>
+	</wo:if>
+
+	<wo:if condition="$isIssues">
+		<div class="feed-layout">
+			<div>
+				<div class="whoa-section">Open issues<wo:link href="$issuesOnGithubURL" target="_blank" rel="noopener">All <wo:str value="$openIssueCount" /> on GitHub ↗</wo:link></div>
+				<div class="feed-table-wrap">
+					<table class="feed-table">
+						<thead><tr><th>Updated</th><th>Issue</th><th>Opened by</th></tr></thead>
+						<tbody>
+							<wo:repetition list="$projectIssues" item="$currentIssue">
+								<tr>
+									<td class="c-when"><wo:str value="$currentIssue.shortDateFormatted" /></td>
+									<td class="c-msg"><wo:link href="$currentIssue.url"><wo:str value="$currentIssue.title" /></wo:link></td>
+									<td class="c-who"><wo:str value="$currentIssue.authorLogin" /></td>
+								</tr>
+							</wo:repetition>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div>
+				<div class="note">The six most recently updated open issues are shown; the count on GitHub is the full total.</div>
+			</div>
+		</div>
+	</wo:if>
 </wo:WCLook>

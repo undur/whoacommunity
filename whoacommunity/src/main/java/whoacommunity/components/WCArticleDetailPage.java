@@ -8,6 +8,7 @@ import java.util.List;
 import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
+import whoacommunity.components.admin.WCArticleEditPage;
 import whoacommunity.data.Article;
 import whoacommunity.data.Comment;
 
@@ -52,12 +53,33 @@ public class WCArticleDetailPage extends WCComponent {
 		super( context );
 	}
 
+	@Override
+	public String pageIdentifier() {
+		return "writing";
+	}
+
+	@Override
+	public List<Crumb> breadcrumbs() {
+		return List.of( HOME_CRUMB, new Crumb( "writing", "/" ) );
+	}
+
+	@Override
+	public String breadcrumbLeaf() {
+		return selectedObject == null ? "" : selectedObject.title();
+	}
+
 	public List<Comment> comments() {
 		return selectedObject.sortedComments();
 	}
 
 	public String question() {
 		return QUESTION;
+	}
+
+	public NGActionResults editArticle() {
+		final WCArticleEditPage nextPage = pageWithName( WCArticleEditPage.class );
+		nextPage.selectedObject = selectedObject;
+		return nextPage;
 	}
 
 	public NGActionResults postComment() {

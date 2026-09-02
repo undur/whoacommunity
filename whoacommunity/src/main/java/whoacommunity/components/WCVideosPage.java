@@ -17,6 +17,16 @@ public class WCVideosPage extends WCComponent {
 		super( context );
 	}
 
+	@Override
+	public String pageIdentifier() {
+		return "videos";
+	}
+
+	@Override
+	public String breadcrumbLeaf() {
+		return "videos";
+	}
+
 	public List<Playlist> playlists() {
 		return Videos.playlists();
 	}

@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Typed view of the per-repo node returned by our GraphQL query. Used only
  * to deserialize from JSON via Gson; field names match the GraphQL schema
- * one-for-one.
+ * (or our aliases) one-for-one.
  *
  * Anything missing in the response is left null/0/false by Gson, which is
  * the behavior we want.
@@ -16,6 +16,7 @@ final class GithubResponse {
 	private GithubResponse() {}
 
 	record RepoNode(
+			String description,
 			IssueConnection issues,
 			ReleaseConnection releases,
 			DefaultBranchRef defaultBranchRef,
@@ -24,12 +25,13 @@ final class GithubResponse {
 	/** The "readme" alias: the README.md blob at HEAD, or null if the repo has none */
 	record Readme( String text ) {}
 
-	record IssueConnection( List<IssueNode> nodes ) {}
+	record IssueConnection( int totalCount, List<IssueNode> nodes ) {}
 
 	record IssueNode(
 			int number,
 			String title,
 			String url,
+			Instant createdAt,
 			Instant updatedAt,
 			Author author ) {}
 

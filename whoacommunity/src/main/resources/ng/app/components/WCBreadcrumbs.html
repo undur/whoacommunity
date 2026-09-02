@@ -1,0 +1,7 @@
+<nav class="whoa-crumbs">
+	<wo:repetition list="$crumbs" item="$crumb">
+		<wo:link href="$crumb.url"><wo:str value="$crumb.title" /></wo:link>
+		<span class="sep">/</span>
+	</wo:repetition>
+	<span class="current"><wo:str value="$leaf" /></span>
+</nav>

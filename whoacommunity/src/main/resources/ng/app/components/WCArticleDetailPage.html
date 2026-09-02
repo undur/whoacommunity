@@ -1,74 +1,65 @@
 <wo:WCLook>
-	<div class="row">
-		<div class="col-md-8 article-list">
-			<div class="card article-card">
-				<div class="card-header dark-card-header">
-					<h3 class="card-title">
-						<wo:str value="$selectedObject.title" />
-					</h3>
-					<div class="card-actions">
-						<small><wo:str value="$selectedObject.formattedDate" /></small>
-					</div>
-				</div>
-				<div class="card-body">
-					<wo:str value="$selectedObject.contentAsHTML" escapeHTML="$false" />
-				</div>
+	<div class="whoa-panel" style="max-width: 80ch">
+		<header class="article-head">
+			<h1 class="article-title"><wo:str value="$selectedObject.title" /></h1>
+			<div class="article-meta">
+				<span><wo:str value="$selectedObject.formattedDate" /></span><span class="sep">/</span>
+				<span><wo:str value="$selectedObject.authorName" /></span><span class="sep">/</span>
+				<span><wo:str value="$selectedObject.commentCountString" /></span>
+				<wo:if condition="$selectedObject.published" negate="$true"><span class="sep">/</span><span class="post-tag">draft</span></wo:if>
+				<wo:if condition="$isLocal">
+					<span class="sep">/</span><wo:link action="$editArticle" class="lead-edit">edit</wo:link>
+				</wo:if>
 			</div>
+		</header>
 
-			<wo:auc id="commentsUC" class="card comments-card">
-				<div class="card-header">
-					<h3 class="card-title" id="comments">💬 <wo:str value="$selectedObject.commentCountString" /></h3>
-				</div>
-				<div class="card-body">
-					<wo:repetition list="$comments" item="$currentComment">
-						<div class="comment">
-							<div class="comment-meta">
-								<strong class="comment-name"><wo:str value="$currentComment.name" /></strong>
-								<span class="comment-date"><wo:str value="$currentComment.formattedDateTime" /></span>
-								<wo:if condition="$isLocal">
-									<wo:aul action="$deleteComment" updateContainerID="commentsUC" class="comment-delete">delete</wo:aul>
-								</wo:if>
-							</div>
-							<div class="comment-content"><wo:str value="$currentComment.contentAsHTML" escapeHTML="$false" /></div>
-						</div>
-					</wo:repetition>
-
-					<wo:if condition="$selectedObject.hasComments" negate="$true">
-						<p class="comments-empty">No comments yet — be the first.</p>
-					</wo:if>
-
-					<wo:form class="comment-form">
-						<h4 class="comment-form-title">Leave a comment</h4>
-
-						<wo:if condition="$errorMessage">
-							<div class="alert alert-warning comment-alert"><wo:str value="$errorMessage" /></div>
-						</wo:if>
-						<wo:if condition="$justPosted">
-							<div class="alert alert-success comment-alert">Thanks — your comment has been posted.</div>
-						</wo:if>
-
-						<label class="form-label">Name</label>
-						<wo:textfield value="$newName" class="form-control" placeholder="Your name" autocomplete="name" />
-
-						<label class="form-label mt-3">Comment</label>
-						<wo:text value="$newContent" rows="5" class="form-control" placeholder="Say something nice. Or useful. Ideally both." />
-						<small class="form-hint">Markdown is welcome — code fences included.</small>
-
-						<label class="form-label mt-3"><wo:str value="$question" /></label>
-						<wo:textfield value="$newAnswer" class="form-control comment-answer" autocomplete="off" />
-
-						<div class="hp-field" aria-hidden="true">
-							<label>Website</label>
-							<wo:textfield value="$honeypot" tabindex="-1" autocomplete="off" />
-						</div>
-
-						<wo:asb action="$postComment" updateContainerID="commentsUC" class="btn btn-primary mt-3">Post comment</wo:asb>
-					</wo:form>
-				</div>
-			</wo:auc>
+		<div class="article-body">
+			<wo:str value="$selectedObject.contentAsHTML" escapeHTML="$false" />
 		</div>
-		<div class="col-md-4 sidebar">
-			<wo:WCSidebar />
-		</div>
+
+		<wo:auc id="commentsUC" class="comments-card">
+			<div class="comments-title" id="comments">Comments</div>
+			<wo:repetition list="$comments" item="$currentComment">
+				<div class="comment">
+					<div class="comment-meta">
+						<span class="comment-name"><wo:str value="$currentComment.name" /></span>
+						<span class="comment-date"><wo:str value="$currentComment.formattedDateTime" /></span>
+						<wo:if condition="$isLocal">
+							<wo:aul action="$deleteComment" updateContainerID="commentsUC" class="comment-delete lead-edit">delete</wo:aul>
+						</wo:if>
+					</div>
+					<div class="comment-content"><wo:str value="$currentComment.contentAsHTML" escapeHTML="$false" /></div>
+				</div>
+			</wo:repetition>
+			<wo:if condition="$selectedObject.hasComments" negate="$true">
+				<p class="comments-empty">No comments yet — be the first.</p>
+			</wo:if>
+
+			<wo:form class="comment-form">
+				<wo:if condition="$errorMessage">
+					<div class="alert alert-warning"><wo:str value="$errorMessage" /></div>
+				</wo:if>
+				<wo:if condition="$justPosted">
+					<div class="alert alert-success">Thanks — your comment has been posted.</div>
+				</wo:if>
+
+				<label class="form-label">Name</label>
+				<wo:textfield value="$newName" class="form-control" placeholder="Your name" autocomplete="name" />
+
+				<label class="form-label mt-3">Comment</label>
+				<wo:text value="$newContent" rows="5" class="form-control" placeholder="Say something nice. Or useful. Ideally both." />
+				<small class="form-hint">Markdown is welcome — code fences included.</small>
+
+				<label class="form-label mt-3"><wo:str value="$question" /></label>
+				<wo:textfield value="$newAnswer" class="form-control comment-answer" autocomplete="off" />
+
+				<div class="hp-field" aria-hidden="true">
+					<label>Website</label>
+					<wo:textfield value="$honeypot" tabindex="-1" autocomplete="off" />
+				</div>
+
+				<div><wo:asb action="$postComment" updateContainerID="commentsUC" class="btn btn-primary mt-3">Post comment</wo:asb></div>
+			</wo:form>
+		</wo:auc>
 	</div>
 </wo:WCLook>

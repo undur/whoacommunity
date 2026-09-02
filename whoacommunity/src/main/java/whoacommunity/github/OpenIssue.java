@@ -14,6 +14,7 @@ public record OpenIssue(
 		int number,
 		String title,
 		String url,
+		Instant createdAt,
 		Instant updatedAt,
 		String authorLogin ) {
 

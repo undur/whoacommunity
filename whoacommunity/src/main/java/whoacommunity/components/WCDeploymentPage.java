@@ -3,7 +3,7 @@ package whoacommunity.components;
 import java.util.List;
 
 import ng.appserver.NGContext;
-import ng.appserver.templating.NGComponent;
+import whoacommunity.app.WCComponent;
 import whoacommunity.util.ScriptDoc;
 
 /**
@@ -13,7 +13,27 @@ import whoacommunity.util.ScriptDoc;
  * copying the page yields a runnable script (the copy button hands over the
  * verbatim file, comments included).
  */
-public class WCDeploymentPage extends NGComponent {
+public class WCDeploymentPage extends WCComponent {
+
+	@Override
+	public String pageIdentifier() {
+		return "deployment";
+	}
+
+	@Override
+	public String currentDeploymentGuide() {
+		return "modulo";
+	}
+
+	@Override
+	public List<Crumb> breadcrumbs() {
+		return List.of( HOME_CRUMB, new Crumb( "deployment", "/deployment-config" ) );
+	}
+
+	@Override
+	public String breadcrumbLeaf() {
+		return "modulo";
+	}
 
 	private static final ScriptDoc DOC = ScriptDoc.parse( "/setup-server.sh" );
 

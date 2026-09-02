@@ -1,99 +1,43 @@
-<div class="card">
-	<div class="card-header">
-		<h3 class="card-title">Stuff and things</h3>
-	</div>
-	<div class="card-body">
-		<ul>
-			<li><a href="https://wiki.wocommunity.org/">WOCommunity wiki</a></li>
-		</ul>
+<div class="rail-block">
+	<div class="rail-head"><span class="live"></span>Commits<wo:link href="/dev-feed">all →</wo:link></div>
+	<wo:repetition list="$items" item="$current">
+		<wo:link href="$current.link" class="rail-row">
+			<span class="rail-emoji"><wo:str value="$current.repo.emoji" /></span><span class="rail-repo"><wo:str value="$current.repo.name" /></span>
+			<span class="rail-text-wrap"><wo:str value="$current.title" /></span>
+			<span class="rail-when"><wo:str value="$current.shortDateFormatted" /></span>
+		</wo:link>
+	</wo:repetition>
+</div>
 
-		<strong>Mailinglists</strong>
-		<ul>
-			<li><a href="https://lists.wocommunity.org/Lists/webobjects-dev/List.html">WOCommunity mailinglist archives</a></li>
-			<li><a href="https://lists.apple.com/archives/list/webobjects-dev@lists.apple.com/">Apple mailinglist archives</a></li>
-		</ul>
+<div class="rail-block">
+	<div class="rail-head">Releases</div>
+	<wo:repetition list="$releases" item="$currentRelease">
+		<wo:link href="$currentRelease.url" class="rail-row">
+			<span class="rail-emoji"><wo:str value="$currentRelease.repo.emoji" /></span><span class="rail-repo"><wo:str value="$currentRelease.repo.name" /></span>
+			<span class="rail-text rail-version"><wo:str value="$currentRelease.tagName" /></span>
+			<span class="rail-when"><wo:str value="$currentRelease.shortDateFormatted" /></span>
+		</wo:link>
+	</wo:repetition>
+</div>
 
-		<strong>Development on GitHub</strong>
-		<ul>
-			<li><a href="https://github.com/undur">undur</a></li>
-			<li><a href="https://github.com/ngobjects">ng-objects</a></li>
-			<li><a href="https://github.com/wocommunity">wocommunity</a></li>
-		</ul>
-	</div>
+<div class="rail-block">
+	<div class="rail-head">Open issues</div>
+	<wo:repetition list="$openIssues" item="$currentIssue">
+		<wo:link href="$currentIssue.url" class="rail-row">
+			<span class="rail-emoji"><wo:str value="$currentIssue.repo.emoji" /></span><span class="rail-repo"><wo:str value="$currentIssue.repo.name" /></span>
+			<span class="rail-text"><wo:str value="$currentIssue.title" /></span>
+			<span class="rail-when"><wo:str value="$currentIssue.shortDateFormatted" /></span>
+		</wo:link>
+	</wo:repetition>
 </div>
-<div class="card feed-card">
-	<div class="card-header">
-		<h3 class="card-title">Latest commits</h3>
-		<div class="card-actions">
-			<wo:link href="/dev-feed" class="btn btn-sm">
-				<span class="nav-link-icon d-md-none d-lg-inline-block">
-					<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-rss"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M4 4a16 16 0 0 1 16 16" /><path d="M4 11a9 9 0 0 1 9 9" /></svg>
-				</span>
-				<span class="nav-link-title">Dev feed</span>
-			</wo:link>
-		</div>
-	</div>
-	<table class="card-table feed-table table table-sm commit-table table-striped">
-		<wo:repetition list="$items" item="$current">
-			<tr>
-				<td nowrap><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
-				<td><wo:link href="$current.link" class="row-link"><wo:str value="$current.title" /></wo:link></td>
-				<td nowrap><wo:str value="$current.shortDateFormatted" /></td>
-			</tr>
-		</wo:repetition>
-	</table>
-</div>
-<div class="card">
-	<div class="card-header">
-		<h3 class="card-title">Latest releases</h3>
-	</div>
-	<table class="card-table feed-table table table-sm commit-table table-striped">
-		<wo:repetition list="$releases" item="$currentRelease">
-			<tr>
-				<td nowrap><wo:str value="$currentRelease.repo.emoji" /> <wo:str value="$currentRelease.repo.name" /></td>
-				<td><wo:link href="$currentRelease.url" class="row-link"><wo:str value="$currentRelease.displayName" /></wo:link></td>
-				<td nowrap><wo:str value="$currentRelease.shortDateFormatted" /></td>
-			</tr>
-		</wo:repetition>
-	</table>
-</div>
-<div class="card">
-	<div class="card-header">
-		<h3 class="card-title">New issues</h3>
-	</div>
-	<table class="card-table feed-table table table-sm commit-table table-striped">
-		<wo:repetition list="$openIssues" item="$currentIssue">
-			<tr>
-				<td nowrap><wo:str value="$currentIssue.repo.emoji" /> <wo:str value="$currentIssue.repo.name" /></td>
-				<td><wo:link href="$currentIssue.url" class="row-link"><wo:str value="$currentIssue.title" /></wo:link></td>
-				<td nowrap><wo:str value="$currentIssue.shortDateFormatted" /></td>
-			</tr>
-		</wo:repetition>
-	</table>
-</div>
-<div class="card recent-card">
-	<div class="card-header">
-		<h3 class="card-title">Latest articles</h3>
-	</div>
-	<table class="card-table feed-table table table-sm commit-table table-striped">
-		<wo:repetition list="$articles" item="$currentArticle">
-			<tr>
-				<td><wo:link href="$currentArticleURL" class="row-link"><wo:str value="$currentArticle.title" /></wo:link></td>
-				<td nowrap><wo:str value="$currentArticle.shortDateFormatted" /></td>
-			</tr>
-		</wo:repetition>
-	</table>
-</div>
-<div class="card">
-	<div class="card-header">
-		<h3 class="card-title">What's happenin' with Java</h3>
-	</div>
-	<table class="card-table feed-table table table-sm commit-table table-striped">
-		<wo:repetition list="$javaItems" item="$javaItem">
-			<tr>
-				<td><wo:link href="$javaItem.link" class="row-link"><wo:str value="$javaItem.title" /></wo:link></td>
-				<td nowrap><wo:str value="$javaItem.shortDateFormatted" /></td>
-			</tr>
-		</wo:repetition>
-	</table>
+
+<div class="rail-block">
+	<div class="rail-head">Latest articles<wo:link href="/writing">all →</wo:link></div>
+	<wo:repetition list="$recentArticles" item="$currentArticle">
+		<wo:link href="$currentArticleURL" class="rail-row">
+			<wo:if condition="$currentArticle.published" negate="$true"><span class="post-tag">draft</span></wo:if>
+			<span class="rail-text-wrap"><wo:str value="$currentArticle.title" /></span>
+			<span class="rail-when"><wo:str value="$currentArticle.shortDateFormatted" /></span>
+		</wo:link>
+	</wo:repetition>
 </div>

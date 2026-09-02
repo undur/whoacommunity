@@ -1,37 +1,21 @@
 package whoacommunity.components;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import org.apache.cayenne.ObjectContext;
 
 import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
-import whoacommunity.app.WCCore;
-import whoacommunity.components.admin.WCAdminPage;
-import whoacommunity.data.Article;
-import whoacommunity.data.SlackUser;
-import whoacommunity.util.Repos;
-import whoacommunity.util.Repos.Repo;
 
+/**
+ * The page frame: sidebar with brand and site tree, main column with
+ * breadcrumb bar, content and footer. Page identity (breadcrumbs, current
+ * section) is read from the page component being wrapped.
+ */
 public class WCLook extends WCComponent {
 
 	public String searchString;
 
-	/** Iteration variable for the Projects menu */
-	public Repo currentProjectRepo;
-
 	public WCLook( NGContext context ) {
 		super( context );
-	}
-
-	public List<Repo> projectRepos() {
-		return Repos.projectRepos();
-	}
-
-	public String currentProjectRepoURL() {
-		return "/project/" + currentProjectRepo.name();
 	}
 
 	/**
@@ -39,22 +23,10 @@ public class WCLook extends WCComponent {
 	 */
 	public String bodyClass() {
 		return "layout-fluid";
-		//		return null;
-	}
-
-	/**
-	 * FIXME: We currently don't allow logins so this always returns null
-	 */
-	public SlackUser user() {
-		return null;
-	}
-
-	public boolean showTopButtons() {
-		return false;
 	}
 
 	public String envString() {
-		return "Góður kóði slf. 2025";
+		return "Góður kóði slf. 2026";
 	}
 
 	public NGActionResults search() {
@@ -64,20 +36,4 @@ public class WCLook extends WCComponent {
 		return nextPage;
 	}
 
-	public NGActionResults admin() {
-		return pageWithName( WCAdminPage.class );
-	}
-
-	public NGActionResults createArticle() {
-		final ObjectContext oc = WCCore.newContext();
-
-		final Article a = oc.newObject( Article.class );
-		a.setDate( LocalDate.now() );
-		a.setTitle( "New article" );
-		a.setContent( "" );
-
-		oc.commitChanges();
-
-		return pageWithName( WCMain.class );
-	}
 }

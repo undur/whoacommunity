@@ -1,0 +1,55 @@
+<nav class="whoa-tree">
+	<div class="whoa-tree-head">Site</div>
+	<wo:repetition list="$sections" item="$section">
+		<wo:link href="$section.url" class="$sectionClass">
+			<span class="tree-emoji"><wo:str value="$section.glyph" /></span>
+			<span class="tree-name"><wo:str value="$section.title" /></span>
+			<wo:if condition="$section.hasCount">
+				<span class="tree-tag"><wo:str value="$section.count" /></span>
+			</wo:if>
+		</wo:link>
+		<wo:if condition="$isDeploymentSection">
+			<wo:repetition list="$deploymentGuides" item="$guide">
+				<wo:link href="$guide.url" class="$guideClass">
+					<span class="tree-name"><wo:str value="$guide.title" /></span>
+				</wo:link>
+			</wo:repetition>
+		</wo:if>
+	</wo:repetition>
+
+	<div class="whoa-tree-head">Projects</div>
+	<wo:repetition list="$projects" item="$project">
+		<wo:link href="$projectURL" class="$projectClass">
+			<span class="tree-emoji"><wo:str value="$project.emoji" /></span>
+			<span class="tree-name"><wo:str value="$project.name" /></span>
+			<wo:if condition="$projectHasVersion">
+				<span class="tree-tag"><wo:str value="$projectLatestVersion" /></span>
+			</wo:if>
+		</wo:link>
+		<wo:if condition="$isCurrentProject">
+			<wo:repetition list="$subPages" item="$subPage">
+				<wo:link href="$subPage.url" class="$subPageClass">
+					<span class="tree-name"><wo:str value="$subPage.title" /></span>
+					<wo:if condition="$subPage.hasCount">
+						<span class="tree-tag"><wo:str value="$subPage.count" /></span>
+					</wo:if>
+				</wo:link>
+			</wo:repetition>
+		</wo:if>
+	</wo:repetition>
+
+	<div class="whoa-tree-head">Elsewhere</div>
+	<a href="https://wiki.wocommunity.org/"><span class="tree-emoji">↗</span><span class="tree-name">WOCommunity wiki</span></a>
+	<a href="https://lists.wocommunity.org/Lists/webobjects-dev/List.html"><span class="tree-emoji">↗</span><span class="tree-name">Mailing lists</span></a>
+	<a href="https://github.com/undur"><span class="tree-emoji">↗</span><span class="tree-name">github/undur</span></a>
+	<a href="https://github.com/ngobjects"><span class="tree-emoji">↗</span><span class="tree-name">github/ngobjects</span></a>
+	<a href="https://github.com/wocommunity"><span class="tree-emoji">↗</span><span class="tree-name">github/wocommunity</span></a>
+
+	<wo:if condition="$isLocal">
+		<div class="whoa-tree-head">Admin</div>
+		<wo:link action="$createArticle"><span class="tree-emoji">✎</span><span class="tree-name">Create article</span></wo:link>
+		<wo:link href="/refresh-data"><span class="tree-emoji">↻</span><span class="tree-name">Refresh feeds</span></wo:link>
+		<wo:link href="/slack-archive"><span class="tree-emoji">▣</span><span class="tree-name">Slack archive</span></wo:link>
+		<wo:link href="/slack-client"><span class="tree-emoji">▣</span><span class="tree-name">Slack client</span></wo:link>
+	</wo:if>
+</nav>

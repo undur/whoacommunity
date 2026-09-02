@@ -11,6 +11,13 @@ import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
 import whoacommunity.util.CachedFeed;
 
+/**
+ * The activity rail: commits, releases, open issues, latest articles.
+ * The lists themselves come from WCComponent (items / releases / openIssues / recentArticles).
+ *
+ * The inside.java feed is still fetched and cached here but no longer rendered on the
+ * front page (per the redesign); javaItems() stays available for any page that wants it.
+ */
 public class WCSidebar extends WCComponent {
 
 	public JavaItem javaItem;
