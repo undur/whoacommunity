@@ -18,6 +18,10 @@
 	</wo:repetition>
 
 	<div class="whoa-tree-head">Projects</div>
+	<wo:link href="/projects" class="$projectsOverviewClass">
+		<span class="tree-emoji">◧</span>
+		<span class="tree-name">Overview</span>
+	</wo:link>
 	<wo:repetition list="$projects" item="$project">
 		<wo:link href="$projectURL" class="$projectClass">
 			<span class="tree-emoji"><wo:str value="$project.emoji" /></span>

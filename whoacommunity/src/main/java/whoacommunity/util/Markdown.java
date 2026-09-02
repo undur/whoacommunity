@@ -65,6 +65,52 @@ public class Markdown {
 		return out;
 	}
 
+	private static final Pattern URL_ATTR = Pattern.compile( "(href|src)=\"([^\"]*)\"" );
+
+	/**
+	 * Rewrite relative href/src values in rendered HTML so links written for a repository's
+	 * own tree keep working when the README is shown elsewhere. Anchors, absolute URLs,
+	 * protocol-relative URLs and mailto: links are left alone.
+	 *
+	 * @param linkBase  Prefix for relative links, e.g. https://github.com/owner/repo/blob/HEAD/
+	 * @param imageBase Prefix for relative image sources, e.g. https://raw.githubusercontent.com/owner/repo/HEAD/
+	 */
+	public static String rebaseRelativeUrls( final String html, final String linkBase, final String imageBase ) {
+		if( html == null ) {
+			return null;
+		}
+
+		final Matcher matcher = URL_ATTR.matcher( html );
+		final StringBuilder out = new StringBuilder();
+
+		while( matcher.find() ) {
+			final String attr = matcher.group( 1 );
+			final String url = matcher.group( 2 );
+			final String replacement;
+
+			if( isRelative( url ) ) {
+				final String path = url.startsWith( "./" ) ? url.substring( 2 ) : url.startsWith( "/" ) ? url.substring( 1 ) : url;
+				final String base = "src".equals( attr ) ? imageBase : linkBase;
+				replacement = attr + "=\"" + base + path + "\"";
+			}
+			else {
+				replacement = matcher.group( 0 );
+			}
+
+			matcher.appendReplacement( out, Matcher.quoteReplacement( replacement ) );
+		}
+
+		matcher.appendTail( out );
+		return out.toString();
+	}
+
+	private static boolean isRelative( final String url ) {
+		if( url == null || url.isEmpty() ) return false;
+		if( url.startsWith( "#" ) || url.startsWith( "//" ) ) return false;
+		if( url.matches( "^[a-zA-Z][a-zA-Z0-9+.-]*:.*" ) ) return false; // http:, https:, mailto:, data:, …
+		return true;
+	}
+
 	/**
 	 * @return Rendered HTML reduced to plain text: tags stripped, entities for the common cases decoded, whitespace collapsed
 	 */

@@ -1,0 +1,17 @@
+<wo:WCLook>
+	<div class="whoa-section">Projects<span><wo:str value="$projects.size" /> repositories</span></div>
+	<div class="project-grid">
+		<wo:repetition list="$projects" item="$currentProject">
+			<wo:link href="$currentProjectURL" class="project-card">
+				<div class="project-card-head">
+					<span class="project-card-emoji"><wo:str value="$currentProject.emoji" /></span>
+					<span class="project-card-name"><wo:str value="$currentProject.name" /></span>
+					<wo:if condition="$currentProjectHasVersion">
+						<span class="tree-tag"><wo:str value="$currentProjectVersion" /></span>
+					</wo:if>
+				</div>
+				<p class="project-card-blurb"><wo:str value="$currentProjectBlurb" /></p>
+			</wo:link>
+		</wo:repetition>
+	</div>
+</wo:WCLook>

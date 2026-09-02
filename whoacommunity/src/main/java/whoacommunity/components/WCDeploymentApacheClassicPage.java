@@ -26,7 +26,7 @@ public class WCDeploymentApacheClassicPage extends WCComponent {
 
 	@Override
 	public List<Crumb> breadcrumbs() {
-		return List.of( HOME_CRUMB, new Crumb( "deployment", "/deployment-config" ) );
+		return List.of( HOME_CRUMB, new Crumb( "deployment", "/deployment" ) );
 	}
 
 	@Override

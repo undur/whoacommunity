@@ -54,10 +54,10 @@ public class WCProjectPage extends WCComponent {
 	@Override
 	public List<Crumb> breadcrumbs() {
 		if( subPage == SubPage.overview ) {
-			return List.of( HOME_CRUMB, new Crumb( "projects", "/" ) );
+			return List.of( HOME_CRUMB, new Crumb( "projects", "/projects" ) );
 		}
 
-		return List.of( HOME_CRUMB, new Crumb( "projects", "/" ), new Crumb( repo.name(), projectURL() ) );
+		return List.of( HOME_CRUMB, new Crumb( "projects", "/projects" ), new Crumb( repo.name(), projectURL() ) );
 	}
 
 	@Override
@@ -155,7 +155,17 @@ public class WCProjectPage extends WCComponent {
 	public String readmeAsHTML() {
 		if( !_readmeRendered ) {
 			final String readme = GithubFeed.shared.readmeFor( repo );
-			_readmeHTML = readme == null ? null : Markdown.render( readme );
+
+			if( readme == null ) {
+				_readmeHTML = null;
+			}
+			else {
+				// Links and images in a README are written relative to the repo's own tree
+				final String linkBase = repo.url() + "/blob/HEAD/";
+				final String imageBase = "https://raw.githubusercontent.com/" + repo.githubOwner() + "/" + repo.githubRepoName() + "/HEAD/";
+				_readmeHTML = Markdown.rebaseRelativeUrls( Markdown.render( readme ), linkBase, imageBase );
+			}
+
 			_readmeRendered = true;
 		}
 

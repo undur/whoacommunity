@@ -52,9 +52,9 @@ public class WCSiteTree extends WCComponent {
 
 		return List.of(
 				new Section( "writing", "◆", "Writing", "/", String.valueOf( articleCount() ) ),
-				new Section( "videos", "◇", "Videos", "/videos", String.valueOf( videoCount ) ),
 				new Section( "activity", "◈", "Activity", "/dev-feed", null ),
-				new Section( "deployment", "▤", "Deployment", "/deployment-config", null ) );
+				new Section( "deployment", "▤", "Deployment", "/deployment", null ),
+				new Section( "videos", "◇", "Videos", "/videos", String.valueOf( videoCount ) ) );
 	}
 
 	public boolean isDeploymentSection() {
@@ -64,10 +64,11 @@ public class WCSiteTree extends WCComponent {
 	public SubPage guide;
 
 	public List<SubPage> deploymentGuides() {
-		return List.of(
-				new SubPage( "modulo", "Pure modulo", "/deployment-config", null ),
-				new SubPage( "apache-modulo", "Apache + modulo", "/deployment-apache-modulo", null ),
-				new SubPage( "apache-mod-webobjects", "Apache + mod_WebObjects", "/deployment-apache-mod-webobjects", null ) );
+		return WCDeploymentOverviewPage
+				.allGuides()
+				.stream()
+				.map( g -> new SubPage( g.id(), g.title(), g.url(), null ) )
+				.toList();
 	}
 
 	public String guideClass() {
@@ -83,6 +84,14 @@ public class WCSiteTree extends WCComponent {
 
 	public List<Repo> projects() {
 		return Repos.projectRepos();
+	}
+
+	/**
+	 * The "Overview" row at the top of the Projects section, current on /projects itself
+	 */
+	public String projectsOverviewClass() {
+		final WCComponent page = page();
+		return page != null && "projects".equals( page.pageIdentifier() ) ? "is-current" : "";
 	}
 
 	public String projectURL() {

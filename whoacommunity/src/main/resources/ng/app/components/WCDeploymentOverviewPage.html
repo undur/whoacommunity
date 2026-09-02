@@ -1,0 +1,22 @@
+<wo:WCLook>
+	<div class="whoa-section">Deployment<span>three ways to put a WO application on a server</span></div>
+
+	<div class="whoa-panel deployment-intro">
+		<p>Each guide is a single shell script, shown in full with an explanation beside every step. You run it from your workstation against a fresh Linux server you have root ssh access to, and a few minutes later the server is serving over a real certificate, ready for apps.</p>
+		<p>The three scripts share most of their length. All of them build <a href="/project/wonder-slim-deployment">wotaskd and JavaMonitor</a> locally with Maven, install a JDK on the server if one is missing, lay out <code>/opt/webobjects</code>, create an unprivileged <code>webobjects</code> user that everything runs as, install systemd units and log rotation, and start the stack. Every one of them ends the same way: wotaskd launching and watching instances, JavaMonitor as the place you add apps, certificates from Let's Encrypt.</p>
+		<p>Where they differ is the edge: what listens on ports 80 and 443, and how a request finds its way from there to an application instance. That choice is the whole difference between the three, and it's what each guide is named after.</p>
+	</div>
+
+	<div class="project-grid project-grid-3">
+		<wo:repetition list="$guides" item="$currentGuide">
+			<wo:link href="$currentGuide.url" class="project-card">
+				<div class="project-card-head">
+					<span class="project-card-emoji"><wo:str value="$currentGuide.emoji" /></span>
+					<span class="project-card-name"><wo:str value="$currentGuide.title" /></span>
+					<span class="tree-tag"><wo:str value="$currentGuide.tag" /></span>
+				</div>
+				<p class="project-card-blurb"><wo:str value="$currentGuide.blurb" /></p>
+			</wo:link>
+		</wo:repetition>
+	</div>
+</wo:WCLook>

@@ -1,6 +1,7 @@
 package whoacommunity.util;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -64,6 +65,30 @@ public class Repos {
 				.filter( Repos::isOurs )
 				.filter( r -> !NOT_PROJECTS.contains( r.name() ) )
 				.toList();
+	}
+
+	/**
+	 * One-paragraph descriptions for the projects overview. Written here rather than
+	 * pulled from GitHub so they say what a project *replaces*, which the repo
+	 * descriptions don't.
+	 */
+	private static final Map<String, String> BLURBS = Map.ofEntries(
+			Map.entry( "ng-objects", "A new WO-like web framework, written from scratch: familiar to a WebObjects programmer but without Foundation, EOF or the session lock. Where everything else here is heading." ),
+			Map.entry( "wonder-slim", "A slimmed-down fork of Project Wonder with just what a modern WO application needs to run on a current JDK. Seventy-one frameworks became four; Java 1.8 became JDK 25." ),
+			Map.entry( "parsley", "The template parser for WebObjects: WOOgnl's inline syntax on ng-objects' parser, with line-and-column errors shown in the page, exception context and a render heat map in development." ),
+			Map.entry( "parslips", "WOLips cut down to a single plugin focused on template editing for WO and ng-objects, with refactorings WOLips never had, an element reference, and a dev server that tools and agents can drive." ),
+			Map.entry( "apiext-format", "The successor to WO's .api files: typed, directional, documented element bindings, so an editor can check a template against a real contract instead of guessing." ),
+			Map.entry( "vermilingua", "A Maven plugin that builds self-contained .woa bundles from scratch rather than wrapping the old Ant tasks. No NEXT_ROOT, no system-wide WO install, and the JVM is switchable at launch." ),
+			Map.entry( "wo-adaptor-jetty", "A Jetty-based WOAdaptor for classic WO applications: virtual threads, streaming request bodies and WebSockets, on the same HTTP stack ng-objects uses." ),
+			Map.entry( "modulo", "A Jetty reverse proxy that takes the place of mod_WebObjects — and, optionally, a complete front-end server that replaces Apache and certbot too: TLS with native ACME, HTTP/2, WebSockets and hot reload, from one TOML file." ),
+			Map.entry( "wonder-slim-deployment", "wotaskd and JavaMonitor, forked from Wonder and cleaned up: Foundation-free, with the wire protocols finally documented and a deploy endpoint that swaps bundles and bounces instances for you." ),
+			Map.entry( "parslips-dev-loop-skill", "A Claude Code skill that teaches an agent the edit, refresh, validate loop through the Parslips dev server and the running application's own endpoints." ) );
+
+	/**
+	 * @return The project's blurb for the overview page, falling back to nothing (the page shows the GitHub description then)
+	 */
+	public static String blurbFor( final Repo repo ) {
+		return BLURBS.get( repo.name() );
 	}
 
 	/**

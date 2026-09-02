@@ -656,6 +656,34 @@ a:hover { color: var(--whoa-accent); }
 /* "draft" pill on unpublished articles (only ever rendered in development) */
 .writing-row .post-tag, .rail-row .post-tag, .article-meta .post-tag { flex: 0 0 auto; align-self: center; }
 
+/* Projects overview: a grid of cards, one per project */
+.project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; max-width: 1100px; }
+@media (max-width: 899.98px) { .project-grid { grid-template-columns: minmax(0, 1fr); } }
+.project-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; }
+@media (max-width: 1299.98px) { .project-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 899.98px) { .project-grid-3 { grid-template-columns: minmax(0, 1fr); } }
+.deployment-intro { max-width: 80ch; margin-bottom: 1.25rem; }
+.deployment-intro p { margin: 0 0 .85rem; line-height: 1.6; }
+.deployment-intro p:last-child { margin-bottom: 0; }
+.project-card {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  padding: 1.1rem 1.25rem 1.2rem;
+  background: var(--whoa-panel);
+  border: 1px solid var(--whoa-line);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--whoa-text);
+  transition: border-color .14s ease, background .14s ease;
+}
+.project-card:hover { border-color: var(--whoa-dim); background: var(--whoa-panel-2); color: var(--whoa-text); }
+.project-card-head { display: flex; align-items: center; gap: .6rem; }
+.project-card-emoji { font-size: 1.35rem; line-height: 1; flex: 0 0 auto; }
+.project-card-name { font-family: "JetBrains Mono", monospace; font-size: 1.05rem; font-weight: 500; letter-spacing: -0.03em; color: var(--whoa-bright); flex: 1; min-width: 0; }
+.project-card:hover .project-card-name { color: var(--whoa-accent); }
+.project-card-blurb { margin: 0; font-size: .9rem; line-height: 1.55; color: var(--whoa-muted); }
+
 /* Real search field for logged-in users (the handoff's .whoa-search is a
    non-functional placeholder; this styles the actual <input>). */
 .whoa-search-input {
@@ -717,6 +745,25 @@ a:hover { color: var(--whoa-accent); }
 .article-body .token.operator, .article-body .token.entity, .article-body .token.url { color: #cfd6e2; background: transparent; }
 .article-body .token.atrule, .article-body .token.attr-value, .article-body .token.keyword { color: #8fb4ff; }
 .article-body .token.function, .article-body .token.class-name { color: #f0a35e; }
+/* Prism marks markup tags with class "token tag" — which collides with Tabler's .tag
+   pill component. Strip that styling inside code so XML/HTML samples read as text. */
+.article-body pre .token.tag {
+  display: inline;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  height: auto;
+  min-height: 0;
+  line-height: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  box-shadow: none;
+  gap: 0;
+  color: #e8b3ff;
+}
+.article-body pre .token.tag .token.punctuation { color: #8b95a5; }
 .article-body .token.regex, .article-body .token.important, .article-body .token.variable { color: #f6d67a; }
 
 /* ============================================================
