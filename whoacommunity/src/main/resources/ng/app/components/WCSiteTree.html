@@ -8,13 +8,6 @@
 				<span class="tree-tag"><wo:str value="$section.count" /></span>
 			</wo:if>
 		</wo:link>
-		<wo:if condition="$isDeploymentSection">
-			<wo:repetition list="$deploymentGuides" item="$guide">
-				<wo:link href="$guide.url" class="$guideClass">
-					<span class="tree-name"><wo:str value="$guide.title" /></span>
-				</wo:link>
-			</wo:repetition>
-		</wo:if>
 	</wo:repetition>
 
 	<div class="whoa-tree-head">Projects</div>
@@ -42,12 +35,15 @@
 		</wo:if>
 	</wo:repetition>
 
+	<div class="whoa-tree-head">GitHub</div>
+	<a href="https://github.com/undur"><span class="tree-emoji">↗</span><span class="tree-name">undur</span></a>
+	<a href="https://github.com/ngobjects"><span class="tree-emoji">↗</span><span class="tree-name">ngobjects</span></a>
+	<a href="https://github.com/wocommunity"><span class="tree-emoji">↗</span><span class="tree-name">wocommunity</span></a>
+
 	<div class="whoa-tree-head">Elsewhere</div>
 	<a href="https://wiki.wocommunity.org/"><span class="tree-emoji">↗</span><span class="tree-name">WOCommunity wiki</span></a>
-	<a href="https://lists.wocommunity.org/Lists/webobjects-dev/List.html"><span class="tree-emoji">↗</span><span class="tree-name">Mailing lists</span></a>
-	<a href="https://github.com/undur"><span class="tree-emoji">↗</span><span class="tree-name">github/undur</span></a>
-	<a href="https://github.com/ngobjects"><span class="tree-emoji">↗</span><span class="tree-name">github/ngobjects</span></a>
-	<a href="https://github.com/wocommunity"><span class="tree-emoji">↗</span><span class="tree-name">github/wocommunity</span></a>
+	<a href="https://lists.wocommunity.org/Lists/webobjects-dev/List.html"><span class="tree-emoji">↗</span><span class="tree-name">WOCommunity list archive</span></a>
+	<a href="https://lists.apple.com/archives/list/webobjects-dev@lists.apple.com/"><span class="tree-emoji">↗</span><span class="tree-name">Apple list archive</span></a>
 
 	<wo:if condition="$isLocal">
 		<div class="whoa-tree-head">Admin</div>

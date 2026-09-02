@@ -113,6 +113,12 @@ public class Application extends NGApplication {
 
 		if( "text/css".equals( response.headerForKey( "Content-Type" ) ) ) {
 			response.setHeader( "Content-Type", "text/css; charset=utf-8" );
+
+			// Resources are served with max-age=3600, which in development means a
+			// plain reload keeps showing the old stylesheet for an hour. Revalidate every time.
+			if( isDevelopmentMode() ) {
+				response.setHeader( "Cache-Control", "no-cache" );
+			}
 		}
 
 		// Font files never change (a changed font gets a new filename), so let

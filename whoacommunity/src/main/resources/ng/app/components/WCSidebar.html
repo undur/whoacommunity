@@ -10,7 +10,7 @@
 </div>
 
 <div class="rail-block">
-	<div class="rail-head">Releases</div>
+	<div class="rail-head">Releases<wo:link href="/dev-feed?tab=releases">all →</wo:link></div>
 	<wo:repetition list="$releases" item="$currentRelease">
 		<wo:link href="$currentRelease.url" class="rail-row">
 			<span class="rail-emoji"><wo:str value="$currentRelease.repo.emoji" /></span><span class="rail-repo"><wo:str value="$currentRelease.repo.name" /></span>
@@ -21,7 +21,7 @@
 </div>
 
 <div class="rail-block">
-	<div class="rail-head">Open issues</div>
+	<div class="rail-head">Open issues<wo:link href="/dev-feed?tab=issues">all →</wo:link></div>
 	<wo:repetition list="$openIssues" item="$currentIssue">
 		<wo:link href="$currentIssue.url" class="rail-row">
 			<span class="rail-emoji"><wo:str value="$currentIssue.repo.emoji" /></span><span class="rail-repo"><wo:str value="$currentIssue.repo.name" /></span>

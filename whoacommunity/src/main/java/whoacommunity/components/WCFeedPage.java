@@ -55,6 +55,17 @@ public class WCFeedPage extends WCComponent {
 
 	public WCFeedPage( NGContext context ) {
 		super( context );
+
+		// /dev-feed?tab=releases opens on that tab, so the front page rail can deep-link
+		final String requested = context.request().formValueForKey( "tab" );
+
+		if( requested != null ) {
+			for( Tab t : Tab.values() ) {
+				if( t.name().equals( requested ) ) {
+					tab = t;
+				}
+			}
+		}
 	}
 
 	@Override

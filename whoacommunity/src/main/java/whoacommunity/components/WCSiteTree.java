@@ -53,28 +53,8 @@ public class WCSiteTree extends WCComponent {
 		return List.of(
 				new Section( "writing", "◆", "Writing", "/", String.valueOf( articleCount() ) ),
 				new Section( "activity", "◈", "Activity", "/dev-feed", null ),
-				new Section( "deployment", "▤", "Deployment", "/deployment", null ),
+				new Section( "deployment", "▤", "Deployment guides", "/deployment", null ),
 				new Section( "videos", "◇", "Videos", "/videos", String.valueOf( videoCount ) ) );
-	}
-
-	public boolean isDeploymentSection() {
-		return "deployment".equals( section.id() );
-	}
-
-	public SubPage guide;
-
-	public List<SubPage> deploymentGuides() {
-		return WCDeploymentOverviewPage
-				.allGuides()
-				.stream()
-				.map( g -> new SubPage( g.id(), g.title(), g.url(), null ) )
-				.toList();
-	}
-
-	public String guideClass() {
-		final WCComponent page = page();
-		final boolean current = page != null && guide.id().equals( page.currentDeploymentGuide() );
-		return current ? "is-sub is-current" : "is-sub";
 	}
 
 	public String sectionClass() {

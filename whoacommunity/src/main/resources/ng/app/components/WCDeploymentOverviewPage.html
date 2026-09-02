@@ -15,6 +15,11 @@
 					<span class="project-card-name"><wo:str value="$currentGuide.title" /></span>
 					<span class="tree-tag"><wo:str value="$currentGuide.tag" /></span>
 				</div>
+				<div class="topo">
+					<wo:repetition list="$currentGuide.nodes" item="$currentNode">
+						<wo:container elementName="span" class="$currentNodeClass"><span class="topo-label"><wo:str value="$currentNode.label" /></span><span class="topo-caption"><wo:str value="$currentNode.caption" /></span></wo:container>
+					</wo:repetition>
+				</div>
 				<p class="project-card-blurb"><wo:str value="$currentGuide.blurb" /></p>
 			</wo:link>
 		</wo:repetition>
