@@ -69,6 +69,22 @@ public class WCProjectPage extends WCComponent {
 		return "/project/" + repo.name();
 	}
 
+	public String projectReleasesURL() {
+		return projectURL() + "/releases";
+	}
+
+	public String projectIssuesURL() {
+		return projectURL() + "/issues";
+	}
+
+	public boolean hasReleases() {
+		return !projectReleases().isEmpty();
+	}
+
+	public boolean hasIssues() {
+		return !projectIssues().isEmpty();
+	}
+
 	public String projectCommitsURL() {
 		return projectURL() + "/commits";
 	}

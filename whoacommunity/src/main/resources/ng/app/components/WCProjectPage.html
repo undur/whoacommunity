@@ -49,6 +49,22 @@
 						<wo:link href="$current.link" class="rail-row"><span class="rail-text"><wo:str value="$current.title" /></span><span class="rail-when"><wo:str value="$current.shortDateFormatted" /></span></wo:link>
 					</wo:repetition>
 				</div>
+				<wo:if condition="$hasReleases">
+					<div class="rail-block">
+						<div class="rail-head">Releases<wo:link href="$projectReleasesURL">all →</wo:link></div>
+						<wo:repetition list="$projectReleases" item="$currentRelease">
+							<wo:link href="$currentRelease.url" class="rail-row"><span class="rail-text rail-version"><wo:str value="$currentRelease.tagName" /></span><span class="rail-when"><wo:str value="$currentRelease.shortDateFormatted" /></span></wo:link>
+						</wo:repetition>
+					</div>
+				</wo:if>
+				<wo:if condition="$hasIssues">
+					<div class="rail-block">
+						<div class="rail-head">Open issues<wo:link href="$projectIssuesURL">all <wo:str value="$openIssueCount" /> →</wo:link></div>
+						<wo:repetition list="$projectIssues" item="$currentIssue">
+							<wo:link href="$currentIssue.url" class="rail-row"><span class="rail-text-wrap"><wo:str value="$currentIssue.title" /></span><span class="rail-when"><wo:str value="$currentIssue.shortDateFormatted" /></span></wo:link>
+						</wo:repetition>
+					</div>
+				</wo:if>
 			</div>
 		</div>
 	</wo:if>

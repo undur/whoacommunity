@@ -417,6 +417,15 @@ a:hover { color: var(--whoa-accent); }
 
 .feed-table-wrap { background: var(--whoa-panel); border: 1px solid var(--whoa-line); border-radius: 8px; overflow: hidden; }
 
+.feed-tabs { display: flex; gap: .25rem; padding: .35rem .6rem 0; border-bottom: 1px solid var(--whoa-line); background: var(--whoa-panel-2); }
+.feed-tabs a {
+  font-family: "JetBrains Mono", monospace; font-size: .7rem; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--whoa-muted); text-decoration: none; padding: .5rem .7rem .55rem;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.feed-tabs a:hover { color: var(--whoa-bright); }
+.feed-tabs a.is-on { color: var(--whoa-bright); border-bottom-color: var(--whoa-accent); }
+
 .feed-filter {
   display: flex;
   align-items: center;
@@ -514,7 +523,8 @@ a:hover { color: var(--whoa-accent); }
 .comments-card { margin-top: 2.6rem; padding-top: 1.8rem; border-top: 1px solid var(--whoa-line); max-width: 74ch; }
 .comments-title { font-family: "JetBrains Mono", monospace; font-size: .67rem; letter-spacing: .14em; text-transform: uppercase; color: var(--whoa-dim); margin-bottom: 1.1rem; }
 .comments-empty { color: var(--whoa-muted); font-size: .92rem; margin-bottom: 1.8rem; }
-.comment { padding: 1rem 0; border-bottom: 1px solid var(--whoa-line-2); }
+/* Scoped to the thread: a bare .comment would also style Prism's "token comment" spans in code samples */
+.comments-card .comment { padding: 1rem 0; border-bottom: 1px solid var(--whoa-line-2); }
 .comment-meta { display: flex; align-items: baseline; gap: .5rem; margin-bottom: .3rem; }
 .comment-name { font-size: .85rem; font-weight: 600; color: var(--whoa-bright); }
 .comment-date { font-family: "JetBrains Mono", monospace; font-size: .68rem; color: var(--whoa-dim); }

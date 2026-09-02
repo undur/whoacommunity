@@ -7,12 +7,14 @@ import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
 import whoacommunity.github.Commit;
 import whoacommunity.github.GithubFeed;
+import whoacommunity.github.OpenIssue;
+import whoacommunity.github.Release;
 import whoacommunity.util.Repos;
 import whoacommunity.util.Repos.Repo;
 
 /**
- * Development activity: every commit we hold across the tracked repos,
- * filterable by repository from the rail.
+ * Development activity: commits, releases and open issues across the tracked
+ * repos, one tab each, filterable by repository from the rail.
  */
 public class WCFeedPage extends WCComponent {
 
@@ -21,12 +23,33 @@ public class WCFeedPage extends WCComponent {
 	 */
 	public record RepoGroup( String name, List<Repo> repos ) {}
 
+	public enum Tab {
+		commits( "Commits", "50 most recent commits each", "Only the 50 most recent commits are fetched per repository, so this isn't the full history — it's what GitHub's feed gives us." ),
+		releases( "Releases", "3 most recent releases each", "Only the three most recent published releases are fetched per repository." ),
+		issues( "Open issues", "6 most recently updated each", "Only the six most recently updated open issues are fetched per repository — the count in the rail is the true total." );
+
+		public final String title;
+		public final String scope;
+		public final String note;
+
+		Tab( String title, String scope, String note ) {
+			this.title = title;
+			this.scope = scope;
+			this.note = note;
+		}
+	}
+
 	public RepoGroup currentGroup;
 	public Repo currentRepo;
+	public Tab currentTab;
 
 	/**
-	 * The repo the user has filtered the commit list down to, or null when
-	 * showing all commits.
+	 * Which of the three lists is showing
+	 */
+	public Tab tab = Tab.commits;
+
+	/**
+	 * The repo the user has filtered the list down to, or null when showing everything.
 	 */
 	public Repo selectedRepo;
 
@@ -44,6 +67,31 @@ public class WCFeedPage extends WCComponent {
 		return "activity";
 	}
 
+	public List<Tab> tabs() {
+		return List.of( Tab.values() );
+	}
+
+	public NGActionResults selectTab() {
+		tab = currentTab;
+		return null;
+	}
+
+	public String tabClass() {
+		return currentTab == tab ? "is-on" : "";
+	}
+
+	public boolean isCommits() {
+		return tab == Tab.commits;
+	}
+
+	public boolean isReleases() {
+		return tab == Tab.releases;
+	}
+
+	public boolean isIssues() {
+		return tab == Tab.issues;
+	}
+
 	public List<RepoGroup> groups() {
 		return List.of(
 				new RepoGroup( "Our repositories", Repos.ourRepos() ),
@@ -55,12 +103,17 @@ public class WCFeedPage extends WCComponent {
 	 */
 	public List<Commit> allCommits() {
 		final List<Commit> all = GithubFeed.shared.commits();
+		return selectedRepo == null ? all : all.stream().filter( c -> c.repo() == selectedRepo ).toList();
+	}
 
-		if( selectedRepo == null ) {
-			return all;
-		}
+	public List<Release> allReleases() {
+		final List<Release> all = GithubFeed.shared.releases();
+		return selectedRepo == null ? all : all.stream().filter( r -> r.repo() == selectedRepo ).toList();
+	}
 
-		return all.stream().filter( c -> c.repo() == selectedRepo ).toList();
+	public List<OpenIssue> allIssues() {
+		final List<OpenIssue> all = GithubFeed.shared.issues();
+		return selectedRepo == null ? all : all.stream().filter( i -> i.repo() == selectedRepo ).toList();
 	}
 
 	public boolean hasFilter() {
@@ -86,7 +139,14 @@ public class WCFeedPage extends WCComponent {
 		return currentRepo == selectedRepo ? "is-on" : "";
 	}
 
-	public int currentRepoCommitCount() {
-		return GithubFeed.shared.commitsFor( currentRepo ).size();
+	/**
+	 * @return How many rows the current tab holds for the rail's repo, so the counts follow the tab
+	 */
+	public int currentRepoCount() {
+		return switch( tab ) {
+			case commits -> GithubFeed.shared.commitsFor( currentRepo ).size();
+			case releases -> GithubFeed.shared.releasesFor( currentRepo ).size();
+			case issues -> GithubFeed.shared.openIssueCountFor( currentRepo );
+		};
 	}
 }

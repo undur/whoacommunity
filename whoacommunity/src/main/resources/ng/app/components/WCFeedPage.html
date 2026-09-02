@@ -2,28 +2,71 @@
 	<div class="feed-layout">
 		<div>
 			<div class="whoa-section">Development activity<a href="/atom.xml">Atom feed ↗</a></div>
-			<wo:auc id="commitsUC" class="feed-table-wrap">
+			<wo:auc id="feedUC" class="feed-table-wrap">
+				<div class="feed-tabs">
+					<wo:repetition list="$tabs" item="$currentTab">
+						<wo:aul action="$selectTab" updateContainerID="feedUC;reposUC" class="$tabClass"><wo:str value="$currentTab.title" /></wo:aul>
+					</wo:repetition>
+				</div>
 				<div class="feed-filter">
-					<span>Showing <strong><wo:str value="$filterDescription" /></strong> — 50 most recent commits each</span>
+					<span>Showing <strong><wo:str value="$filterDescription" /></strong> — <wo:str value="$tab.scope" /></span>
 					<wo:if condition="$hasFilter">
-						<wo:aul action="$clearFilter" updateContainerID="commitsUC;reposUC" class="clear">clear filter</wo:aul>
+						<wo:aul action="$clearFilter" updateContainerID="feedUC;reposUC" class="clear">clear filter</wo:aul>
 					</wo:if>
 				</div>
-				<table class="feed-table">
-					<thead>
-						<tr><th>Repository</th><th>When</th><th>Message</th><th>Author</th></tr>
-					</thead>
-					<tbody>
-						<wo:repetition list="$allCommits" item="$current">
-							<tr>
-								<td class="c-repo"><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
-								<td class="c-when"><wo:str value="$current.shortDateFormatted" /></td>
-								<td class="c-msg"><wo:link href="$current.link"><wo:str value="$current.title" /></wo:link></td>
-								<td class="c-who"><wo:str value="$current.author" /></td>
-							</tr>
-						</wo:repetition>
-					</tbody>
-				</table>
+
+				<wo:if condition="$isCommits">
+					<table class="feed-table">
+						<thead>
+							<tr><th>Repository</th><th>When</th><th>Message</th><th>Author</th></tr>
+						</thead>
+						<tbody>
+							<wo:repetition list="$allCommits" item="$current">
+								<tr>
+									<td class="c-repo"><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
+									<td class="c-when"><wo:str value="$current.shortDateFormatted" /></td>
+									<td class="c-msg"><wo:link href="$current.link"><wo:str value="$current.title" /></wo:link></td>
+									<td class="c-who"><wo:str value="$current.author" /></td>
+								</tr>
+							</wo:repetition>
+						</tbody>
+					</table>
+				</wo:if>
+
+				<wo:if condition="$isReleases">
+					<table class="feed-table">
+						<thead>
+							<tr><th>Repository</th><th>When</th><th>Release</th></tr>
+						</thead>
+						<tbody>
+							<wo:repetition list="$allReleases" item="$currentRelease">
+								<tr>
+									<td class="c-repo"><wo:str value="$currentRelease.repo.emoji" /> <wo:str value="$currentRelease.repo.name" /></td>
+									<td class="c-when"><wo:str value="$currentRelease.shortDateFormatted" /></td>
+									<td class="c-msg"><wo:link href="$currentRelease.url"><wo:str value="$currentRelease.displayName" /></wo:link></td>
+								</tr>
+							</wo:repetition>
+						</tbody>
+					</table>
+				</wo:if>
+
+				<wo:if condition="$isIssues">
+					<table class="feed-table">
+						<thead>
+							<tr><th>Repository</th><th>Updated</th><th>Issue</th><th>Opened by</th></tr>
+						</thead>
+						<tbody>
+							<wo:repetition list="$allIssues" item="$currentIssue">
+								<tr>
+									<td class="c-repo"><wo:str value="$currentIssue.repo.emoji" /> <wo:str value="$currentIssue.repo.name" /></td>
+									<td class="c-when"><wo:str value="$currentIssue.shortDateFormatted" /></td>
+									<td class="c-msg"><wo:link href="$currentIssue.url"><wo:str value="$currentIssue.title" /></wo:link></td>
+									<td class="c-who"><wo:str value="$currentIssue.authorLogin" /></td>
+								</tr>
+							</wo:repetition>
+						</tbody>
+					</table>
+				</wo:if>
 			</wo:auc>
 		</div>
 		<div>
@@ -34,17 +77,17 @@
 					<ul class="repo-filter">
 						<wo:repetition list="$currentGroup.repos" item="$currentRepo">
 							<li>
-								<wo:aul action="$selectRepo" updateContainerID="commitsUC;reposUC" class="$repoFilterClass">
+								<wo:aul action="$selectRepo" updateContainerID="feedUC;reposUC" class="$repoFilterClass">
 									<span><wo:str value="$currentRepo.emoji" /></span>
 									<span class="rail-text"><wo:str value="$currentRepo.name" /></span>
-									<span class="n"><wo:str value="$currentRepoCommitCount" /></span>
+									<span class="n"><wo:str value="$currentRepoCount" /></span>
 								</wo:aul>
 							</li>
 						</wo:repetition>
 					</ul>
 				</wo:repetition>
+				<div class="note"><wo:str value="$tab.note" /></div>
 			</wo:auc>
-			<div class="note">Only the 50 most recent commits are fetched per repository, so this isn't the full history — it's what GitHub's feed gives us.</div>
 		</div>
 	</div>
 </wo:WCLook>
