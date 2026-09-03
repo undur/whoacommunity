@@ -145,12 +145,28 @@ public class Application extends NGApplication {
 				.map( "/projects", WCProjectsPage.class )
 				.map( "/project/*", this::viewProject )
 				.map( "/atom.xml", this::atom )
+				.map( "/robots.txt", this::robots )
 				.map( "/refresh-data", this::refreshData )
 				.map( "/guides", WCGuidesPage.class )
 				.map( "/deployment", WCGuidesPage.class )
 				.map( "/deployment-config", WCDeploymentPage.class )
 				.map( "/deployment-apache-modulo", WCDeploymentApacheModuloPage.class )
 				.map( "/deployment-apache-mod-webobjects", WCDeploymentApacheClassicPage.class );
+	}
+
+	/**
+	 * Crawlers are welcome everywhere except the endpoints that do work or carry session state
+	 */
+	public NGActionResults robots( NGRequest request ) {
+		final String text = """
+				User-agent: *
+				Disallow: /refresh-data
+				Disallow: /no/
+				Allow: /
+				""";
+		final NGResponse response = new NGResponse( text, 200 );
+		response.setHeader( "Content-Type", "text/plain; charset=utf-8" );
+		return response;
 	}
 
 	/**

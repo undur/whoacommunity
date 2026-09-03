@@ -97,6 +97,19 @@ public class WCMain extends WCComponent {
 				.toList();
 	}
 
+	/**
+	 * @return The latest release on its project's releases page, anchored — or the activity releases tab for a repo without a project page
+	 */
+	public String latestReleaseURL() {
+		final Release release = latestRelease();
+
+		if( Repos.projectRepoNamed( release.repo().name() ).isPresent() ) {
+			return "/project/" + release.repo().name() + "/releases#" + release.anchorId();
+		}
+
+		return "/dev-feed?tab=releases";
+	}
+
 	public long commitCountThisWeek() {
 		return ourCommitsThisWeek().size();
 	}

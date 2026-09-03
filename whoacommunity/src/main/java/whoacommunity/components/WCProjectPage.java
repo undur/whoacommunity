@@ -215,6 +215,18 @@ public class WCProjectPage extends WCComponent {
 		return GithubFeed.shared.commitsFor( repo );
 	}
 
+	public String currentReleaseHref() {
+		return "#" + currentRelease.anchorId();
+	}
+
+	public String currentReleaseAnchorId() {
+		return currentRelease.anchorId();
+	}
+
+	public boolean hasProjectReleases() {
+		return !projectReleases().isEmpty();
+	}
+
 	public List<Release> projectReleases() {
 		return GithubFeed.shared.releasesFor( repo );
 	}

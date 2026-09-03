@@ -181,8 +181,8 @@ public class GithubFeed {
 						totalCount
 						nodes { number title url createdAt updatedAt author { login } }
 					}
-					releases(first: 3, orderBy: {field: CREATED_AT, direction: DESC}) {
-						nodes { name tagName url createdAt isPrerelease isDraft }
+					releases(first: 20, orderBy: {field: CREATED_AT, direction: DESC}) {
+						nodes { name tagName url createdAt isPrerelease isDraft description tagCommit { committedDate } }
 					}
 					defaultBranchRef {
 						target {
@@ -262,12 +262,19 @@ public class GithubFeed {
 
 			for( ReleaseNode n : rn.releases().nodes() ) {
 				if( n.isDraft() || n.isPrerelease() ) continue;
+				// A release's createdAt is when the release OBJECT was made on GitHub, which for a
+				// release published after the fact (a backfilled history, a tag released later) says
+				// nothing about when the code shipped. The tagged commit's date does; prefer it.
+				final Instant releasedAt = n.tagCommit() != null && n.tagCommit().committedDate() != null
+						? n.tagCommit().committedDate()
+						: n.createdAt();
 				out.add( new Release(
 						repos.get( i ),
 						n.name(),
 						n.tagName(),
 						n.url(),
-						n.createdAt() ) );
+						releasedAt,
+						n.description() ) );
 			}
 		}
 		out.sort( Comparator.comparing( Release::createdAt, Comparator.nullsLast( Comparator.reverseOrder() ) ) );

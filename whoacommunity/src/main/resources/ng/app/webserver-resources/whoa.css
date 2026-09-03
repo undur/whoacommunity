@@ -266,7 +266,8 @@ a:hover { color: var(--whoa-accent); }
 
 .whoa-content { padding: 1.9rem 1.6rem 4rem; max-width: 1420px; }
 .whoa-grid { display: grid; grid-template-columns: minmax(0,1fr) 400px; gap: 2.4rem; }
-@media (max-width: 1279.98px) { .whoa-grid { grid-template-columns: minmax(0,1fr); } }
+/* Breakpoints sit 100px under a half-width 2560px window (1280px), so a tiled browser keeps the two-column layout */
+@media (max-width: 1179.98px) { .whoa-grid { grid-template-columns: minmax(0,1fr); } }
 
 /* ---------- Status strip ---------- */
 
@@ -281,7 +282,10 @@ a:hover { color: var(--whoa-accent); }
   margin-bottom: 2.2rem;
 }
 
-.whoa-status > div { background: var(--whoa-panel); padding: .9rem 1.1rem; }
+.whoa-status > div, .whoa-status > a { background: var(--whoa-panel); padding: .9rem 1.1rem; }
+.whoa-status > a { display: block; text-decoration: none; color: inherit; }
+.whoa-status > a:hover { background: var(--whoa-panel-2); text-decoration: none; }
+.whoa-status > a:hover .v { color: var(--whoa-accent); }
 .whoa-status .k { font-family: "JetBrains Mono", monospace; font-size: .6rem; letter-spacing: .13em; text-transform: uppercase; color: var(--whoa-dim); margin-bottom: .4rem; }
 .whoa-status .v { font-family: "JetBrains Mono", monospace; font-size: 1.05rem; color: var(--whoa-bright); letter-spacing: -0.015em; }
 .whoa-status .v .unit { color: var(--whoa-accent); }
@@ -563,6 +567,23 @@ a:hover { color: var(--whoa-accent); }
 .toc a:hover { color: var(--whoa-accent); border-left-color: var(--whoa-accent); }
 .toc a.is-current { color: var(--whoa-bright); font-weight: 500; border-left-color: var(--whoa-accent); }
 .toc a.is-deep { padding-left: 1.5rem; font-size: .75rem; }
+.toc .toc-note { margin-top: 1.4rem; }
+.toc a .toc-when { float: right; font-family: "JetBrains Mono", monospace; font-size: .66rem; color: var(--whoa-dim); font-variant-numeric: tabular-nums; }
+
+/* Release notes on a project's releases page */
+.release-list { display: flex; flex-direction: column; gap: 1.1rem; }
+.release { scroll-margin-top: 4.2rem; }
+.release-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: .6rem; margin-bottom: .4rem; }
+.release-title { font-size: 1.2rem; font-weight: 600; letter-spacing: -0.018em; color: var(--whoa-bright); margin: 0; }
+.release-date { font-family: "JetBrains Mono", monospace; font-size: .7rem; color: var(--whoa-dim); font-variant-numeric: tabular-nums; }
+.release-link { margin-left: auto; font-size: .78rem; color: var(--whoa-muted); text-decoration: none; }
+.release-link:hover { color: var(--whoa-accent); }
+.release-empty { margin: 0; font-size: .9rem; color: var(--whoa-dim); }
+/* headings inside release notes sit under the release title, so they step down a level */
+.release-body h1, .release-body h2 { font-size: 1rem; margin: 1.4rem 0 .4rem; }
+.release-body h3 { margin-top: 1.2rem; }
+.release-body > :first-child { margin-top: 0; }
+.release-body > :last-child { margin-bottom: 0; }
 
 /* ---------- Doc source badge ---------- */
 
@@ -656,7 +677,7 @@ a:hover { color: var(--whoa-accent); }
   text-decoration: none;
   line-height: 1;
 }
-.whoa-powered:hover { border-color: var(--whoa-accent-line); background: var(--whoa-accent-soft); }
+.whoa-powered:hover { border-color: var(--whoa-accent-line); background: var(--whoa-accent-soft); text-decoration: none; }
 .whoa-powered-mark { font-size: 15px; flex: 0 0 auto; }
 .whoa-powered-text { display: flex; flex-direction: column; gap: 2px; font-family: "JetBrains Mono", monospace; min-width: 0; }
 .whoa-powered-text .k { font-size: 7.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--whoa-dim); }
@@ -665,13 +686,17 @@ a:hover { color: var(--whoa-accent); }
 
 /* "draft" pill on unpublished articles (only ever rendered in development) */
 .writing-row .post-tag, .rail-row .post-tag, .article-meta .post-tag { flex: 0 0 auto; align-self: center; }
+.beta-tag { color: #b45309; background: rgba(245, 158, 11, .14); border-color: rgba(245, 158, 11, .5); }
+:root[data-theme="dark"] .beta-tag { color: #fbbf24; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .beta-tag { color: #fbbf24; } }
+.writing-drafts-section { margin-top: 2.6rem; }
 
 /* Projects overview: a grid of cards, one per project */
 .project-section + .project-grid { margin-bottom: 2.2rem; }
 .project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; max-width: 1100px; }
 @media (max-width: 899.98px) { .project-grid { grid-template-columns: minmax(0, 1fr); } }
 .project-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; }
-@media (max-width: 1299.98px) { .project-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1179.98px) { .project-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 899.98px) { .project-grid-3 { grid-template-columns: minmax(0, 1fr); } }
 .guides-section { margin-top: .4rem; }
 .deployment-intro { max-width: 80ch; margin-bottom: 1.25rem; }

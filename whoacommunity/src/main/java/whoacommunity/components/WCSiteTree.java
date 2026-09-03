@@ -103,7 +103,7 @@ public class WCSiteTree extends WCComponent {
 		final List<SubPage> out = new ArrayList<>();
 		final String base = projectURL();
 		out.add( new SubPage( "overview", "Overview", base, null ) );
-		out.add( new SubPage( "commits", "Commits", base + "/commits", countOrNull( GithubFeed.shared.commitsFor( project ).size() ) ) );
+		out.add( new SubPage( "commits", "Commits", base + "/commits", null ) ); // no count: it only ever says 50, the fetch limit
 		out.add( new SubPage( "releases", "Releases", base + "/releases", countOrNull( GithubFeed.shared.releasesFor( project ).size() ) ) );
 		out.add( new SubPage( "issues", "Issues", base + "/issues", countOrNull( GithubFeed.shared.openIssueCountFor( project ) ) ) );
 		return out;

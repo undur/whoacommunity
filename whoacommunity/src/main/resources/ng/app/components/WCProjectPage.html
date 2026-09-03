@@ -106,25 +106,43 @@
 	</wo:if>
 
 	<wo:if condition="$isReleases">
-		<div class="feed-layout">
+		<div class="whoa-grid">
 			<div>
 				<div class="whoa-section">Releases<wo:link href="$releasesOnGithubURL" target="_blank" rel="noopener">On GitHub ↗</wo:link></div>
-				<div class="feed-table-wrap">
-					<table class="feed-table">
-						<thead><tr><th>When</th><th>Release</th></tr></thead>
-						<tbody>
-							<wo:repetition list="$projectReleases" item="$currentRelease">
-								<tr>
-									<td class="c-when"><wo:str value="$currentRelease.shortDateFormatted" /></td>
-									<td class="c-msg"><wo:link href="$currentRelease.url"><wo:str value="$currentRelease.displayName" /></wo:link></td>
-								</tr>
-							</wo:repetition>
-						</tbody>
-					</table>
-				</div>
+				<wo:if condition="$hasProjectReleases">
+					<div class="release-list">
+						<wo:repetition list="$projectReleases" item="$currentRelease">
+							<wo:container elementName="section" class="whoa-panel release" id="$currentReleaseAnchorId">
+								<div class="release-head">
+									<h2 class="release-title"><wo:str value="$currentRelease.displayName" /></h2>
+									<span class="tree-tag"><wo:str value="$currentRelease.tagName" /></span>
+									<span class="release-date"><wo:str value="$currentRelease.shortDateFormatted" /></span>
+									<wo:link href="$currentRelease.url" class="release-link" target="_blank" rel="noopener">on GitHub ↗</wo:link>
+								</div>
+								<wo:if condition="$currentRelease.hasBody">
+									<div class="article-body release-body"><wo:str value="$currentRelease.bodyAsHTML" escapeHTML="$false" /></div>
+								</wo:if>
+								<wo:if condition="$currentRelease.hasBody" negate="$true">
+									<p class="release-empty">No release notes.</p>
+								</wo:if>
+							</wo:container>
+						</wo:repetition>
+					</div>
+				</wo:if>
+				<wo:if condition="$hasProjectReleases" negate="$true">
+					<div class="whoa-panel"><p class="project-empty">No published releases.</p></div>
+				</wo:if>
 			</div>
 			<div>
-				<div class="note">Only the three most recent published releases are fetched per repository.</div>
+				<wo:if condition="$hasProjectReleases">
+					<nav class="toc">
+						<div class="toc-head">Releases</div>
+						<wo:repetition list="$projectReleases" item="$currentRelease">
+							<wo:link href="$currentReleaseHref"><wo:str value="$currentRelease.tagName" /><span class="toc-when"><wo:str value="$currentRelease.shortDateFormatted" /></span></wo:link>
+						</wo:repetition>
+						<div class="note toc-note">The twenty most recent published releases, with their notes as written on GitHub.</div>
+					</nav>
+				</wo:if>
 			</div>
 		</div>
 	</wo:if>

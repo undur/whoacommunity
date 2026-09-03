@@ -16,6 +16,7 @@
 					<span class="project-card-emoji"><wo:str value="$currentGuide.emoji" /></span>
 					<span class="project-card-name"><wo:str value="$currentGuide.title" /></span>
 					<span class="tree-tag"><wo:str value="$currentGuide.tag" /></span>
+					<wo:if condition="$currentGuide.beta"><span class="post-tag beta-tag">beta</span></wo:if>
 				</div>
 				<div class="topo">
 					<wo:repetition list="$currentGuide.nodes" item="$currentNode">

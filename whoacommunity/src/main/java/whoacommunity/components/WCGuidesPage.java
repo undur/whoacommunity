@@ -21,7 +21,7 @@ public class WCGuidesPage extends WCComponent {
 	/**
 	 * @param nodes The request path drawn in the card: edge → (proxy) → apps
 	 */
-	public record Guide( String id, String emoji, String title, String url, String tag, String blurb, List<Node> nodes ) {}
+	public record Guide( String id, String emoji, String title, String url, String tag, boolean beta, String blurb, List<Node> nodes ) {}
 
 	/**
 	 * A box in the card's little topology diagram
@@ -33,13 +33,13 @@ public class WCGuidesPage extends WCComponent {
 	private static final Node APPS = new Node( "apps", "instances", "apps" );
 
 	private static final List<Guide> GUIDES = List.of(
-			new Guide( "modulo", "🤖", "Pure modulo", "/deployment-config", "recommended",
+			new Guide( "modulo", "🤖", "Pure modulo", "/deployment-config", "new hotness", true,
 					"modulo alone on ports 80 and 443: TLS from Let's Encrypt via native ACME, virtual hosts, static files and routing to instances, from one TOML file. No Apache, no certbot, no compiled module. The field-tested path, and the one we run ourselves.",
 					List.of( new Node( "modulo", "80/443 · TLS · routing", "edge" ), APPS ) ),
-			new Guide( "apache-modulo", "🪶", "Apache + modulo", "/deployment-apache-modulo", "hybrid",
+			new Guide( "apache-modulo", "🪶", "Apache + modulo", "/deployment-apache-modulo", "hybrid", false,
 					"Apache keeps the edge — certbot certificates, vhosts, static files — and modulo stands behind it as the WO-aware reverse proxy, replacing mod_WebObjects without compiling anything. For an Apache estate you can't, or won't, retire.",
 					List.of( new Node( "Apache", "80/443 · TLS", "edge" ), new Node( "modulo", "routing", "proxy" ), APPS ) ),
-			new Guide( "apache-mod-webobjects", "🏛️", "Apache + mod_WebObjects", "/deployment-apache-mod-webobjects", "classic",
+			new Guide( "apache-mod-webobjects", "🏛️", "Apache + mod_WebObjects", "/deployment-apache-mod-webobjects", "classic", false,
 					"Deployment as it has been done since the last century: Apache with a compiled mod_WebObjects module, certbot, and a C toolchain on the production server to build it. Published for comparison, so you can see what the other two leave out.",
 					List.of( new Node( "Apache", "80/443 · TLS", "edge" ), new Node( "mod_WebObjects", "routing, in-process", "proxy" ), APPS ) ) );
 

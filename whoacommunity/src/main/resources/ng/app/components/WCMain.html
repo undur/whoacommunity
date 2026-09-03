@@ -1,21 +1,21 @@
 <wo:WCLook>
 	<wo:if condition="$hasLatestRelease">
 		<div class="whoa-status">
-			<div>
+			<wo:link href="$latestReleaseURL">
 				<div class="k">Latest release</div>
 				<div class="v"><wo:str value="$latestRelease.repo.name" /> <span class="unit"><wo:str value="$latestRelease.tagName" /></span></div>
 				<div class="s"><wo:str value="$latestRelease.shortDateFormatted" /></div>
-			</div>
-			<div>
+			</wo:link>
+			<wo:link href="/dev-feed">
 				<div class="k">Commits this week</div>
 				<div class="v"><wo:str value="$commitCountThisWeek" /></div>
 				<div class="s"><wo:str value="$activeRepoCountString" /></div>
-			</div>
-			<div>
+			</wo:link>
+			<wo:link href="/dev-feed?tab=issues">
 				<div class="k">Open issues</div>
 				<div class="v"><wo:str value="$openIssueCount" /></div>
 				<div class="s"><wo:str value="$issuesOpenedThisMonthString" /></div>
-			</div>
+			</wo:link>
 		</div>
 	</wo:if>
 

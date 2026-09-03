@@ -25,7 +25,7 @@ public class WCFeedPage extends WCComponent {
 
 	public enum Tab {
 		commits( "Commits", "50 most recent commits each", "Only the 50 most recent commits are fetched per repository, so this isn't the full history — it's what GitHub's feed gives us." ),
-		releases( "Releases", "3 most recent releases each", "Only the three most recent published releases are fetched per repository." ),
+		releases( "Releases", "20 most recent releases each", "Only the twenty most recent published releases are fetched per repository." ),
 		issues( "Open issues", "6 most recently updated each", "Only the six most recently updated open issues are fetched per repository — the count in the rail is the true total." );
 
 		public final String title;

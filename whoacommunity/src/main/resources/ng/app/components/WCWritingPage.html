@@ -1,15 +1,28 @@
 <wo:WCLook>
 	<div style="max-width: 74ch">
-		<div class="whoa-section">Writing<span><wo:str value="$articleCount" /> articles</span></div>
+		<div class="whoa-section">Writing<span><wo:str value="$publishedArticles.size" /> articles</span></div>
 		<div class="writing-list">
-			<wo:repetition list="$articles" item="$currentArticle">
+			<wo:repetition list="$publishedArticles" item="$currentArticle">
 				<wo:link href="$currentArticleURL" class="writing-row">
 					<span class="d"><wo:str value="$currentArticle.formattedDate" /></span>
-					<wo:if condition="$currentArticle.published" negate="$true"><span class="post-tag">draft</span></wo:if>
 					<span class="t"><wo:str value="$currentArticle.title" /></span>
 					<span class="c"><wo:str value="$currentArticle.commentCountString" /></span>
 				</wo:link>
 			</wo:repetition>
 		</div>
+
+		<wo:if condition="$hasDrafts">
+			<div class="whoa-section writing-drafts-section">Drafts<span><wo:str value="$draftArticles.size" /> unpublished, only you see these</span></div>
+			<div class="writing-list">
+				<wo:repetition list="$draftArticles" item="$currentArticle">
+					<wo:link href="$currentArticleURL" class="writing-row">
+						<span class="d"><wo:str value="$currentArticle.formattedDate" /></span>
+						<span class="post-tag">draft</span>
+						<span class="t"><wo:str value="$currentArticle.title" /></span>
+						<span class="c"><wo:str value="$currentArticle.commentCountString" /></span>
+					</wo:link>
+				</wo:repetition>
+			</div>
+		</wo:if>
 	</div>
 </wo:WCLook>

@@ -39,13 +39,18 @@ final class GithubResponse {
 
 	record ReleaseConnection( List<ReleaseNode> nodes ) {}
 
+	/** The commit a release's tag points at — its date is when the released code was made. */
+	record TagCommit( Instant committedDate ) {}
+
 	record ReleaseNode(
 			String name,
 			String tagName,
 			String url,
 			Instant createdAt,
 			boolean isPrerelease,
-			boolean isDraft ) {}
+			boolean isDraft,
+			String description,
+			TagCommit tagCommit ) {}
 
 	record DefaultBranchRef( CommitTarget target ) {}
 
