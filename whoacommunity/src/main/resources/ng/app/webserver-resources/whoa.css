@@ -667,11 +667,13 @@ a:hover { color: var(--whoa-accent); }
 .writing-row .post-tag, .rail-row .post-tag, .article-meta .post-tag { flex: 0 0 auto; align-self: center; }
 
 /* Projects overview: a grid of cards, one per project */
+.project-section + .project-grid { margin-bottom: 2.2rem; }
 .project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; max-width: 1100px; }
 @media (max-width: 899.98px) { .project-grid { grid-template-columns: minmax(0, 1fr); } }
 .project-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; }
 @media (max-width: 1299.98px) { .project-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 899.98px) { .project-grid-3 { grid-template-columns: minmax(0, 1fr); } }
+.guides-section { margin-top: .4rem; }
 .deployment-intro { max-width: 80ch; margin-bottom: 1.25rem; }
 
 /* The little topology chain in each deployment card: edge → (proxy) → apps */

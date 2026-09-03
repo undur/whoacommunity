@@ -26,7 +26,7 @@ import ng.plugins.Routes;
 import whoacommunity.components.WCArticleDetailPage;
 import whoacommunity.components.WCDeploymentApacheClassicPage;
 import whoacommunity.components.WCDeploymentApacheModuloPage;
-import whoacommunity.components.WCDeploymentOverviewPage;
+import whoacommunity.components.WCGuidesPage;
 import whoacommunity.components.WCDeploymentPage;
 import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCMain;
@@ -146,7 +146,8 @@ public class Application extends NGApplication {
 				.map( "/project/*", this::viewProject )
 				.map( "/atom.xml", this::atom )
 				.map( "/refresh-data", this::refreshData )
-				.map( "/deployment", WCDeploymentOverviewPage.class )
+				.map( "/guides", WCGuidesPage.class )
+				.map( "/deployment", WCGuidesPage.class )
 				.map( "/deployment-config", WCDeploymentPage.class )
 				.map( "/deployment-apache-modulo", WCDeploymentApacheModuloPage.class )
 				.map( "/deployment-apache-mod-webobjects", WCDeploymentApacheClassicPage.class );

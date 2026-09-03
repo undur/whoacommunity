@@ -53,7 +53,7 @@ public class WCSiteTree extends WCComponent {
 		return List.of(
 				new Section( "writing", "◆", "Writing", "/", String.valueOf( articleCount() ) ),
 				new Section( "activity", "◈", "Activity", "/dev-feed", null ),
-				new Section( "deployment", "▤", "Deployment guides", "/deployment", null ),
+				new Section( "guides", "▤", "Guides", "/guides", null ),
 				new Section( "videos", "◇", "Videos", "/videos", String.valueOf( videoCount ) ) );
 	}
 

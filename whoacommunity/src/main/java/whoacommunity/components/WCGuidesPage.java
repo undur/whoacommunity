@@ -6,10 +6,10 @@ import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
 
 /**
- * The deployment overview: what the three guides share, and a card for each.
- * The guide list here is the single source the site tree draws from too.
+ * The guides page. Deployment is its first section: what the three deployment
+ * guides share, and a card for each. More sections will follow.
  */
-public class WCDeploymentOverviewPage extends WCComponent {
+public class WCGuidesPage extends WCComponent {
 
 	/**
 	 * One of the three deployment guides
@@ -46,18 +46,18 @@ public class WCDeploymentOverviewPage extends WCComponent {
 	public Guide currentGuide;
 	public Node currentNode;
 
-	public WCDeploymentOverviewPage( NGContext context ) {
+	public WCGuidesPage( NGContext context ) {
 		super( context );
 	}
 
 	@Override
 	public String pageIdentifier() {
-		return "deployment";
+		return "guides";
 	}
 
 	@Override
 	public String breadcrumbLeaf() {
-		return "deployment";
+		return "guides";
 	}
 
 	public String currentNodeClass() {

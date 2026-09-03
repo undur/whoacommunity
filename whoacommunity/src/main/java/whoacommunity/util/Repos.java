@@ -85,6 +85,42 @@ public class Repos {
 			Map.entry( "parslips-dev-loop-skill", "A Claude Code skill that teaches an agent the edit, refresh, validate loop through the Parslips dev server and the running application's own endpoints." ) );
 
 	/**
+	 * How the projects overview groups things: by what a project is at runtime
+	 */
+	public enum Category {
+		libraries( "Libraries", "What an application links against" ),
+		development( "Development", "Tooling for writing the application; nothing here ships with it" ),
+		deployment( "Build and deployment", "Getting the application built, onto a server and in front of the world" );
+
+		public final String title;
+		public final String subtitle;
+
+		Category( String title, String subtitle ) {
+			this.title = title;
+			this.subtitle = subtitle;
+		}
+	}
+
+	/**
+	 * Which projects belong to which category, in display order
+	 */
+	private static final Map<Category, List<String>> CATEGORIES = Map.of(
+			Category.libraries, List.of( "ng-objects", "wonder-slim", "parsley", "wo-adaptor-jetty" ),
+			Category.development, List.of( "parslips", "apiext-format", "parslips-dev-loop-skill" ),
+			Category.deployment, List.of( "vermilingua", "modulo", "wonder-slim-deployment" ) );
+
+	/**
+	 * @return The project repos in the given category, in the order listed above
+	 */
+	public static List<Repo> projectRepos( final Category category ) {
+		return CATEGORIES
+				.get( category )
+				.stream()
+				.map( name -> projectRepoNamed( name ).orElseThrow( () -> new IllegalStateException( "Not a project repo: " + name ) ) )
+				.toList();
+	}
+
+	/**
 	 * @return The project's blurb for the overview page, falling back to nothing (the page shows the GitHub description then)
 	 */
 	public static String blurbFor( final Repo repo ) {

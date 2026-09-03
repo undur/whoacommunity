@@ -16,7 +16,7 @@ public class WCDeploymentApacheModuloPage extends WCComponent {
 
 	@Override
 	public String pageIdentifier() {
-		return "deployment";
+		return "guides";
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class WCDeploymentApacheModuloPage extends WCComponent {
 
 	@Override
 	public List<Crumb> breadcrumbs() {
-		return List.of( HOME_CRUMB, new Crumb( "deployment", "/deployment" ) );
+		return List.of( HOME_CRUMB, new Crumb( "guides", "/guides" ), new Crumb( "deployment", "/guides" ) );
 	}
 
 	@Override

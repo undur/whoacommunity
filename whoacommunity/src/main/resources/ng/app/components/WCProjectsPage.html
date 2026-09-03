@@ -1,7 +1,8 @@
 <wo:WCLook>
-	<div class="whoa-section">Projects<span><wo:str value="$projects.size" /> repositories</span></div>
+	<wo:repetition list="$categories" item="$currentCategory">
+	<div class="whoa-section project-section"><wo:str value="$currentCategory.title" /><span><wo:str value="$currentCategory.subtitle" /></span></div>
 	<div class="project-grid">
-		<wo:repetition list="$projects" item="$currentProject">
+		<wo:repetition list="$projectsInCurrentCategory" item="$currentProject">
 			<wo:link href="$currentProjectURL" class="project-card">
 				<div class="project-card-head">
 					<span class="project-card-emoji"><wo:str value="$currentProject.emoji" /></span>
@@ -14,4 +15,5 @@
 			</wo:link>
 		</wo:repetition>
 	</div>
+	</wo:repetition>
 </wo:WCLook>

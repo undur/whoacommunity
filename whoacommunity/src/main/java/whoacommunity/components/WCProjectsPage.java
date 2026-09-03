@@ -7,6 +7,7 @@ import whoacommunity.app.WCComponent;
 import whoacommunity.github.GithubFeed;
 import whoacommunity.github.Release;
 import whoacommunity.util.Repos;
+import whoacommunity.util.Repos.Category;
 import whoacommunity.util.Repos.Repo;
 
 /**
@@ -30,8 +31,18 @@ public class WCProjectsPage extends WCComponent {
 		return "projects";
 	}
 
+	public Category currentCategory;
+
+	public List<Category> categories() {
+		return List.of( Category.values() );
+	}
+
 	public List<Repo> projects() {
 		return Repos.projectRepos();
+	}
+
+	public List<Repo> projectsInCurrentCategory() {
+		return Repos.projectRepos( currentCategory );
 	}
 
 	public String currentProjectURL() {
