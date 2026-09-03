@@ -1,9 +1,8 @@
 package whoacommunity.github;
 
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
+import whoacommunity.util.Dates;
 import whoacommunity.util.Repos.Repo;
 
 /**
@@ -19,6 +18,6 @@ public record OpenIssue(
 		String authorLogin ) {
 
 	public String shortDateFormatted() {
-		return DateTimeFormatter.ofPattern( "MMM d" ).withZone( ZoneId.systemDefault() ).format( updatedAt );
+		return Dates.shortDate( updatedAt );
 	}
 }

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+import whoacommunity.util.Dates;
 import whoacommunity.util.Repos.Repo;
 
 /**
@@ -25,6 +26,6 @@ public record Commit(
 	}
 
 	public String shortDateFormatted() {
-		return DateTimeFormatter.ofPattern( "MMM d" ).withZone( ZoneId.systemDefault() ).format( committedAt );
+		return Dates.shortDate( committedAt );
 	}
 }
