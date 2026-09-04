@@ -26,6 +26,7 @@ import ng.plugins.Routes;
 import whoacommunity.components.WCArticleDetailPage;
 import whoacommunity.components.WCDeploymentApacheClassicPage;
 import whoacommunity.components.WCDeploymentApacheModuloPage;
+import whoacommunity.components.WCGuideWonderSlimDevPage;
 import whoacommunity.components.WCGuidesPage;
 import whoacommunity.components.WCDeploymentPage;
 import whoacommunity.components.WCFeedPage;
@@ -148,6 +149,7 @@ public class Application extends NGApplication {
 				.map( "/robots.txt", this::robots )
 				.map( "/refresh-data", this::refreshData )
 				.map( "/guides", WCGuidesPage.class )
+				.map( "/guide/wonder-slim-development", WCGuideWonderSlimDevPage.class )
 				.map( "/deployment", WCGuidesPage.class )
 				.map( "/deployment-config", WCDeploymentPage.class )
 				.map( "/deployment-apache-modulo", WCDeploymentApacheModuloPage.class )

@@ -1,0 +1,70 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Setting up for wonder-slim development<span>macOS, about twenty minutes</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<p>What you end up with: a JDK that can redefine classes while your application runs, so that most edits take effect without a restart; Eclipse with Parslips for editing templates; and Maven pointed at the WOCommunity repository so the WebObjects frameworks resolve. The steps assume macOS and a shell; Linux is the same apart from the paths.</p>
+
+					<h2 id="jdk">1. Install the JetBrains Runtime</h2>
+					<p>Any current JDK runs wonder-slim, but only the <a href="https://github.com/JetBrains/JetBrainsRuntime">JetBrains Runtime</a> ships with DCEVM, the enhanced class redefinition that lets a running application pick up changed classes beyond method bodies. That is what makes the edit-and-reload loop work, so it is the one to develop on.</p>
+					<p>The simplest way to get it is <a href="https://sdkman.io/">SDKMAN!</a>, which lists the JetBrains builds under the vendor <code>JetBrains</code>. Install SDKMAN! if you don't have it, then pick the newest entry that ends in <code>-jbr</code>:</p>
+<pre><code class="language-none">curl -s "https://get.sdkman.io" | bash
+source ~/.sdkman/bin/sdkman-init.sh
+
+sdk list java | grep jbr
+sdk install java 25.0.4+1.58348-jbr</code></pre>
+					<p>That downloads, unpacks and registers the JDK under <code>~/.sdkman/candidates/java/</code>, with none of the quarantine flags a manual download picks up. Check it took, and that the enhanced redefinition flag is accepted:</p>
+<pre><code class="language-none">~/.sdkman/candidates/java/25.0.4+1.58348-jbr/bin/java -XX:+AllowEnhancedClassRedefinition -version</code></pre>
+					<p>If you would rather not use SDKMAN!, the <a href="https://github.com/JetBrains/JetBrainsRuntime/releases">releases page</a> has the same builds as tarballs; take the <code>jbrsdk</code> variant for your architecture. Unpacking a tarball on macOS marks it quarantined, so you will need <code>xattr -r -d com.apple.quarantine</code> on the unpacked directory before the JVM will start. <a href="/article/f5e9e7ce-60f6-4a34-aede-9fdd3450dac5">This article</a> walks through that route.</p>
+
+					<h2 id="hotswap-agent">2. Add HotswapAgent to the JDK</h2>
+					<p>DCEVM redefines classes; <a href="https://github.com/HotswapProjects/HotswapAgent">HotswapAgent</a> tells frameworks about it, so that caches and reflection-based lookups see the new definitions. It is a single jar that the JDK loads from a fixed location. Download the latest <code>hotswap-agent-x.y.z.jar</code> from the <a href="https://github.com/HotswapProjects/HotswapAgent/releases">releases page</a> and place it as <code>lib/hotswap/hotswap-agent.jar</code> inside the JDK:</p>
+<pre><code class="language-none">JDK=~/.sdkman/candidates/java/25.0.4+1.58348-jbr
+curl -LO https://github.com/HotswapProjects/HotswapAgent/releases/download/RELEASE-2.0.3/hotswap-agent-2.0.3.jar
+mkdir -p "$JDK/lib/hotswap"
+mv hotswap-agent-2.0.3.jar "$JDK/lib/hotswap/hotswap-agent.jar"</code></pre>
+					<p>The file name inside the JDK must be exactly <code>hotswap-agent.jar</code>, whatever version you downloaded.</p>
+
+					<h2 id="eclipse">3. Install Eclipse</h2>
+					<p>Download the current <strong>Eclipse IDE for Java Developers</strong> from <a href="https://www.eclipse.org/downloads/">eclipse.org</a>. It includes the Maven integration (m2e) that wonder-slim projects rely on. Eclipse bundles its own JDK for running the IDE itself; that one is not the one your applications will run on, so leave it be.</p>
+
+					<h2 id="parslips">4. Install Parslips</h2>
+					<p><a href="/project/parslips">Parslips</a> is the template editor, a refactoring of WOLips focused on component templates for WebObjects and ng-objects. In Eclipse open <em>Help → Install New Software…</em>, click <em>Add…</em> and enter the update site:</p>
+<pre><code class="language-none">https://undur.github.io/parslips/repository/</code></pre>
+					<p>Select <em>Parsley Template Editor</em>, follow the prompts, and restart Eclipse when asked. The <a href="https://undur.github.io/parslips/repository/guide.html">getting-started guide</a> covers the perspective, shortcuts and project settings once it is in.</p>
+
+					<h2 id="maven">5. Point Maven at the WOCommunity repository</h2>
+					<p>The WebObjects frameworks aren't on Maven Central; they come from the WOCommunity repository, which has to be declared in <code>~/.m2/settings.xml</code>. Parslips does this for you: open <em>Eclipse → Settings → Parsley → Maven</em> and click <em>Add WOCommunity Repository</em>. It backs up any existing <code>settings.xml</code> first, creates one if there is none, and reports whether the repository is configured.</p>
+
+					<h2 id="eclipse-jdk">6. Add the JDK to Eclipse and give it the right arguments</h2>
+					<p>Open <em>Eclipse → Settings → Java → Installed JREs</em>, click <em>Add…</em>, choose <em>Standard VM</em>, and set the JRE home to the JDK you installed:</p>
+<pre><code class="language-none">/Users/you/.sdkman/candidates/java/25.0.4+1.58348-jbr</code></pre>
+					<p>In the same dialog, fill in <em>Default VM arguments</em>. The first two switch on class redefinition and load HotswapAgent; the <code>--add-opens</code> lines let WebObjects reflect into JDK internals it has always reflected into:</p>
+<pre><code class="language-none">-XX:+AllowEnhancedClassRedefinition
+-XX:HotswapAgent=fatjar
+--add-opens java.base/java.time=ALL-UNNAMED
+--add-opens java.base/java.lang=ALL-UNNAMED
+--add-opens java.base/java.util=ALL-UNNAMED</code></pre>
+					<p>Tick the new JDK as the default. Depending on which classes your application touches you may need to open further packages; this set has served well.</p>
+
+					<h2 id="check">7. Check that it works</h2>
+					<p>Launch an application in debug mode and watch the console: HotswapAgent announces itself in the first lines. Then change a method body, save, and call the code again; the change is there without a restart. Adding a method or a field works too, that is DCEVM's contribution over the stock JVM. Changes to a class's constructor or hierarchy still need a restart.</p>
+					<p>Also worth having on the command line: <code>git</code>, which macOS installs on first use via the Xcode command-line tools, and Maven itself for builds outside Eclipse, which SDKMAN! provides with <code>sdk install maven</code>.</p>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#jdk">Install the JetBrains Runtime</a>
+				<a href="#hotswap-agent">Add HotswapAgent</a>
+				<a href="#eclipse">Install Eclipse</a>
+				<a href="#parslips">Install Parslips</a>
+				<a href="#maven">Point Maven at WOCommunity</a>
+				<a href="#eclipse-jdk">Add the JDK to Eclipse</a>
+				<a href="#check">Check that it works</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>

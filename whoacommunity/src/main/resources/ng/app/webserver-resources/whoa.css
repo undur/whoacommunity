@@ -713,6 +713,10 @@ a:hover { color: var(--whoa-accent); }
 @media (max-width: 1179.98px) { .project-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 899.98px) { .project-grid-3 { grid-template-columns: minmax(0, 1fr); } }
 .guides-section { margin-top: .4rem; }
+.project-grid + .guides-section { margin-top: 2.4rem; }
+.guide-panel { max-width: 80ch; }
+.guide-panel .article-body h2 { font-size: 1.05rem; margin-top: 2rem; }
+.guide-panel .article-body > :first-child { margin-top: 0; }
 .deployment-intro { max-width: 80ch; margin-bottom: 1.25rem; }
 
 /* The little topology chain in each deployment card: edge → (proxy) → apps */

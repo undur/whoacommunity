@@ -18,10 +18,26 @@
 					<span class="tree-tag"><wo:str value="$currentGuide.tag" /></span>
 					<wo:if condition="$currentGuide.beta"><span class="post-tag beta-tag">beta</span></wo:if>
 				</div>
-				<div class="topo">
-					<wo:repetition list="$currentGuide.nodes" item="$currentNode">
-						<wo:container elementName="span" class="$currentNodeClass"><span class="topo-label"><wo:str value="$currentNode.label" /></span><span class="topo-caption"><wo:str value="$currentNode.caption" /></span></wo:container>
-					</wo:repetition>
+				<wo:if condition="$currentGuideHasNodes">
+					<div class="topo">
+						<wo:repetition list="$currentGuide.nodes" item="$currentNode">
+							<wo:container elementName="span" class="$currentNodeClass"><span class="topo-label"><wo:str value="$currentNode.label" /></span><span class="topo-caption"><wo:str value="$currentNode.caption" /></span></wo:container>
+						</wo:repetition>
+					</div>
+				</wo:if>
+				<p class="project-card-blurb"><wo:str value="$currentGuide.blurb" /></p>
+			</wo:link>
+		</wo:repetition>
+	</div>
+
+	<div class="whoa-section guides-section">Development<span>your own machine, rather than a server</span></div>
+	<div class="project-grid">
+		<wo:repetition list="$developmentGuides" item="$currentGuide">
+			<wo:link href="$currentGuide.url" class="project-card">
+				<div class="project-card-head">
+					<span class="project-card-emoji"><wo:str value="$currentGuide.emoji" /></span>
+					<span class="project-card-name"><wo:str value="$currentGuide.title" /></span>
+					<span class="tree-tag"><wo:str value="$currentGuide.tag" /></span>
 				</div>
 				<p class="project-card-blurb"><wo:str value="$currentGuide.blurb" /></p>
 			</wo:link>
