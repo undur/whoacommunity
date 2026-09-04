@@ -32,7 +32,7 @@ public class Repos {
 					new Repo( Org.undur, "🔌", "wo-adaptor-jetty", "https://github.com/undur/wo-adaptor-jetty", true ),
 					new Repo( Org.undur, "👨‍⚕️", "examiner", "https://github.com/undur/examiner", true ),
 					new Repo( Org.undur, "💋", "parslips", "https://github.com/undur/parslips", true ),
-					new Repo( Org.undur, "🧠", "parslips-dev-loop-skill", "https://github.com/undur/parslips-dev-loop-skill/", true ),
+					new Repo( Org.undur, "🧠", "parslips-skill", "https://github.com/undur/parslips-skill/", true ),
 					new Repo( Org.undur, "🧩", "apiext-format", "https://github.com/undur/apiext-format", true ),
 
 					// Cayenne repos
@@ -82,7 +82,7 @@ public class Repos {
 			Map.entry( "wo-adaptor-jetty", "A Jetty-based WOAdaptor for classic WO applications: virtual threads, streaming request bodies and WebSockets, on the same HTTP stack ng-objects uses." ),
 			Map.entry( "modulo", "A Jetty reverse proxy that takes the place of mod_WebObjects — and, optionally, a complete front-end server that replaces Apache and certbot too: TLS with native ACME, HTTP/2, WebSockets and hot reload, from one TOML file." ),
 			Map.entry( "wonder-slim-deployment", "wotaskd and JavaMonitor, forked from Wonder and cleaned up: Foundation-free, with the wire protocols finally documented and a deploy endpoint that swaps bundles and bounces instances for you." ),
-			Map.entry( "parslips-dev-loop-skill", "A Claude Code skill that teaches an agent the edit, refresh, validate loop through the Parslips dev server and the running application's own endpoints." ) );
+			Map.entry( "parslips-skill", "A Claude Code skill that teaches an agent the edit, refresh, validate loop through the Parslips dev server and the running application's own endpoints." ) );
 
 	/**
 	 * How the projects overview groups things: by what a project is at runtime
@@ -106,7 +106,7 @@ public class Repos {
 	 */
 	private static final Map<Category, List<String>> CATEGORIES = Map.of(
 			Category.libraries, List.of( "ng-objects", "wonder-slim", "parsley", "wo-adaptor-jetty" ),
-			Category.development, List.of( "parslips", "apiext-format", "parslips-dev-loop-skill" ),
+			Category.development, List.of( "parslips", "apiext-format", "parslips-skill" ),
 			Category.deployment, List.of( "vermilingua", "modulo", "wonder-slim-deployment" ) );
 
 	/**
