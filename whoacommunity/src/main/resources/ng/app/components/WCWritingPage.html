@@ -6,7 +6,7 @@
 				<wo:link href="$currentArticleURL" class="writing-row">
 					<span class="d"><wo:str value="$currentArticle.formattedDate" /></span>
 					<span class="t"><wo:str value="$currentArticle.title" /></span>
-					<span class="c"><wo:str value="$currentArticle.commentCountString" /></span>
+					<wo:if condition="$currentArticle.hasComments"><span class="c"><wo:str value="$currentArticle.commentCountString" /></span></wo:if>
 				</wo:link>
 			</wo:repetition>
 		</div>
@@ -19,7 +19,7 @@
 						<span class="d"><wo:str value="$currentArticle.formattedDate" /></span>
 						<span class="post-tag">draft</span>
 						<span class="t"><wo:str value="$currentArticle.title" /></span>
-						<span class="c"><wo:str value="$currentArticle.commentCountString" /></span>
+						<wo:if condition="$currentArticle.hasComments"><span class="c"><wo:str value="$currentArticle.commentCountString" /></span></wo:if>
 					</wo:link>
 				</wo:repetition>
 			</div>

@@ -50,7 +50,7 @@
 					<div class="post-top">
 						<span class="post-date"><wo:str value="$currentArticle.formattedDate" /></span>
 						<wo:if condition="$currentArticle.published" negate="$true"><span class="post-tag">draft</span></wo:if>
-						<span class="post-comments"><wo:str value="$currentArticle.commentCountString" /></span>
+						<wo:if condition="$currentArticle.hasComments"><span class="post-comments"><wo:str value="$currentArticle.commentCountString" /></span></wo:if>
 					</div>
 					<div class="post-title"><wo:str value="$currentArticle.title" /></div>
 					<p class="post-teaser"><wo:str value="$currentArticle.teaser" /></p>

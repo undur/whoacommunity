@@ -4,8 +4,8 @@
 			<h1 class="article-title"><wo:str value="$selectedObject.title" /></h1>
 			<div class="article-meta">
 				<span><wo:str value="$selectedObject.formattedDate" /></span><span class="sep">/</span>
-				<span><wo:str value="$selectedObject.authorName" /></span><span class="sep">/</span>
-				<span><wo:str value="$selectedObject.commentCountString" /></span>
+				<span><wo:str value="$selectedObject.authorName" /></span>
+				<wo:if condition="$selectedObject.hasComments"><span class="sep">/</span><span><wo:str value="$selectedObject.commentCountString" /></span></wo:if>
 				<wo:if condition="$selectedObject.published" negate="$true"><span class="sep">/</span><span class="post-tag">draft</span></wo:if>
 				<wo:if condition="$isLocal">
 					<span class="sep">/</span><wo:link action="$editArticle" class="lead-edit">edit</wo:link>
