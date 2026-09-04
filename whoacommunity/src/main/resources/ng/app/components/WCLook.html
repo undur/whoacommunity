@@ -44,11 +44,14 @@
 	</head>
 	<wo:container elementName="body" class="$bodyClass">
 		<div class="whoa-shell">
-			<aside class="whoa-aside">
-				<wo:link href="/" class="whoa-brand">
-					<span class="whoa-brand-mark">W!</span>
-					<span class="whoa-brand-text">whoacommunity<span class="whoa-brand-sub">WO · ng-objects</span></span>
-				</wo:link>
+			<aside class="whoa-aside" id="whoaAside">
+				<div class="whoa-aside-head">
+					<wo:link href="/" class="whoa-brand">
+						<span class="whoa-brand-mark">W!</span>
+						<span class="whoa-brand-text">whoacommunity<span class="whoa-brand-sub">WO · ng-objects</span></span>
+					</wo:link>
+					<button type="button" class="whoa-menu-toggle" aria-controls="whoaAside" aria-expanded="false" onclick="whoaToggleMenu(this)">Menu</button>
+				</div>
 				<wo:WCSiteTree />
 				<a href="https://github.com/ngobjects/ng-objects" class="whoa-powered" title="Powered by ng-objects — an homage to the 88×31 badges of the WebObjects era">
 					<span class="whoa-powered-mark">🚀</span>
@@ -80,6 +83,13 @@
 		</div>
 
 		<script>
+			function whoaToggleMenu( button ) {
+				const aside = document.getElementById( 'whoaAside' );
+				const open = aside.classList.toggle( 'is-open' );
+				button.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+				button.textContent = open ? 'Close' : 'Menu';
+			}
+
 			function whoaToggleTheme() {
 				var el = document.documentElement;
 				var next = el.getAttribute( 'data-theme' ) === 'dark' ? 'light' : 'dark';

@@ -70,7 +70,8 @@
 			</wo:auc>
 		</div>
 		<div>
-			<wo:auc id="reposUC" class="rail-block">
+			<wo:auc id="reposUC">
+				<div class="rail-block">
 				<div class="rail-head">Filter by repository</div>
 				<wo:repetition list="$groups" item="$currentGroup">
 					<div class="rail-subhead"><wo:str value="$currentGroup.name" /></div>
@@ -86,6 +87,7 @@
 						</wo:repetition>
 					</ul>
 				</wo:repetition>
+				</div>
 				<div class="note"><wo:str value="$tab.note" /></div>
 			</wo:auc>
 		</div>

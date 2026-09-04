@@ -30,7 +30,7 @@ public class Repos {
 					new Repo( Org.undur, "🦡", "vermilingua", "https://github.com/undur/vermilingua-maven-plugin", true ),
 					new Repo( Org.undur, "📚", "whoacommunity.com", "https://github.com/undur/whoacommunity", true ),
 					new Repo( Org.undur, "🔌", "wo-adaptor-jetty", "https://github.com/undur/wo-adaptor-jetty", true ),
-					new Repo( Org.undur, "👨‍⚕️", "examiner", "https://github.com/undur/examiner", true ),
+					// new Repo( Org.undur, "👨‍⚕️", "examiner", "https://github.com/undur/examiner", true ), // in limbo for now — Hugi 2026-09-04
 					new Repo( Org.undur, "💋", "parslips", "https://github.com/undur/parslips", true ),
 					new Repo( Org.undur, "🧠", "parslips-skill", "https://github.com/undur/parslips-skill/", true ),
 					new Repo( Org.undur, "🧩", "apiext-format", "https://github.com/undur/apiext-format", true ),
@@ -52,19 +52,51 @@ public class Repos {
 	}
 
 	/**
-	 * Repos in our own orgs that don't (yet) warrant a project page
+	 * How repos are grouped on the site. Only the stack feeds the front page; the
+	 * repos around it (this site, tooling) have their own group on the activity page
+	 * so their commits don't drown the stack's.
 	 */
-	private static final Set<String> NOT_PROJECTS = Set.of( "whoacommunity.com", "examiner" );
+	public enum Group {
+		stack( "The stack" ),
+		around( "Around the stack" ),
+		others( "Others we follow" );
+
+		public final String title;
+
+		Group( String title ) {
+			this.title = title;
+		}
+	}
 
 	/**
-	 * @return The repos that get a project page: our own orgs, not the ones we merely follow
+	 * Repos in our own orgs that aren't part of the stack
+	 */
+	private static final Set<String> AROUND_THE_STACK = Set.of( "whoacommunity.com", "examiner" );
+
+	public static Group groupOf( final Repo repo ) {
+		if( repo.organization() != Org.undur && repo.organization() != Org.ng ) {
+			return Group.others;
+		}
+
+		return AROUND_THE_STACK.contains( repo.name() ) ? Group.around : Group.stack;
+	}
+
+	public static List<Repo> reposIn( final Group group ) {
+		return repos().stream().filter( r -> groupOf( r ) == group ).toList();
+	}
+
+	/**
+	 * @return true for repos that belong in the front page streams and the default activity view: everything but "around the stack"
+	 */
+	public static boolean inStreams( final Repo repo ) {
+		return groupOf( repo ) != Group.around;
+	}
+
+	/**
+	 * @return The repos that get a project page: the stack
 	 */
 	public static List<Repo> projectRepos() {
-		return repos()
-				.stream()
-				.filter( Repos::isOurs )
-				.filter( r -> !NOT_PROJECTS.contains( r.name() ) )
-				.toList();
+		return reposIn( Group.stack );
 	}
 
 	/**
@@ -128,18 +160,10 @@ public class Repos {
 	}
 
 	/**
-	 * @return true for repos in our own orgs (undur, ng), as opposed to projects we merely follow
+	 * @return true for the stack's own repos — what "commits this week" and the like count
 	 */
 	public static boolean isOurs( final Repo repo ) {
-		return repo.organization() == Org.undur || repo.organization() == Org.ng;
-	}
-
-	public static List<Repo> ourRepos() {
-		return repos().stream().filter( Repos::isOurs ).toList();
-	}
-
-	public static List<Repo> otherRepos() {
-		return repos().stream().filter( r -> !isOurs( r ) ).toList();
+		return groupOf( repo ) == Group.stack;
 	}
 
 	/**

@@ -74,8 +74,7 @@ public class WCMain extends WCComponent {
 	// ---- Status strip ----
 
 	public Release latestRelease() {
-		final List<Release> all = GithubFeed.shared.releases();
-		return all.isEmpty() ? null : all.get( 0 );
+		return GithubFeed.shared.releases().stream().filter( r -> Repos.inStreams( r.repo() ) ).findFirst().orElse( null );
 	}
 
 	public boolean hasLatestRelease() {

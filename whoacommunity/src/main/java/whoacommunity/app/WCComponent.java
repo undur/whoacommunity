@@ -11,6 +11,7 @@ import whoacommunity.github.Commit;
 import whoacommunity.github.GithubFeed;
 import whoacommunity.github.OpenIssue;
 import whoacommunity.github.Release;
+import whoacommunity.util.Repos;
 import whoacommunity.util.Repos.Repo;
 
 public abstract class WCComponent extends NGComponent {
@@ -133,7 +134,7 @@ public abstract class WCComponent extends NGComponent {
 	}
 
 	public List<Commit> items() {
-		final List<Commit> all = GithubFeed.shared.commits();
+		final List<Commit> all = GithubFeed.shared.commits().stream().filter( c -> Repos.inStreams( c.repo() ) ).toList();
 		return all.subList( 0, Math.min( 8, all.size() ) );
 	}
 
@@ -141,12 +142,12 @@ public abstract class WCComponent extends NGComponent {
 	public Release currentRelease;
 
 	public List<OpenIssue> openIssues() {
-		final List<OpenIssue> all = GithubFeed.shared.issues();
+		final List<OpenIssue> all = GithubFeed.shared.issues().stream().filter( i -> Repos.inStreams( i.repo() ) ).toList();
 		return all.subList( 0, Math.min( 6, all.size() ) );
 	}
 
 	public List<Release> releases() {
-		final List<Release> all = GithubFeed.shared.releases();
+		final List<Release> all = GithubFeed.shared.releases().stream().filter( r -> Repos.inStreams( r.repo() ) ).toList();
 		return all.subList( 0, Math.min( 6, all.size() ) );
 	}
 }

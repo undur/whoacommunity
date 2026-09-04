@@ -112,9 +112,23 @@ a:hover { color: var(--whoa-accent); }
 
 .whoa-main { flex: 1; min-width: 0; }
 
+.whoa-aside-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.whoa-menu-toggle { display: none; }
+
+/* Small screens: the aside collapses to the wordmark and a Menu button; the tree opens as a drawer */
 @media (max-width: 899.98px) {
   .whoa-shell { display: block; }
-  .whoa-aside { width: auto; max-height: none; position: static; border-right: 0; border-bottom: 1px solid var(--whoa-line); }
+  .whoa-aside { width: auto; max-height: none; position: static; border-right: 0; border-bottom: 1px solid var(--whoa-line); padding: .7rem 0 .7rem; }
+  .whoa-aside-head { padding-right: 1rem; }
+  .whoa-menu-toggle {
+    display: inline-flex; align-items: center;
+    font-family: "JetBrains Mono", monospace; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--whoa-muted); background: transparent; border: 1px solid var(--whoa-line); border-radius: 5px; padding: .4rem .7rem; cursor: pointer;
+  }
+  .whoa-menu-toggle:hover { color: var(--whoa-bright); border-color: var(--whoa-dim); }
+  .whoa-aside .whoa-tree, .whoa-aside .whoa-powered { display: none; }
+  .whoa-aside.is-open .whoa-tree { display: block; margin-top: .6rem; }
+  .whoa-aside.is-open .whoa-powered { display: flex; }
 }
 
 /* ---------- Brand ---------- */

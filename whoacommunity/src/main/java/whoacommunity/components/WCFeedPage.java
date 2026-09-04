@@ -1,5 +1,7 @@
 package whoacommunity.components;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import ng.appserver.NGActionResults;
@@ -19,12 +21,13 @@ import whoacommunity.util.Repos.Repo;
 public class WCFeedPage extends WCComponent {
 
 	/**
-	 * The filter rail groups repos as ours (undur, ng) and the ones we merely follow
+	 * The filter rail groups repos as the stack, others we follow, and the repos around the stack (this site, tooling) —
+	 * the last group is left out of the unfiltered view so its commits don't drown the stack's
 	 */
 	public record RepoGroup( String name, List<Repo> repos ) {}
 
 	public enum Tab {
-		commits( "Commits", "50 most recent commits each", "Only the 50 most recent commits are fetched per repository, so this isn't the full history — it's what GitHub's feed gives us." ),
+		commits( "Commits", "50 most recent commits each", "Only the 50 most recent commits are fetched per repository, so this isn't the full history — it's what GitHub's feed gives us. The counts in the filter are commits in the last seven days." ),
 		releases( "Releases", "20 most recent releases each", "Only the twenty most recent published releases are fetched per repository." ),
 		issues( "Open issues", "6 most recently updated each", "Only the six most recently updated open issues are fetched per repository — the count in the rail is the true total." );
 
@@ -105,8 +108,9 @@ public class WCFeedPage extends WCComponent {
 
 	public List<RepoGroup> groups() {
 		return List.of(
-				new RepoGroup( "Our repositories", Repos.ourRepos() ),
-				new RepoGroup( "Others", Repos.otherRepos() ) );
+				new RepoGroup( Repos.Group.stack.title, Repos.reposIn( Repos.Group.stack ) ),
+				new RepoGroup( Repos.Group.around.title, Repos.reposIn( Repos.Group.around ) ),
+				new RepoGroup( Repos.Group.others.title, Repos.reposIn( Repos.Group.others ) ) );
 	}
 
 	/**
@@ -114,17 +118,17 @@ public class WCFeedPage extends WCComponent {
 	 */
 	public List<Commit> allCommits() {
 		final List<Commit> all = GithubFeed.shared.commits();
-		return selectedRepo == null ? all : all.stream().filter( c -> c.repo() == selectedRepo ).toList();
+		return selectedRepo == null ? all.stream().filter( c -> Repos.inStreams( c.repo() ) ).toList() : all.stream().filter( c -> c.repo() == selectedRepo ).toList();
 	}
 
 	public List<Release> allReleases() {
 		final List<Release> all = GithubFeed.shared.releases();
-		return selectedRepo == null ? all : all.stream().filter( r -> r.repo() == selectedRepo ).toList();
+		return selectedRepo == null ? all.stream().filter( r -> Repos.inStreams( r.repo() ) ).toList() : all.stream().filter( r -> r.repo() == selectedRepo ).toList();
 	}
 
 	public List<OpenIssue> allIssues() {
 		final List<OpenIssue> all = GithubFeed.shared.issues();
-		return selectedRepo == null ? all : all.stream().filter( i -> i.repo() == selectedRepo ).toList();
+		return selectedRepo == null ? all.stream().filter( i -> Repos.inStreams( i.repo() ) ).toList() : all.stream().filter( i -> i.repo() == selectedRepo ).toList();
 	}
 
 	public boolean hasFilter() {
@@ -132,7 +136,7 @@ public class WCFeedPage extends WCComponent {
 	}
 
 	public String filterDescription() {
-		return selectedRepo == null ? "all repositories" : selectedRepo.emoji() + " " + selectedRepo.name();
+		return selectedRepo == null ? "the stack and the projects we follow" : selectedRepo.emoji() + " " + selectedRepo.name();
 	}
 
 	public NGActionResults selectRepo() {
@@ -151,11 +155,15 @@ public class WCFeedPage extends WCComponent {
 	}
 
 	/**
-	 * @return How many rows the current tab holds for the rail's repo, so the counts follow the tab
+	 * @return The rail count for the current tab: commits in the last seven days (the fetched total is capped at 50, so it would
+	 *         just say 50), releases held, or open issues on GitHub
 	 */
 	public int currentRepoCount() {
 		return switch( tab ) {
-			case commits -> GithubFeed.shared.commitsFor( currentRepo ).size();
+			case commits -> {
+				final Instant weekAgo = Instant.now().minus( 7, ChronoUnit.DAYS );
+				yield (int)GithubFeed.shared.commitsFor( currentRepo ).stream().filter( c -> c.committedAt().isAfter( weekAgo ) ).count();
+			}
 			case releases -> GithubFeed.shared.releasesFor( currentRepo ).size();
 			case issues -> GithubFeed.shared.openIssueCountFor( currentRepo );
 		};
