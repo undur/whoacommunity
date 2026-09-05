@@ -36,6 +36,14 @@ public class WCMain extends WCComponent {
 		return "writing";
 	}
 
+	/**
+	 * The front page is the site itself, so the title tag carries the site's own line rather than "writing"
+	 */
+	@Override
+	public String pageTitle() {
+		return null;
+	}
+
 	@Override
 	public String breadcrumbLeaf() {
 		return "writing";

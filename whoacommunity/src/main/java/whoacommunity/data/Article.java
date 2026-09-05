@@ -41,11 +41,14 @@ public class Article extends _Article implements DateTimeStamped, UUIDStamped {
 		};
 	}
 
+	private static final java.util.regex.Pattern HEADINGS = java.util.regex.Pattern.compile( "<h[1-6][^>]*>.*?</h[1-6]>", java.util.regex.Pattern.DOTALL );
+
 	/**
-	 * @return The first couple of sentences of the article as plain text, for teaser rows
+	 * @return The first couple of sentences of the article as plain text, for teaser rows and the meta description.
+	 *         Headings are left out, so a teaser starts with the first real sentence rather than a section title.
 	 */
 	public String teaser() {
-		final String text = Markdown.plainText( contentAsHTML() );
+		final String text = Markdown.plainText( HEADINGS.matcher( contentAsHTML() ).replaceAll( " " ) );
 
 		if( text.length() <= TEASER_LENGTH ) {
 			return text;

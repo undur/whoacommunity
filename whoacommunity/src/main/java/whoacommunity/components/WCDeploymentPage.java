@@ -31,6 +31,16 @@ public class WCDeploymentPage extends WCComponent {
 	}
 
 	@Override
+	public String pageTitle() {
+		return "Deploying WebObjects and ng-objects applications with modulo";
+	}
+
+	@Override
+	public String pageDescription() {
+		return "A WebObjects deployment guide for the modern stack: modulo as the front end on ports 80 and 443 with TLS from Let's Encrypt, wotaskd and JavaMonitor managing instances, and a script that sets up the whole server.";
+	}
+
+	@Override
 	public String breadcrumbLeaf() {
 		return "modulo";
 	}

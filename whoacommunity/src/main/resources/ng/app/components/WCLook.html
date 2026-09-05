@@ -27,7 +27,14 @@
 		<wo:element elementName="link" rel="stylesheet" href="$whoaFontsCssURL" />
 		<wo:element elementName="link" rel="stylesheet" href="$whoaCssURL" />
 		<wo:script filename="ng-js.js" namespace="ng" />
-		<title>Whoa! Community!</title>
+		<title><wo:str value="$page.documentTitle" /></title>
+		<wo:element elementName="meta" name="description" content="$page.pageDescription" />
+		<wo:element elementName="link" rel="canonical" href="$page.canonicalURL" />
+		<wo:element elementName="meta" property="og:site_name" content="whoacommunity" />
+		<wo:element elementName="meta" property="og:type" content="website" />
+		<wo:element elementName="meta" property="og:title" content="$page.documentTitle" />
+		<wo:element elementName="meta" property="og:description" content="$page.pageDescription" />
+		<wo:element elementName="meta" property="og:url" content="$page.canonicalURL" />
 		<!-- FIXME: Hack for header width bug in tabler, see https://github.com/tabler/tabler/issues/2271 -->
 		<style>
 			@media (min-width: 992px) {

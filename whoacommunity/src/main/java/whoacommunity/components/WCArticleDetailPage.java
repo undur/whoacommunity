@@ -64,6 +64,17 @@ public class WCArticleDetailPage extends WCComponent {
 	}
 
 	@Override
+	public String pageTitle() {
+		return selectedObject.title();
+	}
+
+	@Override
+	public String pageDescription() {
+		final String teaser = selectedObject.teaser();
+		return teaser == null || teaser.isBlank() ? SITE_DESCRIPTION : teaser;
+	}
+
+	@Override
 	public String breadcrumbLeaf() {
 		return selectedObject == null ? "" : selectedObject.title();
 	}

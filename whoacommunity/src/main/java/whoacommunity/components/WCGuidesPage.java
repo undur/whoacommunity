@@ -71,6 +71,16 @@ public class WCGuidesPage extends WCComponent {
 	}
 
 	@Override
+	public String pageTitle() {
+		return "WebObjects deployment and development guides";
+	}
+
+	@Override
+	public String pageDescription() {
+		return "Guides for deploying WebObjects and ng-objects applications, with modulo, with Apache and modulo, or with Apache and mod_WebObjects, and for setting up a machine for wonder-slim development.";
+	}
+
+	@Override
 	public String breadcrumbLeaf() {
 		return "guides";
 	}

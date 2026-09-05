@@ -11,6 +11,7 @@ import whoacommunity.github.OpenIssue;
 import whoacommunity.github.Release;
 import whoacommunity.util.Markdown;
 import whoacommunity.util.Markdown.Heading;
+import whoacommunity.util.Repos;
 import whoacommunity.util.Repos.Repo;
 
 /**
@@ -59,6 +60,21 @@ public class WCProjectPage extends WCComponent {
 		}
 
 		return List.of( HOME_CRUMB, new Crumb( "projects", "/projects" ), new Crumb( repo.name(), projectURL() ) );
+	}
+
+	@Override
+	public String pageTitle() {
+		return subPage == SubPage.overview ? repo.name() : repo.name() + " " + subPage.name();
+	}
+
+	@Override
+	public String pageDescription() {
+		final String blurb = Repos.blurbFor( repo );
+		if( blurb != null ) {
+			return blurb;
+		}
+		final String description = description();
+		return description == null || description.isBlank() ? SITE_DESCRIPTION : description;
 	}
 
 	@Override

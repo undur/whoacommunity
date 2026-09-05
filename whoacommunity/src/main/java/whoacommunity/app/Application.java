@@ -147,6 +147,7 @@ public class Application extends NGApplication {
 				.map( "/project/*", this::viewProject )
 				.map( "/atom.xml", this::atom )
 				.map( "/robots.txt", this::robots )
+				.map( "/sitemap.xml", this::sitemap )
 				.map( "/refresh-data", this::refreshData )
 				.map( "/guides", WCGuidesPage.class )
 				.map( "/guide/wonder-slim-development", WCGuideWonderSlimDevPage.class )
@@ -165,9 +166,58 @@ public class Application extends NGApplication {
 				Disallow: /refresh-data
 				Disallow: /no/
 				Allow: /
+
+				Sitemap: https://www.whoacommunity.com/sitemap.xml
 				""";
 		final NGResponse response = new NGResponse( text, 200 );
 		response.setHeader( "Content-Type", "text/plain; charset=utf-8" );
+		return response;
+	}
+
+	/**
+	 * Every public page: the fixed pages, published articles, project pages, guides and videos.
+	 * Articles carry their date as lastmod; the rest change with the feeds and carry none.
+	 */
+	public NGActionResults sitemap( NGRequest request ) {
+		final String base = "https://www.whoacommunity.com";
+		final StringBuilder xml = new StringBuilder( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" );
+
+		final java.util.function.BiConsumer<String, String> add = ( path, lastmod ) -> {
+			xml.append( "  <url><loc>" ).append( base ).append( path ).append( "</loc>" );
+			if( lastmod != null ) {
+				xml.append( "<lastmod>" ).append( lastmod ).append( "</lastmod>" );
+			}
+			xml.append( "</url>\n" );
+		};
+
+		for( String path : List.of( "/", "/writing", "/projects", "/guides", "/dev-feed", "/videos", "/deployment-config", "/deployment-apache-modulo", "/deployment-apache-mod-webobjects", "/guide/wonder-slim-development" ) ) {
+			add.accept( path, null );
+		}
+
+		final ObjectSelect<Article> query = ObjectSelect
+				.query( Article.class )
+				.where( Article.PUBLISHED.isTrue() )
+				.orderBy( Article.DATE.desc() );
+
+		for( Article article : query.select( WCCore.newContext() ) ) {
+			add.accept( "/article/" + article.uniqueID(), article.date().toString() );
+		}
+
+		for( Repo repo : Repos.projectRepos() ) {
+			for( String sub : List.of( "", "/commits", "/releases", "/issues" ) ) {
+				add.accept( "/project/" + repo.name() + sub, null );
+			}
+		}
+
+		for( Videos.Playlist playlist : Videos.playlists() ) {
+			for( Video video : playlist.videos() ) {
+				add.accept( video.pageURL(), video.published() == null ? null : video.published().toString() );
+			}
+		}
+
+		xml.append( "</urlset>\n" );
+		final NGResponse response = new NGResponse( xml.toString(), 200 );
+		response.setHeader( "Content-Type", "application/xml; charset=utf-8" );
 		return response;
 	}
 
@@ -270,12 +320,23 @@ public class Application extends NGApplication {
 
 	public NGActionResults viewArticle( NGRequest request ) {
 		final String uuidString = request.parsedURI().getString( 1 );
-		final UUID uuid = UUID.fromString( uuidString );
+		final UUID uuid;
+
+		try {
+			uuid = UUID.fromString( uuidString );
+		}
+		catch( IllegalArgumentException e ) {
+			return new NGResponse( "No such article", 404 );
+		}
 
 		final Article article = ObjectSelect
 				.query( Article.class )
 				.where( Article.UNIQUE_ID.eq( uuid ) )
 				.selectOne( WCCore.newContext() );
+
+		if( article == null ) {
+			return new NGResponse( "No such article", 404 );
+		}
 
 		final WCArticleDetailPage page = pageWithName( WCArticleDetailPage.class, request.context() );
 		page.selectedObject = article;

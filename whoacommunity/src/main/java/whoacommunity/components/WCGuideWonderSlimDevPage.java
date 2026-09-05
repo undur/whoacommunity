@@ -26,6 +26,16 @@ public class WCGuideWonderSlimDevPage extends WCComponent {
 	}
 
 	@Override
+	public String pageTitle() {
+		return "Setting up for wonder-slim development";
+	}
+
+	@Override
+	public String pageDescription() {
+		return "The JetBrains Runtime with DCEVM through SDKMAN!, HotswapAgent, Eclipse with Parslips, and Maven pointed at the WOCommunity repository.";
+	}
+
+	@Override
 	public String breadcrumbLeaf() {
 		return "wonder-slim development";
 	}

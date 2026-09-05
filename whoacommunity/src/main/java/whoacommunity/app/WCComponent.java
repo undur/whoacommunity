@@ -86,6 +86,44 @@ public abstract class WCComponent extends NGComponent {
 	/**
 	 * @return The page component being rendered, from the context (used by the layout and the site tree)
 	 */
+	// ---- Page metadata: title, description, canonical URL (rendered in WCLook's head) ----
+
+	public static final String SITE_NAME = "whoacommunity";
+	public static final String SITE_BASE_URL = "https://www.whoacommunity.com";
+	public static final String SITE_DESCRIPTION = "Articles, guides and project activity for WebObjects developers — and for what comes after: ng-objects.";
+
+	/**
+	 * @return The page's own title, without the site name; pages with real content override this
+	 */
+	public String pageTitle() {
+		final String leaf = breadcrumbLeaf();
+		return leaf == null || leaf.isBlank() ? null : leaf;
+	}
+
+	/**
+	 * @return What goes in the title tag: "<page> · whoacommunity", or the site's own line on the front page
+	 */
+	public String documentTitle() {
+		final String title = pageTitle();
+		return title == null ? SITE_NAME + " — WebObjects and ng-objects" : title + " · " + SITE_NAME;
+	}
+
+	/**
+	 * @return The meta description; pages with real content override this with their own
+	 */
+	public String pageDescription() {
+		return SITE_DESCRIPTION;
+	}
+
+	/**
+	 * @return The canonical URL for this page: the request path on the www host, without any query string
+	 */
+	public String canonicalURL() {
+		final String uri = context().request().uri();
+		final String path = uri == null ? "/" : uri.split( "\\?" )[ 0 ];
+		return SITE_BASE_URL + path;
+	}
+
 	public WCComponent page() {
 		final NGComponent page = context().page();
 		return page instanceof WCComponent wc ? wc : null;

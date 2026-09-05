@@ -30,6 +30,16 @@ public class WCDeploymentApacheClassicPage extends WCComponent {
 	}
 
 	@Override
+	public String pageTitle() {
+		return "Deploying WebObjects applications with Apache and mod_WebObjects";
+	}
+
+	@Override
+	public String pageDescription() {
+		return "The classic WebObjects deployment: Apache with a compiled mod_WebObjects adaptor, certbot certificates, wotaskd and JavaMonitor, set up by one script. Published for comparison with the modulo-based stacks.";
+	}
+
+	@Override
 	public String breadcrumbLeaf() {
 		return "apache-mod-webobjects";
 	}

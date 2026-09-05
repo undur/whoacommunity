@@ -30,6 +30,16 @@ public class WCDeploymentApacheModuloPage extends WCComponent {
 	}
 
 	@Override
+	public String pageTitle() {
+		return "Deploying WebObjects applications with Apache and modulo";
+	}
+
+	@Override
+	public String pageDescription() {
+		return "A WebObjects deployment guide for the hybrid setup: Apache keeps ports 80 and 443 and certbot, modulo replaces mod_WebObjects as the reverse proxy to your application instances, wotaskd and JavaMonitor manage them.";
+	}
+
+	@Override
 	public String breadcrumbLeaf() {
 		return "apache-modulo";
 	}
