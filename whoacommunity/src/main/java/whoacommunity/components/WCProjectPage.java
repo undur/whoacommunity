@@ -6,6 +6,7 @@ import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
 import whoacommunity.github.Commit;
 import whoacommunity.github.GithubFeed;
+import whoacommunity.github.GithubFeed.TreeEntry;
 import whoacommunity.github.OpenIssue;
 import whoacommunity.github.Release;
 import whoacommunity.util.Markdown;
@@ -75,6 +76,14 @@ public class WCProjectPage extends WCComponent {
 
 	public String projectIssuesURL() {
 		return projectURL() + "/issues";
+	}
+
+	/**
+	 * @return The newest releases for the overview rail; the releases page has them all
+	 */
+	public List<Release> recentReleases() {
+		final List<Release> all = projectReleases();
+		return all.subList( 0, Math.min( 8, all.size() ) );
 	}
 
 	public boolean hasReleases() {
@@ -213,6 +222,33 @@ public class WCProjectPage extends WCComponent {
 
 	public List<Commit> projectCommits() {
 		return GithubFeed.shared.commitsFor( repo );
+	}
+
+	// ---- Repository listing ----
+
+	public TreeEntry currentEntry;
+
+	public List<TreeEntry> rootEntries() {
+		return GithubFeed.shared.rootEntriesFor( repo );
+	}
+
+	public boolean hasRootEntries() {
+		return !rootEntries().isEmpty();
+	}
+
+	/**
+	 * @return The entry on GitHub: /tree/HEAD/… for a directory, /blob/HEAD/… for a file
+	 */
+	public String currentEntryURL() {
+		return repo.url() + ( currentEntry.isDirectory() ? "/tree/HEAD/" : "/blob/HEAD/" ) + currentEntry.name();
+	}
+
+	public String currentEntryGlyph() {
+		return currentEntry.isDirectory() ? "▸" : "·";
+	}
+
+	public String currentEntryClass() {
+		return currentEntry.isDirectory() ? "rail-row tree-entry is-dir" : "rail-row tree-entry";
 	}
 
 	public String currentReleaseHref() {

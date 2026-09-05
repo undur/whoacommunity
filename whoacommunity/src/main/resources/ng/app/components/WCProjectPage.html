@@ -52,7 +52,7 @@
 				<wo:if condition="$hasReleases">
 					<div class="rail-block">
 						<div class="rail-head">Releases<wo:link href="$projectReleasesURL">all →</wo:link></div>
-						<wo:repetition list="$projectReleases" item="$currentRelease">
+						<wo:repetition list="$recentReleases" item="$currentRelease">
 							<wo:link href="$currentRelease.url" class="rail-row"><span class="rail-text rail-version"><wo:str value="$currentRelease.tagName" /></span><span class="rail-when"><wo:str value="$currentRelease.shortDateFormatted" /></span></wo:link>
 						</wo:repetition>
 					</div>
@@ -62,6 +62,14 @@
 						<div class="rail-head">Open issues<wo:link href="$projectIssuesURL">all <wo:str value="$openIssueCount" /> →</wo:link></div>
 						<wo:repetition list="$projectIssues" item="$currentIssue">
 							<wo:link href="$currentIssue.url" class="rail-row"><span class="rail-text-wrap"><wo:str value="$currentIssue.title" /></span><span class="rail-when"><wo:str value="$currentIssue.shortDateFormatted" /></span></wo:link>
+						</wo:repetition>
+					</div>
+				</wo:if>
+				<wo:if condition="$hasRootEntries">
+					<div class="rail-block">
+						<div class="rail-head">Repository<wo:link href="$repo.url" target="_blank" rel="noopener">on GitHub ↗</wo:link></div>
+						<wo:repetition list="$rootEntries" item="$currentEntry">
+							<wo:link href="$currentEntryURL" class="$currentEntryClass" target="_blank" rel="noopener"><span class="tree-entry-glyph"><wo:str value="$currentEntryGlyph" /></span><span class="rail-text"><wo:str value="$currentEntry.name" /></span></wo:link>
 						</wo:repetition>
 					</div>
 				</wo:if>

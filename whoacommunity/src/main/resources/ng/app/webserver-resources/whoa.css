@@ -584,6 +584,13 @@ a:hover { color: var(--whoa-accent); }
 .toc .toc-note { margin-top: 1.4rem; }
 .toc a .toc-when { float: right; font-family: "JetBrains Mono", monospace; font-size: .66rem; color: var(--whoa-dim); font-variant-numeric: tabular-nums; }
 
+/* Repository listing on a project's overview: one row per top-level entry */
+.tree-entry { padding-top: .3rem; padding-bottom: .3rem; }
+.tree-entry .rail-text { font-family: "JetBrains Mono", monospace; font-size: .74rem; }
+.tree-entry-glyph { flex: 0 0 auto; width: 1em; text-align: center; font-family: "JetBrains Mono", monospace; font-size: .74rem; color: var(--whoa-dim); }
+.tree-entry.is-dir .tree-entry-glyph { color: var(--whoa-accent); }
+.tree-entry.is-dir .rail-text { color: var(--whoa-bright); }
+
 /* Release notes on a project's releases page */
 .release-list { display: flex; flex-direction: column; gap: 1.1rem; }
 .release { scroll-margin-top: 4.2rem; }

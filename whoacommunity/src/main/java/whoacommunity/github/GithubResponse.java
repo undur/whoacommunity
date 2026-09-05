@@ -20,7 +20,14 @@ final class GithubResponse {
 			IssueConnection issues,
 			ReleaseConnection releases,
 			DefaultBranchRef defaultBranchRef,
-			Readme readme ) {}
+			Readme readme,
+			RootTree rootTree ) {}
+
+	/** The "rootTree" alias: the tree at HEAD, so the project page can list the repository's top level */
+	record RootTree( List<TreeEntryNode> entries ) {}
+
+	/** One entry of a tree: type is "blob" for a file, "tree" for a directory */
+	record TreeEntryNode( String name, String type ) {}
 
 	/** The "readme" alias: the README.md blob at HEAD, or null if the repo has none */
 	record Readme( String text ) {}

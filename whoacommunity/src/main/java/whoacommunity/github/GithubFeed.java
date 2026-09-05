@@ -52,7 +52,7 @@ public class GithubFeed {
 	 * Empty payload returned before the first successful refresh and on
 	 * total fetch failure with no prior data to fall back to.
 	 */
-	private static final GithubData EMPTY = new GithubData( List.of(), List.of(), List.of(), Map.of(), Map.of(), Map.of() );
+	private static final GithubData EMPTY = new GithubData( List.of(), List.of(), List.of(), Map.of(), Map.of(), Map.of(), Map.of() );
 
 	private final CachedFeed<GithubData> _feed;
 
@@ -75,6 +75,13 @@ public class GithubFeed {
 	/**
 	 * @return The repo's README.md rendered from HEAD, or null if it has none
 	 */
+	/**
+	 * @return The repository's top-level files and directories, directories first, or an empty list
+	 */
+	public List<TreeEntry> rootEntriesFor( final Repo repo ) {
+		return _feed.value().rootEntries().getOrDefault( repo, List.of() );
+	}
+
 	public String readmeFor( final Repo repo ) {
 		return _feed.value().readmes().get( repo );
 	}
@@ -130,7 +137,13 @@ public class GithubFeed {
 			List<Commit> commits,
 			Map<Repo, String> readmes,
 			Map<Repo, String> descriptions,
-			Map<Repo, Integer> openIssueCounts ) {}
+			Map<Repo, Integer> openIssueCounts,
+			Map<Repo, List<TreeEntry>> rootEntries ) {}
+
+	/**
+	 * A file or directory at the top level of a repository
+	 */
+	public record TreeEntry( String name, boolean isDirectory ) {}
 
 	private static GithubData fetch() {
 		final String token = WCCore.githubToken();
@@ -161,7 +174,8 @@ public class GithubFeed {
 					collectCommits( tracked, repoNodes ),
 					collectReadmes( tracked, repoNodes ),
 					collectDescriptions( tracked, repoNodes ),
-					collectOpenIssueCounts( tracked, repoNodes ) );
+					collectOpenIssueCounts( tracked, repoNodes ),
+					collectRootEntries( tracked, repoNodes ) );
 		}
 		catch( Exception e ) {
 			// Re-throw so CachedFeed logs it and keeps the previous value
@@ -200,6 +214,9 @@ public class GithubFeed {
 					}
 					readme: object(expression: "HEAD:README.md") {
 						... on Blob { text }
+					}
+					rootTree: object(expression: "HEAD:") {
+						... on Tree { entries { name type } }
 					}
 				}
 				""";
@@ -302,6 +319,21 @@ public class GithubFeed {
 		}
 		out.sort( Comparator.comparing( Commit::committedAt, Comparator.nullsLast( Comparator.reverseOrder() ) ) );
 		return List.copyOf( out );
+	}
+
+	private static Map<Repo, List<TreeEntry>> collectRootEntries( final List<Repo> repos, final List<RepoNode> repoNodes ) {
+		final Map<Repo, List<TreeEntry>> out = new HashMap<>();
+		for( int i = 0; i < repos.size(); i++ ) {
+			final RepoNode rn = repoNodes.get( i );
+			if( rn == null || rn.rootTree() == null || rn.rootTree().entries() == null ) continue;
+
+			final List<TreeEntry> entries = rn.rootTree().entries().stream()
+					.map( e -> new TreeEntry( e.name(), "tree".equals( e.type() ) ) )
+					.sorted( Comparator.comparing( TreeEntry::isDirectory ).reversed().thenComparing( TreeEntry::name, String.CASE_INSENSITIVE_ORDER ) )
+					.toList();
+			out.put( repos.get( i ), entries );
+		}
+		return Map.copyOf( out );
 	}
 
 	private static Map<Repo, String> collectReadmes( final List<Repo> repos, final List<RepoNode> repoNodes ) {
