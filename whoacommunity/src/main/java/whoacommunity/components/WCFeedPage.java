@@ -2,7 +2,9 @@ package whoacommunity.components;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
@@ -52,9 +54,14 @@ public class WCFeedPage extends WCComponent {
 	public Tab tab = Tab.commits;
 
 	/**
-	 * The repo the user has filtered the list down to, or null when showing everything.
+	 * The repos whose activity is in the feed. Starts as the default set (everything but "around the stack");
+	 * clicking a repo in the rail toggles it, "only" narrows to that one repo, "reset" restores the default.
 	 */
-	public Repo selectedRepo;
+	private final Set<Repo> _shown = new LinkedHashSet<>( defaultRepos() );
+
+	private static List<Repo> defaultRepos() {
+		return Repos.repos().stream().filter( Repos::inStreams ).toList();
+	}
 
 	public WCFeedPage( NGContext context ) {
 		super( context );
@@ -117,41 +124,103 @@ public class WCFeedPage extends WCComponent {
 	 * @return All commits across the tracked repos, optionally filtered by the selected repo
 	 */
 	public List<Commit> allCommits() {
-		final List<Commit> all = GithubFeed.shared.commits();
-		return selectedRepo == null ? all.stream().filter( c -> Repos.inStreams( c.repo() ) ).toList() : all.stream().filter( c -> c.repo() == selectedRepo ).toList();
+		return GithubFeed.shared.commits().stream().filter( c -> _shown.contains( c.repo() ) ).toList();
 	}
 
 	public List<Release> allReleases() {
-		final List<Release> all = GithubFeed.shared.releases();
-		return selectedRepo == null ? all.stream().filter( r -> Repos.inStreams( r.repo() ) ).toList() : all.stream().filter( r -> r.repo() == selectedRepo ).toList();
+		return GithubFeed.shared.releases().stream().filter( r -> _shown.contains( r.repo() ) ).toList();
 	}
 
 	public List<OpenIssue> allIssues() {
-		final List<OpenIssue> all = GithubFeed.shared.issues();
-		return selectedRepo == null ? all.stream().filter( i -> Repos.inStreams( i.repo() ) ).toList() : all.stream().filter( i -> i.repo() == selectedRepo ).toList();
+		return GithubFeed.shared.issues().stream().filter( i -> _shown.contains( i.repo() ) ).toList();
 	}
 
+	/**
+	 * @return true when the shown set differs from the default, so the "reset" link appears
+	 */
 	public boolean hasFilter() {
-		return selectedRepo != null;
+		return !_shown.equals( new LinkedHashSet<>( defaultRepos() ) );
 	}
 
 	public String filterDescription() {
-		return selectedRepo == null ? "the stack and the projects we follow" : selectedRepo.emoji() + " " + selectedRepo.name();
+		if( !hasFilter() ) {
+			return "the stack and the projects we follow";
+		}
+
+		if( _shown.size() == 1 ) {
+			final Repo only = _shown.iterator().next();
+			return only.emoji() + " " + only.name() + " only";
+		}
+
+		if( _shown.size() == Repos.repos().size() ) {
+			return "all " + _shown.size() + " repositories";
+		}
+
+		return _shown.size() + " of " + Repos.repos().size() + " repositories";
 	}
 
-	public NGActionResults selectRepo() {
-		// Clicking the already-selected repo clears the filter
-		selectedRepo = ( currentRepo == selectedRepo ) ? null : currentRepo;
+	/**
+	 * Clicking a repo's row toggles it in or out of the feed. The last shown repo can't be toggled off (an empty feed helps nobody).
+	 */
+	public NGActionResults toggleRepo() {
+		if( _shown.contains( currentRepo ) ) {
+			if( _shown.size() > 1 ) {
+				_shown.remove( currentRepo );
+			}
+		}
+		else {
+			_shown.add( currentRepo );
+		}
+
+		return null;
+	}
+
+	/**
+	 * The row's "only" button: narrow the feed to this one repo
+	 */
+	public NGActionResults onlyRepo() {
+		_shown.clear();
+		_shown.add( currentRepo );
+		return null;
+	}
+
+	/**
+	 * Clicking a group's heading shows that group's repos and nothing else
+	 */
+	public NGActionResults selectGroup() {
+		_shown.clear();
+		_shown.addAll( currentGroup.repos() );
+		return null;
+	}
+
+	/**
+	 * The card's "all" button: every repository, including the ones left out by default
+	 */
+	public NGActionResults showAll() {
+		_shown.clear();
+		_shown.addAll( Repos.repos() );
 		return null;
 	}
 
 	public NGActionResults clearFilter() {
-		selectedRepo = null;
+		_shown.clear();
+		_shown.addAll( defaultRepos() );
 		return null;
 	}
 
-	public String repoFilterClass() {
-		return currentRepo == selectedRepo ? "is-on" : "";
+	public boolean isCurrentRepoShown() {
+		return _shown.contains( currentRepo );
+	}
+
+	public String repoRowClass() {
+		return isCurrentRepoShown() ? "is-on" : "is-off";
+	}
+
+	/**
+	 * @return The marker glyph: a filled dot for a repo in the feed, a hollow one for a repo left out
+	 */
+	public String repoMarker() {
+		return isCurrentRepoShown() ? "●" : "○";
 	}
 
 	/**

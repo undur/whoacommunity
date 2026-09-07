@@ -479,19 +479,34 @@ a:hover { color: var(--whoa-accent); }
 .feed-table .c-msg a { color: var(--whoa-text); text-decoration: none; }
 .feed-table tbody tr:hover .c-msg a { color: var(--whoa-accent); }
 
+.rail-subhead-link { display: flex; align-items: baseline; gap: .5rem; text-decoration: none; }
+.rail-subhead-link:hover { color: var(--whoa-accent); }
+.rail-subhead-hint { margin-left: auto; margin-right: 1.4rem; font-size: .62rem; letter-spacing: .04em; text-transform: none; color: var(--whoa-dim); opacity: 0; transition: opacity .12s; }
+.rail-subhead-link:hover .rail-subhead-hint { opacity: 1; }
+@media (hover: none) { .rail-subhead-hint { opacity: 1; } }
 .repo-filter { list-style: none; margin: 0; padding: .4rem 0; }
-.repo-filter li a {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .28rem .9rem;
-  font-size: .8rem;
-  color: var(--whoa-text);
-  text-decoration: none;
+.repo-filter li { display: flex; align-items: stretch; }
+.repo-filter li .repo-toggle {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: .5rem;
+  padding: .28rem .5rem .28rem .9rem;
+  font-size: .8rem; color: var(--whoa-text); text-decoration: none;
 }
-.repo-filter li a:hover { background: var(--whoa-hover); color: var(--whoa-bright); }
-.repo-filter li a.is-on { color: var(--whoa-accent); }
+.repo-filter li:hover .repo-toggle { background: var(--whoa-hover); color: var(--whoa-bright); }
+.repo-filter .repo-mark { flex: 0 0 auto; width: .9em; text-align: center; font-size: .6rem; color: var(--whoa-accent); }
+.repo-filter li.is-off .repo-mark { color: var(--whoa-line); }
+.repo-filter li.is-off .repo-toggle { color: var(--whoa-dim); }
 .repo-filter .n { margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: .66rem; color: var(--whoa-dim); }
+.repo-filter .repo-only {
+  flex: 0 0 auto; align-self: center;
+  margin-right: .6rem; padding: 1px 6px;
+  font-family: "JetBrains Mono", monospace; font-size: .62rem; letter-spacing: .04em;
+  color: var(--whoa-dim); border: 1px solid transparent; border-radius: 3px; text-decoration: none;
+  opacity: 0; transition: opacity .12s;
+}
+.repo-filter li:hover .repo-only, .repo-filter .repo-only:focus { opacity: 1; }
+.repo-filter .repo-only:hover { color: var(--whoa-accent); border-color: var(--whoa-accent-line); background: var(--whoa-accent-soft); }
+@media (hover: none) { .repo-filter .repo-only { opacity: 1; } }
 
 .note {
   background: var(--whoa-accent-soft);

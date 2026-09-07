@@ -50,6 +50,17 @@ public class WCGuidesPage extends WCComponent {
 			new Guide( "wonder-slim-development", "🛠️", "Setting up for wonder-slim development", "/guide/wonder-slim-development", "macOS", false,
 					"A JDK that redefines classes while the application runs, Eclipse with Parslips, and Maven pointed at the WOCommunity repository. The JetBrains Runtime through SDKMAN!, HotswapAgent in one copy, and the VM arguments that make it all work.", List.of() ) );
 
+	/**
+	 * Guides about building: getting from source to a bundle
+	 */
+	private static final List<Guide> BUILDING_GUIDES = List.of(
+			new Guide( "vermilingua", "🦡", "Building WebObjects applications with vermilingua", "/guide/building-with-vermilingua", "Maven", false,
+					"From an empty directory to a self-contained .woa: the pom, the project layout, build.properties, the bundle and its launch script, frameworks, deploying to JavaMonitor, and migrating from wolifecycle.", List.of() ) );
+
+	public List<Guide> buildingGuides() {
+		return BUILDING_GUIDES;
+	}
+
 	public List<Guide> developmentGuides() {
 		return DEVELOPMENT_GUIDES;
 	}

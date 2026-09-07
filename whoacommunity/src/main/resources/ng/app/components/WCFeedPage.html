@@ -11,7 +11,7 @@
 				<div class="feed-filter">
 					<span>Showing <strong><wo:str value="$filterDescription" /></strong> — <wo:str value="$tab.scope" /></span>
 					<wo:if condition="$hasFilter">
-						<wo:aul action="$clearFilter" updateContainerID="feedUC;reposUC" class="clear">clear filter</wo:aul>
+						<wo:aul action="$clearFilter" updateContainerID="feedUC;reposUC" class="clear">reset</wo:aul>
 					</wo:if>
 				</div>
 
@@ -72,18 +72,20 @@
 		<div>
 			<wo:auc id="reposUC">
 				<div class="rail-block">
-				<div class="rail-head">Filter by repository</div>
+				<div class="rail-head">Filter by repository<wo:aul action="$showAll" updateContainerID="feedUC;reposUC" title="Show every repository">all</wo:aul></div>
 				<wo:repetition list="$groups" item="$currentGroup">
-					<div class="rail-subhead"><wo:str value="$currentGroup.name" /></div>
+					<wo:aul action="$selectGroup" updateContainerID="feedUC;reposUC" class="rail-subhead rail-subhead-link" title="Show only these repositories"><wo:str value="$currentGroup.name" /><span class="rail-subhead-hint">only</span></wo:aul>
 					<ul class="repo-filter">
 						<wo:repetition list="$currentGroup.repos" item="$currentRepo">
-							<li>
-								<wo:aul action="$selectRepo" updateContainerID="feedUC;reposUC" class="$repoFilterClass">
+							<wo:container elementName="li" class="$repoRowClass">
+								<wo:aul action="$toggleRepo" updateContainerID="feedUC;reposUC" class="repo-toggle" title="Show or hide this repository in the feed">
+									<span class="repo-mark"><wo:str value="$repoMarker" /></span>
 									<span><wo:str value="$currentRepo.emoji" /></span>
 									<span class="rail-text"><wo:str value="$currentRepo.name" /></span>
 									<span class="n"><wo:str value="$currentRepoCount" /></span>
 								</wo:aul>
-							</li>
+								<wo:aul action="$onlyRepo" updateContainerID="feedUC;reposUC" class="repo-only" title="Show only this repository">only</wo:aul>
+							</wo:container>
 						</wo:repetition>
 					</ul>
 				</wo:repetition>

@@ -1,0 +1,155 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Building WebObjects applications with vermilingua<span>Maven, a pom and one plugin</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<p><a href="/project/vermilingua">vermilingua</a> is a Maven plugin that builds WebObjects applications and frameworks. It is a replacement for the wolifecycle plugin, written from scratch rather than wrapped around the old WOProject Ant tasks, and it produces a self-contained <code>.woa</code> bundle: no <code>NEXT_ROOT</code>, no system-wide WebObjects installation on the build machine or the server. It builds classic WebObjects projects, Wonder and wonder-slim projects, and, since it doesn't care what the Java inside is, ng-objects applications too.</p>
+					<p>This guide takes a project from an empty directory to a running bundle. If you're migrating from wolifecycle, skip to <a href="#migrating">the migration section</a>; the rest still applies but you already have most of it.</p>
+
+					<h2 id="prerequisites">1. What you need first</h2>
+					<p>A JDK and Maven on the command line, and Maven pointed at the WOCommunity repository, which is where the WebObjects and Wonder artifacts live. If you followed the <a href="/guide/wonder-slim-development">development setup guide</a> you have all three; Parslips writes the repository into <code>~/.m2/settings.xml</code> from its Maven preference page. Without Parslips, add the profile by hand:</p>
+<pre><code class="language-xml">&lt;settings&gt;
+  &lt;profiles&gt;
+    &lt;profile&gt;
+      &lt;id&gt;wocommunity&lt;/id&gt;
+      &lt;activation&gt;&lt;activeByDefault&gt;true&lt;/activeByDefault&gt;&lt;/activation&gt;
+      &lt;repositories&gt;
+        &lt;repository&gt;
+          &lt;id&gt;wocommunity.releases&lt;/id&gt;
+          &lt;url&gt;https://maven.wocommunity.org/content/groups/public&lt;/url&gt;
+        &lt;/repository&gt;
+        &lt;repository&gt;
+          &lt;id&gt;wocommunity.snapshots&lt;/id&gt;
+          &lt;url&gt;https://maven.wocommunity.org/content/groups/public-snapshots&lt;/url&gt;
+          &lt;snapshots&gt;&lt;enabled&gt;true&lt;/enabled&gt;&lt;/snapshots&gt;
+        &lt;/repository&gt;
+      &lt;/repositories&gt;
+    &lt;/profile&gt;
+  &lt;/profiles&gt;
+&lt;/settings&gt;</code></pre>
+					<p>The most common build failure on the mailing lists, "Unresolveable build extension" or "could not be resolved" for a plugin or a WebObjects artifact, is this file missing or the profile not active. vermilingua itself is on Maven Central, so it resolves either way; the frameworks it builds against are not.</p>
+
+					<h2 id="pom">2. The pom</h2>
+					<p>Two things make a pom a WebObjects pom: the packaging, and the plugin registered as a build extension so Maven knows what that packaging means.</p>
+<pre><code class="language-xml">&lt;project&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+  &lt;groupId&gt;com.example&lt;/groupId&gt;
+  &lt;artifactId&gt;MyApp&lt;/artifactId&gt;
+  &lt;version&gt;1.0.0-SNAPSHOT&lt;/version&gt;
+  &lt;packaging&gt;woapplication&lt;/packaging&gt;
+
+  &lt;properties&gt;
+    &lt;maven.compiler.release&gt;25&lt;/maven.compiler.release&gt;
+    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+  &lt;/properties&gt;
+
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;is.rebbi.slim&lt;/groupId&gt;
+      &lt;artifactId&gt;ERExtensions&lt;/artifactId&gt;
+      &lt;version&gt;8.0.4&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;is.rebbi.slim&lt;/groupId&gt;
+      &lt;artifactId&gt;ERLoggingReload4j&lt;/artifactId&gt;
+      &lt;version&gt;8.0.4&lt;/version&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+
+  &lt;build&gt;
+    &lt;plugins&gt;
+      &lt;plugin&gt;
+        &lt;groupId&gt;is.rebbi&lt;/groupId&gt;
+        &lt;artifactId&gt;vermilingua-maven-plugin&lt;/artifactId&gt;
+        &lt;version&gt;1.1.7&lt;/version&gt;
+        &lt;extensions&gt;true&lt;/extensions&gt;
+      &lt;/plugin&gt;
+    &lt;/plugins&gt;
+  &lt;/build&gt;
+&lt;/project&gt;</code></pre>
+					<p>Packaging is <code>woapplication</code> for an application and <code>woframework</code> for a framework. <code>&lt;extensions&gt;true&lt;/extensions&gt;</code> is not optional; it is what binds the packaging to the plugin's lifecycle. The dependencies shown are <a href="/project/wonder-slim">wonder-slim</a>, which brings WebObjects itself in transitively. A classic Wonder project lists <code>ERExtensions</code> from the <code>wonder.core</code> group and <code>JavaWebObjects</code> from <code>com.webobjects</code> instead; vermilingua doesn't mind which.</p>
+
+					<h2 id="layout">3. Project layout</h2>
+					<p>vermilingua expects the standard Maven layout, with one deliberate change: WebObjects bundle resources have their own folder, so that <code>src/main/resources</code> means what it means in every other Java project, the classpath.</p>
+<pre><code class="language-none">MyApp/
+  pom.xml
+  build.properties
+  src/main/java/                  Java sources
+  src/main/components/            .wo bundles and standalone .html templates
+  src/main/woresources/           WebObjects bundle resources: .eomodeld, Properties, .plist, …
+  src/main/webserver-resources/   static files served to the browser: CSS, images, JavaScript
+  src/main/resources/             classpath resources, as in any Java project</code></pre>
+					<p>Any folder structure under <code>components</code> is flattened into the bundle, since WebObjects cannot find components in subfolders at runtime; organise them however you like. Localised <code>.lproj</code> folders are preserved. If a project has the old "Fluffy Bunny" layout, <code>Sources</code>, <code>Resources</code>, <code>Components</code> and <code>WebServerResources</code> at the top level, the plugin's <code>woresourcesPath</code>, <code>componentsPath</code> and <code>webserverResourcesPath</code> parameters point it there, with Maven's <code>sourceDirectory</code> set to <code>Sources</code>; the README has the exact configuration.</p>
+
+					<h2 id="build-properties">4. build.properties</h2>
+					<p>A small file at the project root that both the build and the editor read. The essentials for an application:</p>
+<pre><code class="language-none">project.name=MyApp
+project.type=application
+principalClass=com.example.Application
+launch.jvm=java
+launch.jvmOptions=-Xmx512m</code></pre>
+					<p>The <code>launch.*</code> keys end up in the bundle's <code>config.txt</code> and control how the launch script starts the JVM. They can be set here, overridden at build time with <code>mvn package -Dlaunch.jvm=/opt/jdk-25/bin/java</code>, or at launch time with <code>./MyApp -launch.jvm=…</code>, later layers winning. The <code>--add-opens</code> clauses that WebObjects needs on a modern JDK are included by default, so you don't have to remember them. Parslips reads <code>project.base</code> and the inline-binding keys from the same file.</p>
+
+					<h2 id="building">5. Building and running</h2>
+<pre><code class="language-none">mvn package
+./target/MyApp.woa/MyApp -WOPort 1200</code></pre>
+					<p>That's the whole loop. The result under <code>target</code> is a self-contained bundle:</p>
+<pre><code class="language-none">MyApp.woa
+  MyApp                launch script; runs anywhere with a JDK, no NEXT_ROOT
+  config.txt           jvm, jvmOptions, principalClass
+  classpath.txt
+  Contents/
+    Info.plist
+    WebServerResources/
+    Frameworks/          each framework's WebServerResources
+    Resources/Java/      myapp.jar and every dependency jar</code></pre>
+					<p>Every jar the application needs is inside the bundle, which is why the server needs nothing installed beyond a JDK. The launch script is plain shell; on Windows it runs under WSL or Git Bash. Building again without <code>clean</code> overwrites resources in the existing bundle, so a stale file can't survive a rebuild.</p>
+
+					<h2 id="frameworks">6. Frameworks</h2>
+					<p>A framework project uses <code>woframework</code> packaging and the same layout. The build produces a Maven jar that carries the framework's components, resources and WebServerResources inside it, plus an <code>Info.plist</code> marking it as a WebObjects framework. Applications depend on it as an ordinary Maven dependency, and vermilingua unpacks the WebServerResources into the application bundle's <code>Contents/Frameworks</code> at build time. There is no separate <code>.framework</code> directory to install anywhere, and no old-style framework bundles at all: vermilingua builds jar frameworks only.</p>
+
+					<h2 id="deploying">7. Deploying the bundle</h2>
+					<p>Copy the <code>.woa</code> to the server and point wotaskd at it; the <a href="/guides">deployment guides</a> cover the server side. Two plugin parameters help with the copying: <code>createArchives</code> produces a <code>tar.gz</code> of the bundle, and <code>performSplit</code> produces a separate WebServerResources bundle for setups where Apache serves the static files. Neither is on by default, because with modulo the application serves its own resources and neither is needed.</p>
+					<p>Since 1.1.7 the plugin can also push the build straight to JavaMonitor:</p>
+<pre><code class="language-none">mvn package vermilingua:deploy -Ddeploy.password=…</code></pre>
+					<p>With <code>deploy.appName</code>, <code>deploy.monitorHost</code> and <code>deploy.password</code> set in <code>build.properties</code> or as <code>-D</code> overrides, the goal archives the bundle, posts it to JavaMonitor's deploy endpoint, and JavaMonitor hands it to wotaskd on every host the application runs on. It is marked experimental: it works and is in real use, but the details may still move.</p>
+
+					<h2 id="migrating">8. Migrating from wolifecycle</h2>
+					<p>For most projects the migration is the plugin element. Replace <code>wolifecycle-maven-plugin</code> with the vermilingua element from section 2, then check these:</p>
+					<ul>
+						<li><strong>Resources move</strong> from <code>src/main/resources</code> to <code>src/main/woresources</code>, unless you set <code>woresourcesPath</code> to keep them where they are. Moving them is the better choice.</li>
+						<li><strong>Drop</strong> <code>flattenComponents</code> and <code>flattenResources</code> from the configuration; components are always flattened, resources never are. <code>.patternset</code> files are ignored; the build relies on the folder structure.</li>
+						<li><strong>Not supported</strong>: <code>.war</code> builds for servlet deployment, and old-style <code>.framework</code> bundles. If you need either, stay on wolifecycle for that project.</li>
+						<li><strong>NEXT_ROOT</strong> is no longer read, and the launch script no longer passes <code>-DWORootDirectory</code> or <code>-DWOLocalRootDirectory</code>. A deployment that relied on a system-wide WebObjects install under <code>/Library/WebObjects</code> stops needing it.</li>
+						<li><strong>finalName</strong> only changes the bundle's folder name; the inside is identical regardless.</li>
+					</ul>
+
+					<h2 id="troubleshooting">9. When it doesn't work</h2>
+					<ul>
+						<li><strong>"Unresolveable build extension" or an artifact that "could not be resolved"</strong>: the WOCommunity repository isn't configured, or the profile isn't active. See section 1. Fix the command-line build first; Eclipse only complicates the diagnosis.</li>
+						<li><strong><code>NoClassDefFoundError</code> at runtime</strong> for a class that compiled fine: a dependency with the wrong scope, or a framework jar that isn't in <code>Contents/Resources/Java</code>. Check <code>classpath.txt</code> in the bundle; it lists exactly what the launch script puts on the classpath.</li>
+						<li><strong>The main bundle can't be found when launching from Eclipse</strong>, typically <code>NSProperties._mainBundleName()</code> returning null: the project needs <code>build.properties</code> at its root with <code>project.name</code> set, and it must be imported as a Maven project so Eclipse's output folder matches Maven's. If the command-line build runs, this is an Eclipse setup problem, not a build problem.</li>
+						<li><strong>The launch script fails with <code>EACCES</code> or systemd reports <code>status=203/EXEC</code></strong>: an old plugin version set the execute bit for the owner only, and the bundle was copied by root while the app runs as another user. 1.1.7 sets it for everyone; until then, <code>chmod a+x MyApp.woa/MyApp</code>.</li>
+						<li><strong>Static resources 404 on the server</strong>: the application serves its own WebServerResources unless you built with <code>performSplit</code> and configured Apache to serve them. Use one or the other, not half of each.</li>
+					</ul>
+					<p>Everything above is current as of vermilingua 1.1.7. The <a href="/project/vermilingua/releases">release notes</a> say what changed since, and the <a href="https://github.com/undur/vermilingua-maven-plugin">repository</a> takes issues.</p>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#prerequisites">What you need first</a>
+				<a href="#pom">The pom</a>
+				<a href="#layout">Project layout</a>
+				<a href="#build-properties">build.properties</a>
+				<a href="#building">Building and running</a>
+				<a href="#frameworks">Frameworks</a>
+				<a href="#deploying">Deploying the bundle</a>
+				<a href="#migrating">Migrating from wolifecycle</a>
+				<a href="#troubleshooting">When it doesn't work</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>
