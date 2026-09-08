@@ -4,7 +4,8 @@
 			<div class="whoa-section">URL routing in wonder-slim<span>clean URLs, one table, same everywhere</span></div>
 			<div class="whoa-panel guide-panel">
 				<div class="article-body">
-					<p>A WebObjects application's natural URLs are long and opaque: <code>/cgi-bin/WebObjects/MyApp.woa/wo/3.0.1.2</code> for a component action, <code>/wa/</code> for a direct action. <a href="/project/wonder-slim">wonder-slim</a> adds a route table, so an application can answer <code>/shops/</code>, <code>/company/acme</code> or <code>/laws/2026/12/3</code> with whatever code you like: a page, a JSON document, a redirect. The same routes, written once, serve <code>http://localhost:1200/shops/</code> during development and <code>https://www.example.com/shops/</code> in production. This guide shows the API and the shapes it takes in real applications.</p>
+					<p>A WebObjects application's URLs are usually long and opaque, like <code>/cgi-bin/WebObjects/MyApp.woa/wo/3.0.1.2</code>.</p>
+					<p><a href="/project/wonder-slim">wonder-slim</a> adds a route table, so an application can answer <code>/shops/</code>, <code>/company/acme</code> or <code>/laws/2026/12/3</code> with whatever code you like: a page, a JSON document, a redirect. The same routes, written once, serve <code>http://localhost:1200/shops/</code> during development and <code>https://www.example.com/shops/</code> in production. This guide shows the API and the shapes it takes in real applications.</p>
 
 					<h2 id="table">1. The route table</h2>
 					<p>Routes are registered at startup, in the Application constructor or in a small class it calls. Each entry maps a path pattern to a handler:</p>
@@ -13,38 +14,38 @@
 public Application() {
     final RouteTable routes = RouteTable.defaultRouteTable();
 
-    routes.map( "/", SMStartPage.class );
-    routes.map( "/shops/", SMShopListPage.class );
-    routes.map( "/stats/", SMStatisticsPage.class );
-    routes.map( "/frettir/*", new NewsRoute() );
+    routes.map( "/", StartPage.class );
+    routes.map( "/shops/", ShopListPage.class );
+    routes.map( "/stats/", StatisticsPage.class );
+    routes.map( "/news/*", new NewsRoute() );
     routes.map( "/go/*", new GoRoute() );
 }</code></pre>
 					<p>A pattern is either exact, or a prefix when it ends in <code>*</code>. Matching runs in registration order and the first match wins, so put specific patterns before broad ones. A request that matches nothing gets a 404 with the URL in the body. Every routed request is logged with its IP address and user agent, which doubles as a cheap access log during development.</p>
-					<p>Note that <code>/frettir/</code> and <code>/frettir/*</code> are different patterns: the first is the index, the second everything beneath it. Some applications map a path both with and without its trailing slash so either form works; a two-line helper does that.</p>
+					<p>Note that <code>/news/</code> and <code>/news/*</code> are different patterns: the first is the index, the second everything beneath it. Some applications map a path both with and without its trailing slash so either form works; a two-line helper does that.</p>
 
-					<h2 id="shapes">2. Three shapes of handler</h2>
-					<p>A handler is anything that turns a <code>RouteInvocation</code> into a <code>WOActionResults</code>: a page, a response, or something that yields one. In practice that means one of three things.</p>
+					<h2 id="shapes">2. Four shapes of handler</h2>
+					<p>A handler is anything that turns a <code>RouteInvocation</code> into a <code>WOActionResults</code>: a page, a response, or something that yields one. In practice that means one of four things.</p>
 					<p><strong>A component class</strong>, when the URL simply is a page. The route table instantiates it with the request's context:</p>
-<pre><code class="language-clike">routes.map( "/rekstur/", HVFinancesOverviewPage.class );</code></pre>
+<pre><code class="language-clike">routes.map( "/reports/", ReportsPage.class );</code></pre>
 					<p><strong>A lambda</strong>, when there's a decision or a parameter involved. The invocation gives you the parsed URL, the request and its context:</p>
 <pre><code class="language-clike">routes.map( "/", ri -> {
     if( ((Session)ri.context().session()).user() != null ) {
-        return pageWithName( HVStartPage.class );
+        return pageWithName( DashboardPage.class );
     }
 
-    return pageWithName( HVMainPage.class );
+    return pageWithName( LoginPage.class );
 } );
 
-routes.map( "/grein/*", ri -> {
+routes.map( "/articles/*", ri -> {
     final String slug = ri.routeURL().getString( 1 );
-    final SiteArticleDetailPage page = ERXApplication.erxApplication().pageWithName( SiteArticleDetailPage.class, ri.context() );
-    page.setArticle( SiteArticles.bySlug( slug ) );
+    final ArticlePage page = pageWithName( ArticlePage.class, ri.context() );
+    page.setArticle( Article.forSlug( slug ) );
     return page;
 } );</code></pre>
 					<p><strong>A method reference</strong>, when the handler is more than a few lines. The method takes the invocation and returns the result, and the route table stays a readable list:</p>
 <pre><code class="language-clike">routes.map( "/laws", Application::laws );
 routes.map( "/laws/*", Application::laws );
-routes.map( "/kenni", Application::kenni );
+routes.map( "/oauth/callback", Application::oauthCallback );
 
 private static WOActionResults laws( final RouteInvocation ri ) {
     int year = Year.now().getValue();
@@ -62,7 +63,31 @@ private static WOActionResults laws( final RouteInvocation ri ) {
 
     …
 }</code></pre>
-					<p>A fourth form is a class implementing <code>RouteHandler</code>, which is what a reusable handler looks like: <code>new ObjectRouteHandler()</code> mapped at <code>/i/*</code> in several of our applications resolves <code>/i/customer/42</code> to the entity's detail page from a registry of entity types, so every application gets object URLs for free.</p>
+					<p><strong>A class implementing <code>RouteHandler</code></strong>, when the handler carries state or is reused across applications. It's a single-method interface, so a nested static class is all it takes:</p>
+<pre><code class="language-clike">routes.map( "/go/*", new GoRoute() );
+
+/**
+ * /go/&lt;code&gt; redirects to the shop a short code stands for, counting the click on the way
+ */
+private static class GoRoute implements RouteHandler {
+
+    @Override
+    public WOActionResults handle( final RouteInvocation ri ) {
+        final String code = ri.routeURL().getString( 1 );
+        final Shop shop = Shop.forShortCode( code );
+
+        if( shop == null ) {
+            return notFound( "No shop for code " + code );
+        }
+
+        shop.countVisit();
+
+        final WOResponse response = new WOResponse();
+        response.setStatus( 302 );
+        response.setHeader( shop.url(), "location" );
+        return response;
+    }
+}</code></pre>
 
 					<h2 id="parameters">3. Reading parameters</h2>
 					<p>The invocation's <code>routeURL()</code> splits the path on slashes, leading and trailing ones removed, and hands out the pieces by index. Index 0 is the first path element, which for <code>/laws/2026/12</code> is <code>laws</code>, so parameters start at 1:</p>
@@ -73,7 +98,7 @@ url.getString( 1, "none" );  // with a default
 url.getInteger( 2, null );   // parsed as an Integer; NumberFormatException if it isn't one
 url.length();                // how many elements the path has</code></pre>
 					<p>Query parameters are not part of the route; the query string is stripped before matching. Read them from the request, as you always have:</p>
-<pre><code class="language-clike">routes.map( "/kenni", ri -> {
+<pre><code class="language-clike">routes.map( "/oauth/callback", ri -> {
     final String code = ri.request().stringFormValueForKey( "code" );
 
     if( code == null ) {
@@ -87,14 +112,14 @@ url.length();                // how many elements the path has</code></pre>
 					<h2 id="returning">4. What a handler returns</h2>
 					<p>Anything WebObjects can send. Pages are the common case; the rest is <code>WOResponse</code> with the right content and headers:</p>
 <pre><code class="language-clike">// A page, with an object set on it
-final HVCompanyDetailPage page = ERXApplication.erxApplication().pageWithName( HVCompanyDetailPage.class, ri.context() );
+final CompanyPage page = pageWithName( CompanyPage.class, ri.context() );
 page.setCompany( company );
 return page;
 
 // Data: JSON from a route
 routes.map( "/company/*", ri -> {
-    final CompanyDefinition cd = CompanyDefinition.forName( ri.routeURL().getString( 1 ) );
-    final String json = new Gson().toJson( new CompanyClient( cd ).out() );
+    final Company company = Company.forName( ri.routeURL().getString( 1 ) );
+    final String json = new Gson().toJson( company.balanceSheet() );
     final WOResponse response = new WOResponse();
     response.setHeader( "application/json; charset=utf-8", "content-type" );
     response.setContent( json );
@@ -103,7 +128,7 @@ routes.map( "/company/*", ri -> {
 
 // A file from the bundle: the favicon browsers ask for regardless of your markup
 routes.map( "/favicon.ico", ri -> {
-    final byte[] bytes = ERXApplication.erxApplication().resourceManager().bytesForResourceNamed( "favicon.ico", "app", NSArray.emptyArray() );
+    final byte[] bytes = application().resourceManager().bytesForResourceNamed( "favicon.ico", "app", NSArray.emptyArray() );
     final WOResponse response = new WOResponse();
     response.setHeader( "image/x-icon", "content-type" );
     response.setHeader( "public, max-age=3600", "cache-control" );
@@ -112,33 +137,22 @@ routes.map( "/favicon.ico", ri -> {
 } );
 
 // A redirect: 302 on purpose, so browsers don't cache it the way they cache a 301
-routes.map( "/innskraning", ri -> {
+routes.map( "/login", ri -> {
     final WOResponse response = new WOResponse();
     response.setStatus( 302 );
     response.setHeader( "https://app.example.com/", "location" );
     return response;
 } );</code></pre>
-					<p>The machine endpoints a public site needs, <code>/robots.txt</code> and <code>/sitemap.xml</code>, are two more routes returning text. Our sites generate the sitemap from the same page registry the routes are built from, so the two can't drift apart.</p>
-
 					<h2 id="dev-prod">5. The same URLs in development and production</h2>
 					<p>This is the part worth understanding, because it's what makes routes pleasant rather than merely possible.</p>
-					<p><strong>In development</strong> the application listens on its own port and wonder-slim installs the route table as the application's default request handler. A request for <code>/shops/</code> at <code>http://localhost:1200/shops/</code> goes straight to the table. There is no adaptor, no rewrite, nothing to configure: the URL you type is the URL your handler sees.</p>
-					<p><strong>In production behind <a href="/project/modulo">modulo</a></strong>, a site maps hostnames to an application and carries rewrite rules. One catch-all rule sends every path to the application's route action with the original path as a parameter:</p>
-<pre><code class="language-none">[[sites]]
-hostnames = [ "www.example.com", "example.com" ]
-app = "MyApp"
-rewrites = [
-  { match = '^(.*)$', to = '/Apps/WebObjects/MyApp.woa/wa/RouteAction/handler?url=$1', appendQuery = true },
-]</code></pre>
-					<p>The route action unpacks the path and hands it to the same table, so <code>/shops/</code> reaches the same handler with the same <code>routeURL()</code>. Adaptor URLs, <code>/Apps/WebObjects/…</code>, bypass the rewrites, so component actions, direct actions and resource URLs the application generates keep working untouched. Rules run in order, so a redirect for an old address can sit above the catch-all.</p>
-					<p><strong>Behind Apache with mod_WebObjects</strong> the same trick is a <code>RewriteRule</code> in the virtual host, or an <code>ErrorDocument 404</code> handler pointing at the route action, which reads the original path from the <code>redirect_url</code> header Apache sets. Either way the application code is identical; only the front end differs, and the <a href="/guides">deployment guides</a> show each.</p>
-					<p>One detail the route action handles for you: a request that arrives at the application root has no adaptor prefix or application name in it, so the action sets both on the context before rendering. That is why links and forms generated inside a routed page come out as proper adaptor URLs rather than relative to <code>/shops/</code>.</p>
-
+					<p><strong>In development</strong> the application listens on its own port and wonder-slim registers the routing request handler as the application's default request handler. A request for <code>/shops/</code> at <code>http://localhost:1200/shops/</code> is passed to the application as it is and lands in the table. There is no adaptor, no rewrite, nothing to configure: the URL you type is the URL your handler sees.</p>
+					<p><strong>In production behind <a href="/project/modulo">modulo</a></strong>, a site maps its hostnames to an application, and modulo forwards the request to an instance unchanged. The application's default request handler receives <code>/shops/</code> exactly as it did on localhost, so the same handler runs with the same <code>routeURL()</code>. Component actions, direct actions and resource URLs the application generates are adaptor URLs and are routed by modulo the way they always were, so nothing else changes.</p>
+					<p><strong>Behind Apache with mod_WebObjects</strong> only adaptor URLs reach the application by default, so friendly URLs need a <code>RewriteRule</code> in the virtual host that maps them into the application's adaptor URL space. Pointing Apache's 404 handler at the application works as well, and covers every path without a rule per URL. The application code is identical; only the front end differs, and the <a href="/guides">deployment guides</a> show each setup.</p>
 					<h2 id="practice">6. In practice</h2>
 					<ul>
 						<li><strong>Keep the table in one place.</strong> A <code>Routes</code> class with a static <code>register()</code> method, called from the Application constructor, reads as the site's map. wonder-slim's AjaxPlayground does exactly this.</li>
 						<li><strong>Map the root.</strong> <code>/</code> is a route like any other; it is where the login decision usually lives.</li>
-						<li><strong>Prefer flat, stable paths</strong> for pages, and reserve wildcards for things with identifiers: <code>/grein/&lt;slug&gt;</code>, <code>/i/&lt;entity&gt;/&lt;id&gt;</code>.</li>
+						<li><strong>Prefer flat, stable paths</strong> for pages, and reserve wildcards for things with identifiers: <code>/articles/&lt;slug&gt;</code>, <code>/i/&lt;entity&gt;/&lt;id&gt;</code>.</li>
 						<li><strong>Handle bad parameters yourself.</strong> <code>getInteger</code> throws on non-numbers, and a slug that matches nothing returns null from your lookup; answer with a 404 rather than letting an exception page out.</li>
 						<li><strong>Wildcards are prefixes</strong>, nothing more. There is no pattern language yet; the matching is deliberately simple, and everything beyond the prefix is yours to parse from <code>routeURL()</code>.</li>
 						<li><strong>Resources are routed too.</strong> With the app-based resource manager, wonder-slim maps its own resource URL prefix in the same table, which is how a routed page's stylesheets resolve in both environments.</li>
@@ -151,7 +165,7 @@ rewrites = [
 			<nav class="toc">
 				<div class="toc-head">On this page</div>
 				<a href="#table">The route table</a>
-				<a href="#shapes">Three shapes of handler</a>
+				<a href="#shapes">Four shapes of handler</a>
 				<a href="#parameters">Reading parameters</a>
 				<a href="#returning">What a handler returns</a>
 				<a href="#dev-prod">Development and production</a>
