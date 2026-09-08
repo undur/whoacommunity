@@ -1,6 +1,34 @@
 <wo:WCLook>
 	<div class="whoa-section">Guides</div>
 
+	<div class="whoa-section guides-section">Development<span>your own machine, rather than a server</span></div>
+	<div class="project-grid">
+		<wo:repetition list="$developmentGuides" item="$currentGuide">
+			<wo:link href="$currentGuide.url" class="project-card">
+				<div class="project-card-head">
+					<span class="project-card-emoji"><wo:str value="$currentGuide.emoji" /></span>
+					<span class="project-card-name"><wo:str value="$currentGuide.title" /></span>
+					<span class="tree-tag"><wo:str value="$currentGuide.tag" /></span>
+				</div>
+				<p class="project-card-blurb"><wo:str value="$currentGuide.blurb" /></p>
+			</wo:link>
+		</wo:repetition>
+	</div>
+
+	<div class="whoa-section guides-section">Building<span>from source to a bundle</span></div>
+	<div class="project-grid">
+		<wo:repetition list="$buildingGuides" item="$currentGuide">
+			<wo:link href="$currentGuide.url" class="project-card">
+				<div class="project-card-head">
+					<span class="project-card-emoji"><wo:str value="$currentGuide.emoji" /></span>
+					<span class="project-card-name"><wo:str value="$currentGuide.title" /></span>
+					<span class="tree-tag"><wo:str value="$currentGuide.tag" /></span>
+				</div>
+				<p class="project-card-blurb"><wo:str value="$currentGuide.blurb" /></p>
+			</wo:link>
+		</wo:repetition>
+	</div>
+
 	<div class="whoa-section guides-section">Deployment<span>three ways to put a WO application on a server</span></div>
 
 	<div class="whoa-panel deployment-intro">
@@ -25,34 +53,6 @@
 						</wo:repetition>
 					</div>
 				</wo:if>
-				<p class="project-card-blurb"><wo:str value="$currentGuide.blurb" /></p>
-			</wo:link>
-		</wo:repetition>
-	</div>
-
-	<div class="whoa-section guides-section">Building<span>from source to a bundle</span></div>
-	<div class="project-grid">
-		<wo:repetition list="$buildingGuides" item="$currentGuide">
-			<wo:link href="$currentGuide.url" class="project-card">
-				<div class="project-card-head">
-					<span class="project-card-emoji"><wo:str value="$currentGuide.emoji" /></span>
-					<span class="project-card-name"><wo:str value="$currentGuide.title" /></span>
-					<span class="tree-tag"><wo:str value="$currentGuide.tag" /></span>
-				</div>
-				<p class="project-card-blurb"><wo:str value="$currentGuide.blurb" /></p>
-			</wo:link>
-		</wo:repetition>
-	</div>
-
-	<div class="whoa-section guides-section">Development<span>your own machine, rather than a server</span></div>
-	<div class="project-grid">
-		<wo:repetition list="$developmentGuides" item="$currentGuide">
-			<wo:link href="$currentGuide.url" class="project-card">
-				<div class="project-card-head">
-					<span class="project-card-emoji"><wo:str value="$currentGuide.emoji" /></span>
-					<span class="project-card-name"><wo:str value="$currentGuide.title" /></span>
-					<span class="tree-tag"><wo:str value="$currentGuide.tag" /></span>
-				</div>
 				<p class="project-card-blurb"><wo:str value="$currentGuide.blurb" /></p>
 			</wo:link>
 		</wo:repetition>
