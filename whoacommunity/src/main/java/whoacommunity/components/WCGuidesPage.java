@@ -48,7 +48,9 @@ public class WCGuidesPage extends WCComponent {
 	 */
 	private static final List<Guide> DEVELOPMENT_GUIDES = List.of(
 			new Guide( "wonder-slim-development", "🛠️", "Setting up for wonder-slim development", "/guide/wonder-slim-development", "macOS", false,
-					"A JDK that redefines classes while the application runs, Eclipse with Parslips, and Maven pointed at the WOCommunity repository. The JetBrains Runtime through SDKMAN!, HotswapAgent in one copy, and the VM arguments that make it all work.", List.of() ) );
+					"A JDK that redefines classes while the application runs, Eclipse with Parslips, and Maven pointed at the WOCommunity repository. The JetBrains Runtime through SDKMAN!, HotswapAgent in one copy, and the VM arguments that make it all work.", List.of() ),
+			new Guide( "url-routing", "🧭", "URL routing in wonder-slim", "/guide/url-routing", "wonder-slim", false,
+					"Clean URLs from one route table: pages, lambdas and method references as handlers, path and query parameters, pages, JSON and redirects as results, and why the same URLs work on localhost and behind modulo in production.", List.of() ) );
 
 	/**
 	 * Guides about building: getting from source to a bundle
