@@ -1,0 +1,155 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Parsley template syntax<span>a reference, Parsley 1.6</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<p><a href="/project/parsley">Parsley</a> is the template parser for WebObjects components. It reads the inline tag syntax that WOOgnl introduced, <code>&lt;wo:str value="$name" /&gt;</code>, as well as the classic <code>&lt;webobject&gt;</code> tags with a <code>.wod</code> file, and adds the things a parser written this century should have: line and column numbers in errors, errors shown in the page during development, and a few directives. It is built on the template parser from <a href="/project/ng-objects">ng-objects</a>, so ng-objects templates use exactly this syntax too. <a href="/project/wonder-slim">wonder-slim</a> includes and enables it; in a classic Wonder or plain WebObjects project, add the <code>is.rebbi.parsley:parsley</code> dependency and call <code>Parsley.configure().register()</code> in your Application's constructor. The <a href="https://github.com/undur/Parsley">README</a> has the configuration options.</p>
+					<p>This page is the syntax. If you know WOOgnl you can skim to <a href="#values">binding values</a> and <a href="#directives">directives</a>, where the differences are.</p>
+
+					<h2 id="tags">1. Dynamic tags</h2>
+					<p>A dynamic element is written as a tag in the <code>wo</code> namespace, with its bindings as attributes:</p>
+<pre><code class="language-html">&lt;wo:WOString value="$person.name" /&gt;
+
+&lt;wo:WOHyperlink action="$selectPerson" class="row"&gt;
+    &lt;wo:WOString value="$person.name" /&gt;
+&lt;/wo:WOHyperlink&gt;</code></pre>
+					<p>The part after the colon is the element or component name, resolved exactly as WebObjects resolves it: a dynamic element class, a component in your project or a framework, or one of the shortcuts below. Case matters. A tag with children needs a closing tag that matches; a tag without content is self-closed with <code>/&gt;</code>. Tags in any other namespace, <code>svg:rect</code> or <code>xsl:template</code>, are left alone as ordinary HTML.</p>
+					<p><strong>Shortcuts</strong> are shorter names for the standard elements. The ones you'll use daily:</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Shortcut</th><th>Element</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">str, string</td><td>WOString</td></tr>
+							<tr><td class="c-repo">if, condition, conditional</td><td>ERXWOConditional</td></tr>
+							<tr><td class="c-repo">else</td><td>ERXElse</td></tr>
+							<tr><td class="c-repo">repetition, foreach, loop, repeat</td><td>WORepetition</td></tr>
+							<tr><td class="c-repo">link, hyperlink</td><td>WOHyperlink</td></tr>
+							<tr><td class="c-repo">form</td><td>WOForm</td></tr>
+							<tr><td class="c-repo">textfield, textField</td><td>WOTextField</td></tr>
+							<tr><td class="c-repo">text</td><td>WOText</td></tr>
+							<tr><td class="c-repo">checkbox, checkBox</td><td>WOCheckBox</td></tr>
+							<tr><td class="c-repo">radio, radioButton</td><td>WORadioButton</td></tr>
+							<tr><td class="c-repo">select, popUpButton</td><td>WOPopUpButton</td></tr>
+							<tr><td class="c-repo">browser</td><td>WOBrowser</td></tr>
+							<tr><td class="c-repo">submit, submitButton</td><td>WOSubmitButton</td></tr>
+							<tr><td class="c-repo">hidden, hiddenField</td><td>WOHiddenField</td></tr>
+							<tr><td class="c-repo">password, passwordField</td><td>WOPasswordField</td></tr>
+							<tr><td class="c-repo">upload, fileUpload</td><td>WOFileUpload</td></tr>
+							<tr><td class="c-repo">img, image</td><td>WOImage</td></tr>
+							<tr><td class="c-repo">imageButton</td><td>WOImageButton</td></tr>
+							<tr><td class="c-repo">container, genericContainer</td><td>WOGenericContainer</td></tr>
+							<tr><td class="c-repo">element, genericElement</td><td>WOGenericElement</td></tr>
+							<tr><td class="c-repo">content, componentContent</td><td>WOComponentContent</td></tr>
+							<tr><td class="c-repo">switch, switchComponent</td><td>WOSwitchComponent</td></tr>
+							<tr><td class="c-repo">actionURL</td><td>WOActionURL</td></tr>
+							<tr><td class="c-repo">resourceURL</td><td>WOResourceURL</td></tr>
+							<tr><td class="c-repo">javaScript</td><td>WOJavaScript</td></tr>
+							<tr><td class="c-repo">comment, commentString</td><td>WOHTMLCommentString</td></tr>
+						</tbody>
+					</table></div>
+					<p>The full list, with the rarer elements, is Parsley's own <code>parsley-tag-aliases.properties</code>. Note that <code>if</code> and <code>else</code> map to Wonder's conditional elements, which is what gives you <code>negate</code> and the else branch.</p>
+
+					<h2 id="values">2. Binding values</h2>
+					<p>One rule decides everything: an inline value that starts with <code>$</code> is dynamic, anything else is a constant string. The quotes around an attribute are only delimiters; they don't mean "string" the way they do in a <code>.wod</code> file.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Written</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">value="$person.name"</td><td>A key path, evaluated against the component with key-value coding. Read and, where the element pushes values back, written.</td></tr>
+							<tr><td class="c-repo">value="Hello"</td><td>The constant string <code>Hello</code>.</td></tr>
+							<tr><td class="c-repo">condition="$true" negate="$false"</td><td>Boolean constants. Exactly <code>$true</code> and <code>$false</code>, lowercase; WOOgnl accepted any case, Parsley doesn't.</td></tr>
+							<tr><td class="c-repo">maxLength="$40" step="$0.5"</td><td>Numeric constants. A dynamic value that parses as a number is a number, not a key path.</td></tr>
+							<tr><td class="c-repo">value="$^title"</td><td>A parent binding: whatever the component using this component bound to its own <code>title</code>. The classic pass-through, for wrapper components.</td></tr>
+							<tr><td class="c-repo">condition="$!person.isActive"</td><td>Negation. The key path is evaluated and its truth inverted: <code>null</code>, <code>false</code> and a number that is exactly zero are false, everything else is true. Read-only.</td></tr>
+							<tr><td class="c-repo">disabled</td><td>A valueless attribute is a binding set to <code>true</code>. Handy for HTML-style flags on elements that expect a boolean.</td></tr>
+							<tr><td class="c-repo">value="~person.name.toUpperCase()"</td><td>An OGNL expression, when the optional <code>parsley-ognl</code> module is installed and its association factory registered. Anything not starting with <code>~</code> falls through to the rules above.</td></tr>
+						</tbody>
+					</table></div>
+					<p>Constants can carry escapes: <code>\n</code>, <code>\r</code>, <code>\t</code>, <code>\\</code>, <code>\"</code>, and <code>\$</code> for a literal dollar sign at the start of a value. Attribute values may also be unquoted when they contain no spaces, <code>value=$name</code>, though quoting is the convention. Writing the same binding twice on one tag is an error; WOOgnl silently kept the last one.</p>
+
+					<h2 id="control">3. Conditionals and repetitions</h2>
+<pre><code class="language-html">&lt;wo:if condition="$person.isActive"&gt;
+    Active since &lt;wo:str value="$person.activeSince" dateformat="%Y-%m-%d" /&gt;
+&lt;/wo:if&gt;
+&lt;wo:else&gt;
+    Inactive
+&lt;/wo:else&gt;
+
+&lt;wo:if condition="$people.count" negate="$true"&gt;Nobody here.&lt;/wo:if&gt;
+
+&lt;ul&gt;
+    &lt;wo:repetition list="$people" item="$person" index="$index"&gt;
+        &lt;li&gt;&lt;wo:str value="$index" /&gt;. &lt;wo:str value="$person.name" /&gt;&lt;/li&gt;
+    &lt;/wo:repetition&gt;
+&lt;/ul&gt;</code></pre>
+					<p><code>wo:if</code> takes <code>condition</code> and an optional <code>negate</code>. A <code>wo:else</code> immediately after it renders when the condition was false. <code>$!key</code> and <code>negate="$true"</code> do the same job; use whichever reads better. <code>wo:repetition</code> takes <code>list</code> and <code>item</code>, with optional <code>index</code> and <code>count</code>; the item and index are pushed into the component's fields on each pass, so they must be settable.</p>
+
+					<h2 id="generic">4. Generic elements and component content</h2>
+					<p>When you want a plain HTML element with a dynamic attribute, use a generic container or element and name the tag with <code>elementName</code>. Bindings that aren't the element's own are written out as attributes:</p>
+<pre><code class="language-html">&lt;wo:container elementName="li" class="$rowClass"&gt;…&lt;/wo:container&gt;
+&lt;wo:element elementName="link" rel="stylesheet" href="$stylesheetURL" /&gt;</code></pre>
+					<p>A component that wraps content, a page layout for instance, places <code>&lt;wo:content /&gt;</code> where the caller's content goes.</p>
+
+					<h2 id="directives">5. Directives</h2>
+					<p>Two tags in the <code>p</code> namespace speak to the parser rather than to WebObjects:</p>
+<pre><code class="language-html">&lt;p:raw&gt;
+    &lt;script&gt;if (a &lt; b &amp;&amp; c) { render("&lt;wo:notatag&gt;"); }&lt;/script&gt;
+&lt;/p:raw&gt;
+
+&lt;p:comment&gt;
+    A note for the next developer. Nothing between these tags reaches the browser.
+&lt;/p:comment&gt;</code></pre>
+					<p><code>p:raw</code> passes its content through untouched, so script blocks and anything that could look like a tag are safe. <code>p:comment</code> is stripped entirely from the output. Both nest. Ordinary HTML comments, <code>&lt;!-- --&gt;</code>, are not special to Parsley any more: they flow through to the browser like any other markup, and dynamic tags inside them are still evaluated, so use <code>p:comment</code> for anything you mean to hide.</p>
+
+					<h2 id="wod">6. Bundle templates and .wod files</h2>
+					<p>The traditional form still works, alone or mixed into the same template as inline tags: a named placeholder in the HTML and a declaration in the component's <code>.wod</code> file.</p>
+<pre><code class="language-html">&lt;webobject name="PersonName" /&gt;
+&lt;webobject name="Rows"&gt;…&lt;/webobject&gt;</code></pre>
+<pre><code class="language-none">PersonName : WOString {
+    value = person.name;
+    escapeHTML = true;
+}
+
+Rows : WORepetition {
+    list = people;
+    item = person;
+}</code></pre>
+					<p>In a <code>.wod</code> file the rule is the classic one: a quoted value is a constant string, an unquoted value is a key path, with <code>true</code>, <code>yes</code>, <code>false</code>, <code>no</code>, <code>nil</code> and <code>null</code> read as booleans in any case, and numbers as numbers. <code>^</code> and <code>!</code> work as they do inline. Comments are <code>/* … */</code>. Declaring the same name twice, or a placeholder with no declaration, is an error with a line number.</p>
+
+					<h2 id="aliases">7. Tag aliases</h2>
+					<p>The shortcut table is data, not code. Every <code>parsley-tag-aliases.properties</code> on the classpath is loaded and merged, each line <code>alias = target</code>, and resolution is recursive: <code>str</code> goes to <code>WOString</code>, and if a framework has declared <code>WOString = ERXWOString</code>, on to that. A framework or an application can add its own shortcuts, or replace an element class everywhere, by dropping the file into <code>src/main/resources</code>:</p>
+<pre><code class="language-none"># parsley-tag-aliases.properties
+WOString = ERXWOString
+widget = com.example.MyWidgetElement</code></pre>
+					<p>If two files map the same alias to different targets, the first registration wins and the conflict is logged, rather than depending on classpath order.</p>
+
+					<h2 id="errors">8. Errors, in the page</h2>
+					<p>In development mode Parsley reports problems where you're looking. A tag that names an element or component that doesn't exist, a key path that can't be resolved, a binding an element rejects, a duplicate attribute, or a malformed tag like <code>&lt;wo: Repetition&gt;</code> with a space after the colon: each shows as a message in the rendered page with the template's line and column, instead of an exception page. Exceptions thrown while rendering or invoking an action carry the same source location. The in-page controls strip in the bottom-left corner toggles these features at runtime. In production both are off and errors behave as they always did.</p>
+
+					<h2 id="wooognl">9. If you're coming from WOOgnl</h2>
+					<ul>
+						<li>OGNL expressions need the <code>parsley-ognl</code> module; they are not built in.</li>
+						<li><code>$true</code> and <code>$false</code> are case-sensitive.</li>
+						<li>Duplicate bindings on a tag fail instead of being silently overwritten.</li>
+						<li>HTML comments are no longer parsed specially; use <code>p:comment</code> to hide things.</li>
+						<li>WOOgnl's <code>parseStandardTags</code> mode and tag processors such as <code>&lt;wo:not&gt;</code> are not supported.</li>
+						<li>The editor side, completion and validation of all of the above, is <a href="/project/parslips">Parslips</a>, which reads <code>build.properties</code> for the inline binding prefix; the default is <code>$</code>.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#tags">Dynamic tags and shortcuts</a>
+				<a href="#values">Binding values</a>
+				<a href="#control">Conditionals and repetitions</a>
+				<a href="#generic">Generic elements and content</a>
+				<a href="#directives">Directives</a>
+				<a href="#wod">Bundle templates and .wod</a>
+				<a href="#aliases">Tag aliases</a>
+				<a href="#errors">Errors, in the page</a>
+				<a href="#wooognl">Coming from WOOgnl</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>

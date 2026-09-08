@@ -739,6 +739,9 @@ a:hover { color: var(--whoa-accent); }
 .guide-panel { max-width: 80ch; }
 .guide-panel .article-body h2 { font-size: 1.05rem; margin-top: 2rem; }
 .guide-panel .article-body > :first-child { margin-top: 0; }
+.guide-panel .tw { overflow-x: auto; border: 1px solid var(--whoa-line); border-radius: 6px; margin: 1rem 0 1.2rem; }
+.guide-panel .tw .feed-table td { font-size: .86rem; vertical-align: top; }
+.guide-panel .tw .feed-table td.c-repo { white-space: normal; width: auto; }
 .deployment-intro { max-width: 80ch; margin-bottom: 1.25rem; }
 
 /* The little topology chain in each deployment card: edge → (proxy) → apps */

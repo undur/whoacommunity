@@ -48,7 +48,9 @@ public class WCGuidesPage extends WCComponent {
 	 */
 	private static final List<Guide> DEVELOPMENT_GUIDES = List.of(
 			new Guide( "wonder-slim-development", "🛠️", "Setting up for wonder-slim development", "/guide/wonder-slim-development", "macOS", false,
-					"A JDK that redefines classes while the application runs, Eclipse with Parslips, and Maven pointed at the WOCommunity repository. The JetBrains Runtime through SDKMAN!, HotswapAgent in one copy, and the VM arguments that make it all work.", List.of() ) );
+					"A JDK that redefines classes while the application runs, Eclipse with Parslips, and Maven pointed at the WOCommunity repository. The JetBrains Runtime through SDKMAN!, HotswapAgent in one copy, and the VM arguments that make it all work.", List.of() ),
+			new Guide( "parsley-syntax", "🌿", "Parsley template syntax", "/guide/parsley-template-syntax", "reference", false,
+					"Inline wo: tags and their shortcuts, what $ means and what it doesn't, negation and parent bindings, conditionals and repetitions, p:raw and p:comment, .wod declarations, tag aliases, and the errors you get in the page.", List.of() ) );
 
 	/**
 	 * Guides about building: getting from source to a bundle
