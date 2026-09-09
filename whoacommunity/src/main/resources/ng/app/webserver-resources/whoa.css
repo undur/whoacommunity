@@ -723,6 +723,13 @@ a:hover { color: var(--whoa-accent); }
 /* "draft" pill on unpublished articles (only ever rendered in development) */
 .writing-row .post-tag, .rail-row .post-tag, .article-meta .post-tag { flex: 0 0 auto; align-self: center; }
 .beta-tag { color: #b45309; background: rgba(245, 158, 11, .14); border-color: rgba(245, 158, 11, .5); }
+/* An amber caveat box: work in progress, things that may change under the reader */
+.caveat { background: rgba(245, 158, 11, .12); border: 1px solid rgba(245, 158, 11, .45); border-left: 3px solid #d97706; border-radius: 0 7px 7px 0; padding: .8rem 1rem; margin: 1rem 0 1.6rem; font-size: .88rem; line-height: 1.55; }
+.caveat p { margin: 0 0 .5rem; color: var(--whoa-text) !important; }
+.caveat p:last-child { margin-bottom: 0; }
+.caveat a { color: #b45309; }
+:root[data-theme="dark"] .caveat a { color: #fbbf24; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .caveat a { color: #fbbf24; } }
 :root[data-theme="dark"] .beta-tag { color: #fbbf24; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .beta-tag { color: #fbbf24; } }
 .writing-drafts-section { margin-top: 2.6rem; }

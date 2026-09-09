@@ -27,9 +27,14 @@
 						<span class="badge rounded-pill text-bg-warning fs-6 fw-normal align-middle ms-2">beta</span></h1>
 					<button type="button" class="btn btn-outline-secondary btn-sm" id="copyScript">Copy the script</button>
 				</div>
-				<p class="small mb-3">Under active development — the guide and the script currently change frequently.
-				For comparison: <wo:link href="/deployment-apache-modulo">Apache with modulo</wo:link> (the hybrid) and
-				<wo:link href="/deployment-apache-mod-webobjects">Apache with mod_WebObjects</wo:link> (the classic).</p>
+				<div class="caveat">
+					<p>Under active development — the guide and the script currently change frequently.
+					For comparison: <wo:link href="/deployment-apache-modulo">Apache with modulo</wo:link> (the hybrid) and
+					<wo:link href="/deployment-apache-mod-webobjects">Apache with mod_WebObjects</wo:link> (the classic).</p>
+					<p>A revised default layout — per-app homes, sites as files, a stack directory — is under design:
+					<a href="https://github.com/undur/modulo/blob/main/docs/DEFAULT-DIRECTORY-STRUCTURE.md">DEFAULT-DIRECTORY-STRUCTURE.md</a>.
+					Opinions welcome.</p>
+				</div>
 
 				<h3>Running the script</h3>
 				<pre class="setup-inset mb-0">curl -O https://raw.githubusercontent.com/undur/modulo/main/scripts/setup-server.sh
@@ -62,9 +67,6 @@ chmod +x setup-server.sh
     │   └── access/    <span class="cmt">…and per-site access logs</span>
     ├── acme/          <span class="cmt">ACME account key + issued certificates</span>
     └── modulo.toml    <span class="cmt">modulo's root config — sites, admin, wotaskd, certs</span></pre>
-				<p class="small">A revised default layout — per-app homes, sites as files, a stack directory — is under design:
-				<a href="https://github.com/undur/modulo/blob/main/docs/DEFAULT-DIRECTORY-STRUCTURE.md">DEFAULT-DIRECTORY-STRUCTURE.md</a>.
-				Opinions welcome.</p>
 			</div>
 		</div>
 
