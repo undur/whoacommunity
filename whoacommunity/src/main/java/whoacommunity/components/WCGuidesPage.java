@@ -57,7 +57,9 @@ public class WCGuidesPage extends WCComponent {
 	 */
 	private static final List<Guide> BUILDING_GUIDES = List.of(
 			new Guide( "vermilingua", "🦡", "Building WebObjects applications with vermilingua", "/guide/building-with-vermilingua", "Maven", false,
-					"From an empty directory to a self-contained .woa: the pom, the project layout, build.properties, the bundle and its launch script, frameworks, deploying to JavaMonitor, and migrating from wolifecycle.", List.of() ) );
+					"From an empty directory to a self-contained .woa: the pom, the project layout, build.properties, the bundle and its launch script, frameworks, deploying to JavaMonitor, and migrating from wolifecycle.", List.of() ),
+			new Guide( "vermilingua-deploy", "🚚", "Deploying with vermilingua:deploy", "/guide/deploying-with-vermilingua", "new hotness", true,
+					"One Maven command ships a build: the bundle is posted to JavaMonitor, and wotaskd swaps it into place and restarts the instances on every host. Configuration, use from a build server, what happens on each host, rollback.", List.of() ) );
 
 	public List<Guide> buildingGuides() {
 		return BUILDING_GUIDES;

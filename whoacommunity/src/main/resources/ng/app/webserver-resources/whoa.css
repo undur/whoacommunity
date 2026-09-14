@@ -748,7 +748,7 @@ a:hover { color: var(--whoa-accent); }
 .article-body pre, .article-body code { font-variant-ligatures: none; }
 .guide-panel .article-body h2 { font-size: 1.05rem; margin-top: 2rem; }
 .guide-panel .article-body > :first-child { margin-top: 0; }
-.deployment-intro { max-width: 80ch; margin-bottom: 1.25rem; }
+.deployment-intro { margin-top: 1.25rem; }
 
 /* The little topology chain in each deployment card: edge → (proxy) → apps */
 .topo { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0; margin: .1rem 0 .2rem; }
@@ -760,7 +760,7 @@ a:hover { color: var(--whoa-accent); }
 .topo-edge { border-color: var(--whoa-accent-line); background: var(--whoa-accent-soft); }
 .topo-edge .topo-label { color: var(--whoa-accent); }
 .topo-apps { border-style: dashed; }
-.deployment-intro p { margin: 0 0 .85rem; line-height: 1.6; }
+.deployment-intro p { margin: 0 0 .7rem; font-size: .88rem; line-height: 1.6; color: var(--whoa-muted); }
 .deployment-intro p:last-child { margin-bottom: 0; }
 .project-card {
   display: flex;

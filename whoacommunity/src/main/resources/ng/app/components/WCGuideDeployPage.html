@@ -1,0 +1,103 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Deploying with vermilingua:deploy<span>one command, every host</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<div class="caveat">
+						<p>The deploy goal is new in vermilingua 1.1.7 and marked experimental: it works and is in daily use on our own servers, but details may change in coming releases. It needs the JavaMonitor and wotaskd from <a href="/project/wonder-slim-deployment">wonder-slim-deployment</a>, which is where the receiving end lives.</p>
+					</div>
+					<p>Once a server is set up as in the <a href="/guides">deployment guides</a>, getting a new build onto it used to mean copying the bundle by hand, moving the old one aside and restarting the instances, on every host the application runs on. <code>vermilingua:deploy</code> does all of that from the build machine:</p>
+<pre><code class="language-none">mvn package vermilingua:deploy -Ddeploy.password=…</code></pre>
+					<p>The goal packs the freshly built <code>.woa</code> into a <code>tar.gz</code> and posts it to JavaMonitor. JavaMonitor hands the archive to the wotaskd on every host that runs an instance of the application. Each wotaskd unpacks it beside the current bundle, moves the current bundle aside, moves the new one into place, and restarts the instances it was running. The response comes back as a report, one section per host, and the build fails if any host failed.</p>
+
+					<h2 id="prerequisites">1. What has to be true first</h2>
+					<ul>
+						<li>The project builds with <a href="/guide/building-with-vermilingua">vermilingua</a> 1.1.7 or later and has <code>woapplication</code> packaging. In a multi-module build the goal skips every module that isn't an application.</li>
+						<li>The servers run wonder-slim-deployment's JavaMonitor and wotaskd, and the application is <strong>already defined in JavaMonitor with at least one instance</strong>. The deploy finds its hosts through the instances; an application with none is refused. The first deployment of a new application is therefore still by hand: install the bundle, add the application and its instances in JavaMonitor, and every deployment after that is the command above.</li>
+						<li>The build machine can reach JavaMonitor, on its port or through a front end; see <a href="#configure">the host setting</a>.</li>
+						<li>The hosts have <code>tar</code>, which every Linux does. wotaskd uses it rather than a Java implementation so the launch script's execute bit and any symlinks survive.</li>
+					</ul>
+
+					<h2 id="configure">2. Configuration</h2>
+					<p>Three settings, read the same way as the <code>launch.*</code> settings: from <code>build.properties</code>, overridden by an environment file, overridden by <code>-D</code> properties on the command line.</p>
+<pre><code class="language-none">deploy.monitorHost = monitor.example.com
+deploy.appName = MyApp</code></pre>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Setting</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">deploy.monitorHost</td><td>Where JavaMonitor is. A bare hostname uses port 56789; <code>host:port</code> sets another; a full <code>https://…</code> base URL deploys through a front end that proxies JavaMonitor, so its port never has to be opened to the build machine.</td></tr>
+							<tr><td class="c-repo">deploy.appName</td><td>The name JavaMonitor knows the application by. Defaults to the bundle name, which is usually right; set it when the two differ.</td></tr>
+							<tr><td class="c-repo">deploy.password</td><td>The stack password JavaMonitor's admin actions require. Pass it as <code>-Ddeploy.password=…</code> rather than writing it into a file that lives in a repository.</td></tr>
+						</tbody>
+					</table></div>
+					<p>Per-environment values go in <code>build.properties.&lt;env&gt;</code>, selected with <code>-Dbuild.env=&lt;env&gt;</code>. A project that deploys to a staging monitor and a production monitor keeps <code>build.properties.staging</code> and <code>build.properties.prod</code> with their own <code>deploy.monitorHost</code>, and the command line picks one:</p>
+<pre><code class="language-none">mvn package vermilingua:deploy -Dbuild.env=prod -Ddeploy.password=…</code></pre>
+
+					<h2 id="running">3. Running it</h2>
+					<p><code>package</code> first, then <code>deploy</code>, in the same invocation or two; the goal refuses to run if there is no bundle under <code>target</code>. A successful run prints the size of the archive, where it went, and each host's report:</p>
+<pre><code class="language-none">[INFO] Deploying MyApp (41,203,118 bytes) to http://monitor.example.com:56789
+[INFO]   hz1.example.com:
+[INFO]     unpacked MyApp.woa (41203118 bytes)
+[INFO]     previous bundle kept as xMyApp_2026_09_14_10_42_07.woa
+[INFO]     pruned 1 older build, keeping 5 (WOTaskd.deploy.retainedBuilds)
+[INFO]     restarted MyApp-1
+[INFO]     restarted MyApp-2
+[INFO] Deployed MyApp</code></pre>
+					<p>Anything other than HTTP 200 from JavaMonitor fails the goal, and JavaMonitor answers 500 if any host reported a failure, so a broken deployment breaks the build rather than passing quietly. The upload has a five-minute timeout, generous for any bundle that should exist.</p>
+
+					<h2 id="ci">4. From a build server</h2>
+					<p>This is where the goal earns its keep: a push to the main branch becomes a deployment. In Jenkins the Maven goals for our own sites are:</p>
+<pre><code class="language-none">clean package vermilingua:deploy -Dlaunch.jvm=/opt/jdk-26/bin/java -Ddeploy.password=${DEPLOY_PASSWORD}</code></pre>
+					<p>with the password held as a Jenkins credential and injected into the environment, never in the job's visible configuration. <code>launch.jvm</code> is set at the same time so the bundle's launch script points at the server's JDK rather than the build machine's; the two settings travel together for the same reason, they describe the target rather than the source.</p>
+
+					<h2 id="server">5. What happens on each host</h2>
+					<p>wotaskd's deployer works in a fixed order, and the order is the point:</p>
+					<ol>
+						<li><strong>Unpack into a staging directory beside the bundle.</strong> Same filesystem, so the moves that follow are atomic renames rather than copies.</li>
+						<li><strong>Swap.</strong> The current <code>MyApp.woa</code> is renamed to <code>xMyApp_&lt;timestamp&gt;.woa</code> and the new bundle takes its name. Instances are still running at this point: a JVM holds its jars open by descriptor, so renaming the directory under it does no harm, and anything that starts the instance from now on, the deploy or wotaskd's auto-recover sweep, starts the new build.</li>
+						<li><strong>Prune.</strong> Moved-aside builds beyond the newest five are deleted; <code>WOTaskd.deploy.retainedBuilds</code> on wotaskd changes the count, negative keeps everything. A build that won't delete is reported and left; housekeeping never stops a deployment.</li>
+						<li><strong>Bounce.</strong> Every instance that was running is terminated, waited for, and started again. An instance that still holds its port after the wait is reported as not restarted rather than started on top. A host with no running instances gets the new bundle and nothing else.</li>
+					</ol>
+					<p>The report you see in the build output is these steps, one line each, per host.</p>
+
+					<h2 id="downtime">6. Downtime and rollback</h2>
+					<p>This first iteration is a <strong>full bounce</strong>: on each host every instance stops and starts around the same moment, so the application is unavailable for the seconds a restart takes. For most of our applications that is fine and happens at a quiet hour. When it isn't, stop and start the instances yourself around the swap, through JavaMonitor's pages or its <code>admin/stop</code> and <code>admin/start</code> actions, or deploy to one host at a time. Graceful and rolling variants are on the list.</p>
+					<p><strong>Rolling back</strong> is the swap in reverse, because the previous bundle is still there: on the host, rename the current bundle aside, rename <code>xMyApp_&lt;timestamp&gt;.woa</code> back to <code>MyApp.woa</code>, and bounce the instances from JavaMonitor. The last five builds are kept for exactly this.</p>
+
+					<h2 id="manual">7. The same thing by hand</h2>
+					<p>The goal is a thin client for one HTTP request, so anything that can post a file can deploy. Useful from a machine without Maven, or to see exactly what the goal does:</p>
+<pre><code class="language-none">tar -czf MyApp.tar.gz -C target MyApp.woa
+curl -X POST -H 'Content-Type: application/octet-stream' --data-binary @MyApp.tar.gz \
+  "http://monitor.example.com:56789/Apps/WebObjects/JavaMonitor.woa/admin/deploy?type=app&amp;name=MyApp&amp;pw=…"</code></pre>
+					<p>The content type is not optional. Without it curl declares the body form-encoded, and JavaMonitor tries to parse a forty-megabyte archive as form fields.</p>
+
+					<h2 id="troubleshooting">8. When it doesn't work</h2>
+					<ul>
+						<li><strong>"No monitor to deploy to"</strong>: <code>deploy.monitorHost</code> isn't set in any of the three places. Check the environment file's name matches <code>-Dbuild.env</code>.</li>
+						<li><strong>"No application bundle at target/…"</strong>: run <code>package</code> in the same command, or before it.</li>
+						<li><strong>"Unknown application"</strong>, HTTP 404: JavaMonitor has no application by that name. The default is the bundle name; set <code>deploy.appName</code> to what JavaMonitor shows.</li>
+						<li><strong>"has no instances — nothing to deploy to"</strong>, HTTP 406: add at least one instance in JavaMonitor. The hosts to deploy to are read from the instances.</li>
+						<li><strong>A password error</strong>: the stack password guards every admin action; pass <code>-Ddeploy.password</code>. The password currently travels as a query parameter, which front-end access logs may record; deploying over a private network or through a front end you control keeps it out of the wrong logs until the endpoint learns to take it as a header.</li>
+						<li><strong>Connection refused or a timeout</strong>: the build machine can't reach port 56789. Open it to the build machine only, or set <code>deploy.monitorHost</code> to an <code>https://</code> front end that proxies JavaMonitor.</li>
+						<li><strong>"still holds port … — not restarted"</strong> in a host's report: an instance didn't leave its port within the wait. The new bundle is in place; start the instance from JavaMonitor once the old process is gone.</li>
+					</ul>
+					<p>Everything above matches vermilingua 1.1.7 and the current wonder-slim-deployment. The <a href="/project/vermilingua/releases">release notes</a> say what changed since.</p>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#prerequisites">What has to be true first</a>
+				<a href="#configure">Configuration</a>
+				<a href="#running">Running it</a>
+				<a href="#ci">From a build server</a>
+				<a href="#server">What happens on each host</a>
+				<a href="#downtime">Downtime and rollback</a>
+				<a href="#manual">The same thing by hand</a>
+				<a href="#troubleshooting">When it doesn't work</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>
