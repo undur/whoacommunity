@@ -50,7 +50,9 @@ public class WCGuidesPage extends WCComponent {
 			new Guide( "wonder-slim-development", "🛠️", "Setting up for wonder-slim development", "/guide/wonder-slim-development", "macOS", false,
 					"A JDK that redefines classes while the application runs, Eclipse with Parslips, and Maven pointed at the WOCommunity repository. The JetBrains Runtime through SDKMAN!, HotswapAgent in one copy, and the VM arguments that make it all work.", List.of() ),
 			new Guide( "url-routing", "🧭", "URL routing in wonder-slim", "/guide/url-routing", "wonder-slim", false,
-					"Clean URLs from one route table: pages, lambdas and method references as handlers, path and query parameters, pages, JSON and redirects as results, and why the same URLs work on localhost and behind modulo in production.", List.of() ) );
+					"Clean URLs from one route table: pages, lambdas and method references as handlers, path and query parameters, pages, JSON and redirects as results, and why the same URLs work on localhost and behind modulo in production.", List.of() ),
+			new Guide( "server-push", "📡", "Server push: events and WebSockets", "/guide/server-push", "wo-adaptor-jetty", true,
+					"Pushing from the server to the browser with wo-adaptor-jetty: server-sent events that stream over an ordinary HTTP response, broadcasting to every connected client, WebSockets when the browser needs to talk back, and the client-side traps worth knowing before you start.", List.of() ) );
 
 	/**
 	 * Guides about building: getting from source to a bundle

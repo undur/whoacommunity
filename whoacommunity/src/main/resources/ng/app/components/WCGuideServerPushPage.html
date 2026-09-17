@@ -1,0 +1,224 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Server push with wo-adaptor-jetty<span>server-sent events and WebSockets from a WebObjects application</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<p>A WebObjects application answers requests. Sometimes you want the other direction: a page that updates when something happens on the server, without the browser asking. A progress bar during a long job, a notification when someone else changes the data you're looking at, a live figure on a dashboard.</p>
+					<p><a href="/project/wo-adaptor-jetty">wo-adaptor-jetty</a> supports two ways of doing that. <strong>Server-sent events</strong> are the one to reach for: a normal HTTP response that never ends, which the server keeps writing to. <strong>WebSockets</strong> are there when you need the browser to talk back over the same connection. This guide covers both, starting with events, because most things that look like they need a WebSocket don't.</p>
+
+					<div class="whoa-callout">
+						<p><strong>This needs wo-adaptor-jetty.</strong> Neither works with WebObjects' classic adaptor: it has no way to send a response of unknown length, so an event stream would be answered with an empty body and the events would never leave the server. Run your application with <code>-WOAdaptor WOAdaptorJetty</code>.</p>
+					</div>
+
+					<h2 id="which">1. Which one do you want?</h2>
+					<p>Server-sent events carry text from the server to the browser over one long-lived HTTP response. The browser reconnects by itself when the connection drops, and the whole thing is ordinary HTTP: it goes through proxies, works with your existing sessions and cookies, and can be tested with <code>curl</code>. The browser cannot send anything back on that connection, but it can always make a normal request, which is what most applications want anyway.</p>
+					<p>WebSockets give you a two-way channel after an upgrade handshake. That is genuinely better for a chat, a collaborative editor, or anything where the browser speaks constantly. It costs you: the connection lives outside the request cycle, so WebObjects sessions, routes and components aren't involved, and every proxy between you and the client has to be willing to tunnel it.</p>
+					<p>A useful rule: if the browser only ever needs to <em>hear</em> about things, use events. Reach for a socket when it needs to <em>speak</em> often enough that a request per message is wasteful.</p>
+
+					<h2 id="dependency">2. The dependency</h2>
+					<p>Both live in a separate module, so an application that doesn't push carries none of it:</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;is.rebbi&lt;/groupId&gt;
+    &lt;artifactId&gt;wo-adaptor-jetty-push&lt;/artifactId&gt;
+    &lt;version&gt;0.10.0&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+					<p>It is released together with the adaptor and used at the same version. Adding it to the classpath is all that's needed: the adaptor finds it and enables WebSocket upgrades on its own server, with nothing to configure. Server-sent events need nothing beyond the classes described below.</p>
+					<p>The module was called <code>wo-adaptor-jetty-websocket</code> up to and including 0.9.0. If you're upgrading from that, change the artifactId; the package names are unchanged.</p>
+
+					<h2 id="first-stream">3. A first event stream</h2>
+					<p>An <code>SSEStream</code> is an open-ended response. You create it, return its response from any action, and keep sending to it afterwards — the request has finished, but the response is still open:</p>
+<pre><code class="language-clike">import com.webobjects.appserver.sse.SSEStream;
+
+public WOActionResults progressAction() {
+    final SSEStream stream = new SSEStream();
+
+    Thread.startVirtualThread( () -&gt; {
+        try {
+            for( int step = 1; step &lt;= 10 &amp;&amp; stream.isOpen(); step++ ) {
+                stream.send( "progress", String.valueOf( step * 10 ) );
+                Thread.sleep( 500 );
+            }
+        }
+        catch( InterruptedException e ) {
+            Thread.currentThread().interrupt();
+        }
+        finally {
+            stream.close();
+        }
+    } );
+
+    return stream.response();
+}</code></pre>
+					<p>The action returns immediately. WebObjects is done with the request; the adaptor holds the response open and writes each event as it is sent, and the stream ends when <code>close()</code> is called or the client goes away.</p>
+					<p>On the page:</p>
+<pre><code class="language-javascript">const events = new EventSource('/progress');
+
+events.addEventListener('progress', (e) =&gt; {
+    document.getElementById('bar').style.width = e.data + '%';
+});</code></pre>
+					<p>That is the whole mechanism. Everything below is detail around it.</p>
+
+					<h2 id="sending">4. Sending events</h2>
+					<p><code>send</code> comes in three forms, and none of them block — events are queued, so you can send from any thread, including one holding a database lock you'd rather not hold while writing to a socket:</p>
+<pre><code class="language-clike">stream.send( "some data" );                      // unnamed: arrives as "message" on the client
+stream.send( "userJoined", "hugi" );             // named: addEventListener( "userJoined", … )
+stream.send( "tick", "09:41:12", "evt-1041" );   // named, with an id
+
+stream.comment( "still here" );                  // a comment line: clients ignore it</code></pre>
+					<p>Data is text. Multi-line strings are sent as multiple data lines, as the format requires, and arrive as one string with the newlines intact. For structured data, serialise it yourself:</p>
+<pre><code class="language-clike">stream.send( "orderUpdated", new Gson().toJson( order ) );</code></pre>
+					<p>The id matters if you care about resumption. A browser remembers the last id it saw and sends it back as the <code>Last-Event-ID</code> header when it reconnects, so an application that numbers its events can carry on where the client left off:</p>
+<pre><code class="language-clike">final String lastSeen = request().headerForKey( "last-event-id" );
+
+if( lastSeen != null ) {
+    for( Event missed : eventsSince( lastSeen ) ) {
+        stream.send( "update", missed.json(), missed.id() );
+    }
+}</code></pre>
+
+					<h2 id="lifecycle">5. When the client goes away</h2>
+					<p>A stream ends in one of two ways: you close it, or the client disconnects and the adaptor closes it for you. Either way <code>isOpen()</code> turns false and any registered listener runs:</p>
+<pre><code class="language-clike">stream.onClose( () -&gt; {
+    subscribers.remove( stream );
+    logger.info( "Client left, {} remaining", subscribers.size() );
+} );</code></pre>
+					<p>Sending to a closed stream is a silent no-op, so a broadcaster never has to check first, and a race between a client leaving and an event going out is harmless.</p>
+					<p>Detection is not instant: the server discovers the client is gone when it next tries to write. A stream that sends something every few seconds notices within seconds; an idle one notices at the next keep-alive, which is every 30 seconds by default. If you keep server-side state per connection, that's the window you're reclaiming it in.</p>
+
+					<h2 id="hub">6. Broadcasting to everyone</h2>
+					<p>A single stream is one client. <code>SSEHub</code> is a set of them, and streams leave it automatically when they close, so it only ever holds live connections:</p>
+<pre><code class="language-clike">import com.webobjects.appserver.sse.SSEHub;
+
+public class OrderFeed {
+
+    private static final SSEHub SUBSCRIBERS = new SSEHub();
+
+    /** The action a page subscribes through */
+    public static WOActionResults subscribe() {
+        return SUBSCRIBERS.open().response();
+    }
+
+    /** Called from wherever orders actually change */
+    public static void orderChanged( final Order order ) {
+        SUBSCRIBERS.broadcast( "orderUpdated", new Gson().toJson( order ) );
+    }
+}</code></pre>
+					<p><code>open()</code> creates a stream, adds it to the hub and hands it back, so you can send something to just that client before returning its response — the current state, say, so a page that has just connected doesn't sit empty until the next change:</p>
+<pre><code class="language-clike">public static WOActionResults subscribe() {
+    final SSEStream stream = SUBSCRIBERS.open();
+    stream.send( "snapshot", new Gson().toJson( currentOrders() ) );
+    return stream.response();
+}</code></pre>
+					<p><code>size()</code> tells you how many are connected, which is often worth broadcasting itself, and <code>closeAll()</code> ends every stream, for a clean application shutdown.</p>
+					<p>One hub per feed, held somewhere that outlives a request — a static field or an application-level object. Not on a session or a component: those come and go, and a hub on one would lose its subscribers.</p>
+
+					<h2 id="keepalive">7. Keep-alives and timeouts</h2>
+					<p>An idle connection looks dead to everything between the server and the browser. <code>SSEStream</code> therefore writes a comment line every 30 seconds while nothing else is going out, which keeps proxies and the adaptor's own idle timeout from closing it. You can change the interval:</p>
+<pre><code class="language-clike">new SSEStream( Duration.ofSeconds( 15 ) );
+SUBSCRIBERS.open( Duration.ofSeconds( 15 ) );</code></pre>
+					<p>Keep it below the adaptor's connector idle timeout, which defaults to 600 seconds and is set with <code>-DJettyConnectorIdleTimeoutSeconds</code>, and below the idle timeout of any proxy in front. The default of 30 seconds is well inside both.</p>
+
+					<h2 id="config">8. Configuration a long-lived response needs</h2>
+					<p>One adaptor setting matters here. If you limit how many requests the application handles at once with <code>JettyMaxConcurrentRequests</code>, remember that an open event stream is a request that never finishes and holds its slot for as long as the client stays. A handful of subscribers would use up a small limit and leave nothing for ordinary pages.</p>
+					<p>Exclude the paths your streams live on:</p>
+<pre><code class="language-ini">-DJettyMaxConcurrentRequests=50
+-DJettyQoSExcludedPaths=/events/*,/feed/*</code></pre>
+					<p>The value is a comma-separated list of Jetty path specs; requests matching them bypass the limit entirely. If you don't set <code>JettyMaxConcurrentRequests</code> at all there is no limit and nothing to exclude.</p>
+					<p>Nothing else needs configuring. The adaptor sends the right content type, no content length, and <code>Cache-Control: no-store</code>, and streams the response with chunked transfer encoding until it ends.</p>
+
+					<h2 id="client-traps">9. Two traps on the client side</h2>
+					<p>Both cost an afternoon to find and a minute to avoid.</p>
+					<p><strong>Firefox coalesces concurrent requests to an identical URL.</strong> It dispatches the first and holds the rest until it completes — which for an event stream is never. Open the same page in two tabs and the second one hangs, with no error anywhere: the request never reaches the server. No response header prevents this; the fix is to make each connection's URL unique:</p>
+<pre><code class="language-javascript">const events = new EventSource('/events?t=' + Date.now());</code></pre>
+					<p>Do it from the start. It costs nothing, and the symptom — works in Chrome, second tab blank in Firefox, nothing in either log — is genuinely hard to read.</p>
+					<p><strong>Browsers limit connections per origin over HTTP/1.1</strong>, traditionally six. Each open stream is one of them, so a page holding an event stream has five left for everything else, and six tabs of the same application can wedge it. This disappears over HTTP/2, which multiplexes: if your production front end serves HTTP/2, as <a href="/project/modulo">modulo</a> does, only development against the application's own port is affected. Worth knowing before you open a stream per widget.</p>
+
+					<h2 id="proxies">10. Through a proxy</h2>
+					<p>An event stream only works end to end if everything in the middle passes it through unbuffered. A proxy that buffers responses will hold your events and deliver them in a lump, or not at all.</p>
+					<p>modulo passes streams through as they arrive; nothing to configure. nginx buffers by default, and the adaptor already sends the <code>X-Accel-Buffering: no</code> header it honours, so that case is handled too. Apache with <code>mod_proxy</code> generally streams, but if events arrive in batches, buffering is the first thing to check.</p>
+					<p><code>curl</code> is the quickest way to tell. If the events appear one at a time, it works:</p>
+<pre><code class="language-bash">curl -N https://www.example.com/events</code></pre>
+					<p>Test through the front end, not just against the application's port — buffering is a property of the path, not the application.</p>
+
+					<h2 id="websockets">11. WebSockets</h2>
+					<p>WebSocket support is experimental: it works and is in use, but the API may still change. Endpoints are registered by path at startup, and a handler instance is created per connection:</p>
+<pre><code class="language-clike">import com.webobjects.appserver.websocket.WOWebSocketRegistry;
+
+public Application() {
+    WOWebSocketRegistry.register( "/ws/chat", ChatHandler.class );
+}</code></pre>
+					<p>The handler is where the connection lives:</p>
+<pre><code class="language-clike">import com.webobjects.appserver.websocket.WOWebSocketHandler;
+import com.webobjects.appserver.websocket.WOWebSocketSession;
+
+public class ChatHandler extends WOWebSocketHandler {
+
+    @Override
+    public void onConnect( WOWebSocketSession session, WORequest request ) {
+        // The HTTP request that opened the connection: cookies, headers, form values.
+        // This is where you authenticate, since the socket itself carries no session.
+        final String wosid = request.cookieValueForKey( "wosid" );
+        session.setAttribute( "user", userForSession( wosid ) );
+
+        try {
+            session.sendText( "welcome" );
+        }
+        catch( IOException e ) {
+            logger.error( "Failed to greet client", e );
+        }
+    }
+
+    @Override
+    public void onTextMessage( WOWebSocketSession session, String message ) {
+        broadcast( session.getAttribute( "user" ) + ": " + message );
+    }
+
+    @Override
+    public void onClose( WOWebSocketSession session, int statusCode, String reason ) {
+        connections.remove( session );
+    }
+}</code></pre>
+					<p>The session sends (<code>sendText</code>, <code>sendBinary</code>), closes, reports <code>isOpen()</code> and the remote address, and carries per-connection attributes. Keeping the open sessions in a set of your own is how you broadcast; there is no hub for sockets the way there is for streams.</p>
+					<p>The important constraint is in <code>onConnect</code>: a WebSocket is not a WebObjects request. There is no session, no component, no route. The upgrade request is handed to you so you can identify the client from its cookies or headers, and after that the connection is yours to manage. Anything a WebObjects session would have held, you hold in the session's attributes or in your own structures.</p>
+					<p>From the browser, with the scheme matched to how the page was loaded:</p>
+<pre><code class="language-javascript">const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/chat';
+const socket = new WebSocket(url);
+
+socket.onmessage = (e) =&gt; console.log(e.data);
+socket.onopen = () =&gt; socket.send('hello');</code></pre>
+					<p>The idle timeout is infinite by default; set <code>-DJettyWebSocketIdleTimeout=300</code> to have dead connections reaped after five minutes, and send something from the client well inside that so live ones aren't. <code>WOWebSocketHandler</code> has a built-in heartbeat for the server side of that.</p>
+
+					<h2 id="practice">12. In practice</h2>
+					<ul>
+						<li><strong>Prefer events to sockets</strong> unless the browser genuinely needs to speak. Events are plain HTTP, and everything you already know about requests still applies.</li>
+						<li><strong>Hold hubs statically</strong>, never on a session or a component.</li>
+						<li><strong>Send something meaningful on connect.</strong> A subscriber that waits for the next change looks broken until something happens.</li>
+						<li><strong>Make the stream URL unique per connection</strong>, for Firefox, from the first line of client code you write.</li>
+						<li><strong>Exclude stream paths</strong> from <code>JettyMaxConcurrentRequests</code> if you use it at all.</li>
+						<li><strong>Don't push what you can't afford to lose.</strong> A client that reconnects has missed whatever happened while it was away unless you gave your events ids and can replay them.</li>
+						<li><strong>Test through the front end</strong> with <code>curl -N</code>, and in more than one browser.</li>
+					</ul>
+					<p>The classes are three: <code>SSEStream</code>, <code>SSEHub</code> and, for sockets, <code>WOWebSocketRegistry</code> with <code>WOWebSocketHandler</code>. The <a href="https://github.com/undur/wo-adaptor-jetty">wo-adaptor-jetty repository</a> has them, and wonder-slim's AjaxPlayground has a working page for each: a plain <code>EventSource</code> clock, and a page driven entirely by pushed updates.</p>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#which">Which one do you want?</a>
+				<a href="#dependency">The dependency</a>
+				<a href="#first-stream">A first event stream</a>
+				<a href="#sending">Sending events</a>
+				<a href="#lifecycle">When the client goes away</a>
+				<a href="#hub">Broadcasting to everyone</a>
+				<a href="#keepalive">Keep-alives and timeouts</a>
+				<a href="#config">Configuration</a>
+				<a href="#client-traps">Two client-side traps</a>
+				<a href="#proxies">Through a proxy</a>
+				<a href="#websockets">WebSockets</a>
+				<a href="#practice">In practice</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>
