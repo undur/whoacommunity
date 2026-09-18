@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>whoacommunity</groupId>
 	<artifactId>whoacommunity</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>11.11.11-SNAPSHOT</version>
 	<name>whoacommunity</name>
 	<packaging>woapplication</packaging>
 	<properties>
