@@ -1,5 +1,9 @@
+<wo:link href="/dev-feed" class="rail-badge">
+	<span class="live"></span>
+	<span class="rail-badge-text"><span class="k">Development activity</span><span class="v">Commits, releases and issues, one stream →</span></span>
+</wo:link>
 <div class="rail-block">
-	<div class="rail-head"><span class="live"></span>Commits<wo:link href="/dev-feed">all →</wo:link></div>
+	<div class="rail-head"><span class="live"></span>Commits<wo:link href="/dev-feed?tab=commits">all →</wo:link></div>
 	<wo:repetition list="$items" item="$current">
 		<wo:link href="$current.link" class="rail-row">
 			<span class="rail-emoji"><wo:str value="$current.repo.emoji" /></span><span class="rail-repo"><wo:str value="$current.repo.name" /></span>

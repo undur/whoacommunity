@@ -15,6 +15,28 @@
 					</wo:if>
 				</div>
 
+				<wo:if condition="$isAll">
+					<table class="feed-table feed-all">
+						<thead>
+							<tr><th>Repository</th><th>When</th><th>What happened</th><th>Who</th></tr>
+						</thead>
+						<tbody>
+							<wo:repetition list="$allItems" item="$currentItem">
+								<wo:container elementName="tr" class="$currentItem.rowClass">
+									<td class="c-repo"><wo:str value="$currentItem.repo.emoji" /> <wo:str value="$currentItem.repo.name" /></td>
+									<td class="c-when"><wo:str value="$currentItem.shortDateFormatted" /></td>
+									<td class="c-msg">
+										<wo:if condition="$currentItem.isRelease"><span class="kind kind-release">release <wo:str value="$currentItem.who" /></span></wo:if>
+										<wo:if condition="$currentItem.isIssue"><span class="kind kind-issue">issue</span></wo:if>
+										<wo:link href="$currentItem.url"><wo:str value="$currentItem.title" /></wo:link>
+									</td>
+									<td class="c-who"><wo:if condition="$currentItem.isRelease" negate="$true"><wo:str value="$currentItem.who" /></wo:if></td>
+								</wo:container>
+							</wo:repetition>
+						</tbody>
+					</table>
+				</wo:if>
+
 				<wo:if condition="$isCommits">
 					<table class="feed-table">
 						<thead>

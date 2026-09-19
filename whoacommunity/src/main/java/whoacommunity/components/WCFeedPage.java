@@ -1,6 +1,9 @@
 package whoacommunity.components;
 
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.ArrayList;
+import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,6 +32,7 @@ public class WCFeedPage extends WCComponent {
 	public record RepoGroup( String name, List<Repo> repos ) {}
 
 	public enum Tab {
+		all( "All", "commits, releases and issues from the last 60 days", "One stream: commits as they happen, with the releases they became and the issues that prompted them. Issues are placed by the day they were opened. The counts in the filter are commits in the last seven days." ),
 		commits( "Commits", "50 most recent commits each", "Only the 50 most recent commits are fetched per repository, so this isn't the full history — it's what GitHub's feed gives us. The counts in the filter are commits in the last seven days." ),
 		releases( "Releases", "20 most recent releases each", "Only the twenty most recent published releases are fetched per repository." ),
 		issues( "Open issues", "6 most recently updated each", "Only the six most recently updated open issues are fetched per repository — the count in the rail is the true total." );
@@ -51,7 +55,7 @@ public class WCFeedPage extends WCComponent {
 	/**
 	 * Which of the three lists is showing
 	 */
-	public Tab tab = Tab.commits;
+	public Tab tab = Tab.all;
 
 	/**
 	 * The repos whose activity is in the feed. Starts as the default set (everything but "around the stack");
@@ -99,6 +103,65 @@ public class WCFeedPage extends WCComponent {
 
 	public String tabClass() {
 		return currentTab == tab ? "is-on" : "";
+	}
+
+	/**
+	 * One row of the merged stream: a commit, a release or an issue, placed on one timeline
+	 */
+	public record FeedItem( String kind, Repo repo, Instant when, String title, String url, String who ) {
+
+		public String shortDateFormatted() {
+			return whoacommunity.util.Dates.shortDate( when );
+		}
+
+		public boolean isRelease() {
+			return "release".equals( kind );
+		}
+
+		public boolean isIssue() {
+			return "issue".equals( kind );
+		}
+
+		public String rowClass() {
+			return "row-" + kind;
+		}
+	}
+
+	public FeedItem currentItem;
+
+	private static final Duration ALL_WINDOW = Duration.ofDays( 60 );
+
+	/**
+	 * @return Commits, releases and issues from the shown repos, newest first, limited to the last 60 days so no one kind's fetch limit shapes the tail
+	 */
+	public List<FeedItem> allItems() {
+		final Instant since = Instant.now().minus( ALL_WINDOW );
+		final List<FeedItem> out = new ArrayList<>();
+
+		for( Commit c : GithubFeed.shared.commits() ) {
+			if( _shown.contains( c.repo() ) && c.committedAt().isAfter( since ) ) {
+				out.add( new FeedItem( "commit", c.repo(), c.committedAt(), c.title(), c.link(), c.author() ) );
+			}
+		}
+
+		for( Release r : GithubFeed.shared.releases() ) {
+			if( _shown.contains( r.repo() ) && r.createdAt() != null && r.createdAt().isAfter( since ) ) {
+				out.add( new FeedItem( "release", r.repo(), r.createdAt(), r.displayName(), r.url(), r.tagName() ) );
+			}
+		}
+
+		for( OpenIssue i : GithubFeed.shared.issues() ) {
+			if( _shown.contains( i.repo() ) && i.createdAt() != null && i.createdAt().isAfter( since ) ) {
+				out.add( new FeedItem( "issue", i.repo(), i.createdAt(), i.title(), i.url(), i.authorLogin() ) );
+			}
+		}
+
+		out.sort( Comparator.comparing( FeedItem::when ).reversed() );
+		return out;
+	}
+
+	public boolean isAll() {
+		return tab == Tab.all;
 	}
 
 	public boolean isCommits() {
@@ -229,7 +292,7 @@ public class WCFeedPage extends WCComponent {
 	 */
 	public int currentRepoCount() {
 		return switch( tab ) {
-			case commits -> {
+			case all, commits -> {
 				final Instant weekAgo = Instant.now().minus( 7, ChronoUnit.DAYS );
 				yield (int)GithubFeed.shared.commitsFor( currentRepo ).stream().filter( c -> c.committedAt().isAfter( weekAgo ) ).count();
 			}

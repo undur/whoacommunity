@@ -381,6 +381,14 @@ a:hover { color: var(--whoa-accent); }
 
 /* ---------- Activity rail ---------- */
 
+/* The stream badge above the rail: a door into the merged activity feed */
+.rail-badge { display: flex; align-items: center; gap: .7rem; padding: .7rem .95rem; margin-bottom: 1rem; background: var(--whoa-accent-soft); border: 1px solid var(--whoa-accent-line); border-radius: 7px; text-decoration: none; color: var(--whoa-text); }
+.rail-badge:hover { background: var(--whoa-panel-2); border-color: var(--whoa-accent); text-decoration: none; }
+.rail-badge .rail-badge-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rail-badge .k { font-family: "JetBrains Mono", monospace; font-size: .6rem; letter-spacing: .13em; text-transform: uppercase; color: var(--whoa-accent); }
+.rail-badge .v { font-size: .82rem; color: var(--whoa-bright); }
+.rail-badge:hover .v { color: var(--whoa-accent); }
+
 .rail-block {
   background: var(--whoa-panel);
   border: 1px solid var(--whoa-line);
@@ -402,7 +410,7 @@ a:hover { color: var(--whoa-accent); }
   color: var(--whoa-muted);
 }
 
-.rail-head .live { width: 6px; height: 6px; border-radius: 50%; background: var(--whoa-accent); animation: whoa-pulse 2.6s infinite; }
+.rail-head .live, .rail-badge .live { width: 6px; height: 6px; border-radius: 50%; background: var(--whoa-accent); animation: whoa-pulse 2.6s infinite; }
 @keyframes whoa-pulse { 0% { box-shadow: 0 0 0 0 var(--whoa-accent-line); } 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 .rail-head a { margin-left: auto; text-transform: none; letter-spacing: .03em; font-size: .66rem; color: var(--whoa-dim); text-decoration: none; }
 .rail-head a:hover { color: var(--whoa-accent); }
@@ -477,6 +485,13 @@ a:hover { color: var(--whoa-accent); }
 .feed-table .c-when { font-family: "JetBrains Mono", monospace; font-size: .7rem; color: var(--whoa-dim); white-space: nowrap; width: 1%; font-variant-numeric: tabular-nums; }
 .feed-table .c-who { font-family: "JetBrains Mono", monospace; font-size: .72rem; color: var(--whoa-dim); white-space: nowrap; width: 1%; }
 .feed-table .c-msg a { color: var(--whoa-text); text-decoration: none; }
+/* The merged stream: releases are the markers, issues the asides, commits the quiet majority */
+.feed-all .kind { display: inline-block; font-family: "JetBrains Mono", monospace; font-size: .62rem; letter-spacing: .04em; padding: 1px 6px; border-radius: 3px; margin-right: .5rem; vertical-align: 1px; white-space: nowrap; }
+.feed-all .kind-release { color: var(--whoa-accent); background: var(--whoa-accent-soft); border: 1px solid var(--whoa-accent-line); }
+.feed-all .kind-issue { color: var(--whoa-muted); border: 1px solid var(--whoa-line); }
+.feed-all tr.row-release td { background: var(--whoa-accent-soft); border-top: 1px solid var(--whoa-accent-line); border-bottom: 1px solid var(--whoa-accent-line); }
+.feed-all tr.row-release .c-msg a { color: var(--whoa-bright); font-weight: 500; }
+.feed-all tr.row-issue .c-msg a { color: var(--whoa-muted); }
 .feed-table tbody tr:hover .c-msg a { color: var(--whoa-accent); }
 
 .rail-subhead-link { display: flex; align-items: baseline; gap: .5rem; text-decoration: none; }
