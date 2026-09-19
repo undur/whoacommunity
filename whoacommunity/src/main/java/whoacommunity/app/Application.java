@@ -18,22 +18,23 @@ import com.rometools.rome.io.SyndFeedOutput;
 
 import ng.appserver.NGActionResults;
 import ng.appserver.NGApplication;
-import ng.appserver.NGRequest;
-import ng.appserver.NGResponse;
 import ng.appserver.NGSessionRestorationException;
+import ng.appserver.http.NGRequest;
+import ng.appserver.http.NGResponse;
+import ng.appserver.http.NGResponses;
 import ng.plugins.Elements;
 import ng.plugins.Routes;
 import whoacommunity.components.WCArticleDetailPage;
 import whoacommunity.components.WCDeploymentApacheClassicPage;
 import whoacommunity.components.WCDeploymentApacheModuloPage;
+import whoacommunity.components.WCDeploymentPage;
+import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCGuideDeployPage;
 import whoacommunity.components.WCGuideRoutesPage;
 import whoacommunity.components.WCGuideServerPushPage;
 import whoacommunity.components.WCGuideVermilinguaPage;
 import whoacommunity.components.WCGuideWonderSlimDevPage;
 import whoacommunity.components.WCGuidesPage;
-import whoacommunity.components.WCDeploymentPage;
-import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCMain;
 import whoacommunity.components.WCProjectPage;
 import whoacommunity.components.WCProjectPage.SubPage;
@@ -177,7 +178,7 @@ public class Application extends NGApplication {
 
 				Sitemap: https://www.whoacommunity.com/sitemap.xml
 				""";
-		final NGResponse response = new NGResponse( text, 200 );
+		final NGResponse response = NGResponses.of( 200, text );
 		response.setHeader( "Content-Type", "text/plain; charset=utf-8" );
 		return response;
 	}
@@ -224,7 +225,7 @@ public class Application extends NGApplication {
 		}
 
 		xml.append( "</urlset>\n" );
-		final NGResponse response = new NGResponse( xml.toString(), 200 );
+		final NGResponse response = NGResponses.of( 200, xml.toString() );
 		response.setHeader( "Content-Type", "application/xml; charset=utf-8" );
 		return response;
 	}
@@ -236,7 +237,7 @@ public class Application extends NGApplication {
 	 */
 	public NGActionResults refreshData( NGRequest request ) {
 		CachedFeed.forceRefreshAll();
-		final NGResponse response = new NGResponse( "", 302 );
+		final NGResponse response = NGResponses.of( 302, "" );
 		response.setHeader( "Location", "/" );
 		return response;
 	}
@@ -273,7 +274,7 @@ public class Application extends NGApplication {
 
 		try {
 			final String xmlString = new SyndFeedOutput().outputString( feed );
-			final NGResponse response = new NGResponse( xmlString, 200 );
+			final NGResponse response = NGResponses.of( 200, xmlString );
 			response.setHeader( "content-type", "application/atom+xml" );
 			return response;
 		}
@@ -286,24 +287,24 @@ public class Application extends NGApplication {
 	 * /project/{name} → overview; /project/{name}/{commits|releases|issues} → that sub-page
 	 */
 	public NGActionResults viewProject( NGRequest request ) {
-		final String path = request.uri().split( "\\?" )[ 0 ];
+		final String path = request.uri().split( "\\?" )[0];
 		final String[] parts = path.split( "/" ); // "", "project", name, [sub]
 
-		final String name = parts.length > 2 ? parts[ 2 ] : "";
+		final String name = parts.length > 2 ? parts[2] : "";
 		final Repo repo = Repos.projectRepoNamed( name ).orElse( null );
 
 		if( repo == null ) {
-			return new NGResponse( "No such project", 404 );
+			return NGResponses.of( 404, "No such project" );
 		}
 
 		SubPage subPage = SubPage.overview;
 
-		if( parts.length > 3 && !parts[ 3 ].isBlank() ) {
+		if( parts.length > 3 && !parts[3].isBlank() ) {
 			try {
-				subPage = SubPage.valueOf( parts[ 3 ] );
+				subPage = SubPage.valueOf( parts[3] );
 			}
 			catch( IllegalArgumentException e ) {
-				return new NGResponse( "No such project page", 404 );
+				return NGResponses.of( 404, "No such project page" );
 			}
 		}
 
@@ -318,7 +319,7 @@ public class Application extends NGApplication {
 		final Video video = Videos.videoWithID( youtubeID ).orElse( null );
 
 		if( video == null ) {
-			return new NGResponse( "No such video", 404 );
+			return NGResponses.of( 404, "No such video" );
 		}
 
 		final WCVideoDetailPage page = pageWithName( WCVideoDetailPage.class, request.context() );
@@ -334,7 +335,7 @@ public class Application extends NGApplication {
 			uuid = UUID.fromString( uuidString );
 		}
 		catch( IllegalArgumentException e ) {
-			return new NGResponse( "No such article", 404 );
+			return NGResponses.of( 404, "No such article" );
 		}
 
 		final Article article = ObjectSelect
@@ -343,7 +344,7 @@ public class Application extends NGApplication {
 				.selectOne( WCCore.newContext() );
 
 		if( article == null ) {
-			return new NGResponse( "No such article", 404 );
+			return NGResponses.of( 404, "No such article" );
 		}
 
 		final WCArticleDetailPage page = pageWithName( WCArticleDetailPage.class, request.context() );

@@ -6,7 +6,8 @@ import org.apache.cayenne.ObjectContext;
 
 import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
-import ng.appserver.NGResponse;
+import ng.appserver.http.NGResponse;
+import ng.appserver.http.NGResponses;
 import whoacommunity.app.WCComponent;
 import whoacommunity.data.Article;
 import whoacommunity.data.Article.ArticleFormat;
@@ -41,7 +42,7 @@ public class WCArticleEditPage extends WCComponent {
 	 * @param url The URL to redirect to
 	 */
 	private static NGResponse redirectTemporary( final String url ) {
-		final NGResponse response = new NGResponse();
+		final NGResponse response = NGResponses.of();
 		response.setStatus( 302 );
 		response.setHeader( "location", url );
 		response.setHeader( "content-type", "text/html" );
