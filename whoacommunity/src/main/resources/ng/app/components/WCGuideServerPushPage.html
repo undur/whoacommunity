@@ -22,10 +22,9 @@
 <pre><code class="language-xml">&lt;dependency&gt;
     &lt;groupId&gt;is.rebbi&lt;/groupId&gt;
     &lt;artifactId&gt;wo-adaptor-jetty-push&lt;/artifactId&gt;
-    &lt;version&gt;0.10.0&lt;/version&gt;
+    &lt;version&gt;0.11.0&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 					<p>It is released together with the adaptor and used at the same version. Adding it to the classpath is all that's needed: the adaptor finds it and enables WebSocket upgrades on its own server, with nothing to configure. Server-sent events need nothing beyond the classes described below.</p>
-					<p>Two behaviours described below — a stream committing its response immediately, and the 10-second keep-alive default — arrive in the release after 0.10.0. On 0.10.0 the default interval is 30 seconds and a stream writes nothing until its first event, so send a <code>comment</code> yourself on subscribe and set a shorter interval; both are described in their sections.</p>
 					<p>The module was called <code>wo-adaptor-jetty-websocket</code> up to and including 0.9.0. If you're upgrading from that, change the artifactId; the package names are unchanged.</p>
 
 					<h2 id="first-stream">3. A first event stream</h2>
@@ -121,7 +120,7 @@ public class OrderFeed {
 <pre><code class="language-clike">new SSEStream( Duration.ofSeconds( 15 ) );
 SUBSCRIBERS.open( Duration.ofSeconds( 15 ) );</code></pre>
 					<p>Keep it below <em>every</em> timeout between the stream and its client, not just the nearest one. Three matter in a typical deployment: the adaptor's own connector idle timeout, 600 seconds by default and set with <code>-DJettyConnectorIdleTimeoutSeconds</code>; the idle timeout of whatever proxy sits in front; and — easy to miss — the <code>recvTimeout</code> in the instance's adaptor configuration, which JavaMonitor defaults to <strong>30 seconds</strong> and which <a href="/project/modulo">modulo</a> applies as the idle timeout of its connection to the instance.</p>
-					<p>That last one is why the default interval is 10 seconds rather than 30 (on 0.10.0 it is still 30, so set it yourself). A keep-alive interval equal to an upstream timeout is a race the timeout can win: the connection is aborted, the browser reconnects, and a quiet feed loops like that forever while a busy one looks perfectly healthy. Leave room between them.</p>
+					<p>That last one is why the default interval is 10 seconds rather than 30. A keep-alive interval equal to an upstream timeout is a race the timeout can win: the connection is aborted, the browser reconnects, and a quiet feed loops like that forever while a busy one looks perfectly healthy. Leave room between them.</p>
 
 					<h2 id="config">8. Configuration a long-lived response needs</h2>
 					<p>One adaptor setting matters here. If you limit how many requests the application handles at once with <code>JettyMaxConcurrentRequests</code>, remember that an open event stream is a request that never finishes and holds its slot for as long as the client stays. A handful of subscribers would use up a small limit and leave nothing for ordinary pages.</p>
