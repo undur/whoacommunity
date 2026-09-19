@@ -9,7 +9,7 @@
 					<p><a href="/project/wo-adaptor-jetty">wo-adaptor-jetty</a> supports two ways of doing that. <strong>Server-sent events</strong> are the one to reach for: a normal HTTP response that never ends, which the server keeps writing to. <strong>WebSockets</strong> are there when you need the browser to talk back over the same connection. This guide covers both, starting with events, because most things that look like they need a WebSocket don't.</p>
 
 					<div class="whoa-callout">
-						<p><strong>This needs wo-adaptor-jetty.</strong> Neither works with WebObjects' classic adaptor: it has no way to send a response of unknown length, so an event stream would be answered with an empty body and the events would never leave the server. Run your application with <code>-WOAdaptor WOAdaptorJetty</code>.</p>
+						<p><strong>This needs wo-adaptor-jetty.</strong> Neither works with WebObjects' classic adaptor: it has no way to send a response of unknown length, so an event stream would be answered with an empty body and the events would never leave the server. From 0.12.0 the adaptor selects itself: having it as a dependency is enough, and no launch argument is needed. Earlier versions want <code>-WOAdaptor WOAdaptorJetty</code>.</p>
 					</div>
 
 					<h2 id="which">1. Which one do you want?</h2>
@@ -22,7 +22,7 @@
 <pre><code class="language-xml">&lt;dependency&gt;
     &lt;groupId&gt;is.rebbi&lt;/groupId&gt;
     &lt;artifactId&gt;wo-adaptor-jetty-push&lt;/artifactId&gt;
-    &lt;version&gt;0.11.0&lt;/version&gt;
+    &lt;version&gt;0.12.0&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 					<p>It is released together with the adaptor and used at the same version. Adding it to the classpath is all that's needed: the adaptor finds it and enables WebSocket upgrades on its own server, with nothing to configure. Server-sent events need nothing beyond the classes described below.</p>
 					<p>The module was called <code>wo-adaptor-jetty-websocket</code> up to and including 0.9.0. If you're upgrading from that, change the artifactId; the package names are unchanged.</p>
