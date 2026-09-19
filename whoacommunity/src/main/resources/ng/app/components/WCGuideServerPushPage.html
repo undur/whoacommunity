@@ -5,6 +5,7 @@
 			<div class="whoa-panel guide-panel">
 				<div class="article-body">
 					<p>A WebObjects application answers requests. Sometimes you want the other direction: a page that updates when something happens on the server, without the browser asking. A progress bar during a long job, a notification when someone else changes the data you're looking at, a live figure on a dashboard.</p>
+					<div class="whoa-callout"><p><strong>Where the code lives.</strong> Both are in a module separate from the adaptor itself, <code>is.rebbi:wo-adaptor-jetty-push</code>. The classes below are <code>com.webobjects.appserver.sse.SSEStream</code>, <code>com.webobjects.appserver.sse.SSEHub</code> and, for sockets, <code>com.webobjects.appserver.websocket.WOWebSocketRegistry</code>. Full dependency in section 2.</p></div>
 					<p><a href="/project/wo-adaptor-jetty">wo-adaptor-jetty</a> supports two ways of doing that. <strong>Server-sent events</strong> are the one to reach for: a normal HTTP response that never ends, which the server keeps writing to. <strong>WebSockets</strong> are there when you need the browser to talk back over the same connection. This guide covers both, starting with events, because most things that look like they need a WebSocket don't.</p>
 
 					<div class="whoa-callout">
@@ -24,6 +25,7 @@
     &lt;version&gt;0.10.0&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 					<p>It is released together with the adaptor and used at the same version. Adding it to the classpath is all that's needed: the adaptor finds it and enables WebSocket upgrades on its own server, with nothing to configure. Server-sent events need nothing beyond the classes described below.</p>
+					<p>Two behaviours described below — a stream committing its response immediately, and the 10-second keep-alive default — arrive in the release after 0.10.0. On 0.10.0 the default interval is 30 seconds and a stream writes nothing until its first event, so send a <code>comment</code> yourself on subscribe and set a shorter interval; both are described in their sections.</p>
 					<p>The module was called <code>wo-adaptor-jetty-websocket</code> up to and including 0.9.0. If you're upgrading from that, change the artifactId; the package names are unchanged.</p>
 
 					<h2 id="first-stream">3. A first event stream</h2>
@@ -84,7 +86,7 @@ if( lastSeen != null ) {
     logger.info( "Client left, {} remaining", subscribers.size() );
 } );</code></pre>
 					<p>Sending to a closed stream is a silent no-op, so a broadcaster never has to check first, and a race between a client leaving and an event going out is harmless.</p>
-					<p>Detection is not instant: the server discovers the client is gone when it next tries to write. A stream that sends something every few seconds notices within seconds; an idle one notices at the next keep-alive, which is every 30 seconds by default. If you keep server-side state per connection, that's the window you're reclaiming it in.</p>
+					<p>Detection is not instant: the server discovers the client is gone when it next tries to write. A stream that sends something every few seconds notices within seconds; an idle one notices at the next keep-alive, which is every 10 seconds by default. If you keep server-side state per connection, that's the window you're reclaiming it in.</p>
 
 					<h2 id="hub">6. Broadcasting to everyone</h2>
 					<p>A single stream is one client. <code>SSEHub</code> is a set of them, and streams leave it automatically when they close, so it only ever holds live connections:</p>
@@ -110,6 +112,7 @@ public class OrderFeed {
     stream.send( "snapshot", new Gson().toJson( currentOrders() ) );
     return stream.response();
 }</code></pre>
+					<p><strong>Send something the moment a client subscribes.</strong> The example above does it with a snapshot, and it is worth doing even when you have nothing to say — a bare <code>stream.comment( "connected" )</code> is enough. Until the first byte is written the response is not committed, so no headers have reached the browser: it shows "connecting" rather than an open connection, and every proxy in between sees an idle connection it may decide to time out. Streams created by this library write an opening comment for you, so this is mostly a matter of knowing why it matters — but if you build a stream some other way, send a byte early.</p>
 					<p><code>size()</code> tells you how many are connected, which is often worth broadcasting itself, and <code>closeAll()</code> ends every stream, for a clean application shutdown.</p>
 					<p>One hub per feed, held somewhere that outlives a request — a static field or an application-level object. Not on a session or a component: those come and go, and a hub on one would lose its subscribers.</p>
 
@@ -117,7 +120,8 @@ public class OrderFeed {
 					<p>An idle connection looks dead to everything between the server and the browser. <code>SSEStream</code> therefore writes a comment line every 30 seconds while nothing else is going out, which keeps proxies and the adaptor's own idle timeout from closing it. You can change the interval:</p>
 <pre><code class="language-clike">new SSEStream( Duration.ofSeconds( 15 ) );
 SUBSCRIBERS.open( Duration.ofSeconds( 15 ) );</code></pre>
-					<p>Keep it below the adaptor's connector idle timeout, which defaults to 600 seconds and is set with <code>-DJettyConnectorIdleTimeoutSeconds</code>, and below the idle timeout of any proxy in front. The default of 30 seconds is well inside both.</p>
+					<p>Keep it below <em>every</em> timeout between the stream and its client, not just the nearest one. Three matter in a typical deployment: the adaptor's own connector idle timeout, 600 seconds by default and set with <code>-DJettyConnectorIdleTimeoutSeconds</code>; the idle timeout of whatever proxy sits in front; and — easy to miss — the <code>recvTimeout</code> in the instance's adaptor configuration, which JavaMonitor defaults to <strong>30 seconds</strong> and which <a href="/project/modulo">modulo</a> applies as the idle timeout of its connection to the instance.</p>
+					<p>That last one is why the default interval is 10 seconds rather than 30 (on 0.10.0 it is still 30, so set it yourself). A keep-alive interval equal to an upstream timeout is a race the timeout can win: the connection is aborted, the browser reconnects, and a quiet feed loops like that forever while a busy one looks perfectly healthy. Leave room between them.</p>
 
 					<h2 id="config">8. Configuration a long-lived response needs</h2>
 					<p>One adaptor setting matters here. If you limit how many requests the application handles at once with <code>JettyMaxConcurrentRequests</code>, remember that an open event stream is a request that never finishes and holds its slot for as long as the client stays. A handful of subscribers would use up a small limit and leave nothing for ordinary pages.</p>
@@ -193,7 +197,8 @@ socket.onopen = () =&gt; socket.send('hello');</code></pre>
 					<ul>
 						<li><strong>Prefer events to sockets</strong> unless the browser genuinely needs to speak. Events are plain HTTP, and everything you already know about requests still applies.</li>
 						<li><strong>Hold hubs statically</strong>, never on a session or a component.</li>
-						<li><strong>Send something meaningful on connect.</strong> A subscriber that waits for the next change looks broken until something happens.</li>
+						<li><strong>Send something meaningful on connect.</strong> A subscriber that waits for the next change looks broken until something happens — and until the first byte, the response is not even committed, so the browser has no headers yet.</li>
+						<li><strong>Leave room between the keep-alive and every upstream timeout.</strong> Equal values race, and the timeout winning means an endless reconnect loop on an otherwise quiet feed.</li>
 						<li><strong>Make the stream URL unique per connection</strong>, for Firefox, from the first line of client code you write.</li>
 						<li><strong>Exclude stream paths</strong> from <code>JettyMaxConcurrentRequests</code> if you use it at all.</li>
 						<li><strong>Don't push what you can't afford to lose.</strong> A client that reconnects has missed whatever happened while it was away unless you gave your events ids and can replay them.</li>
