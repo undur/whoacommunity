@@ -30,6 +30,7 @@ import whoacommunity.components.WCDeploymentApacheModuloPage;
 import whoacommunity.components.WCDeploymentPage;
 import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCGuideDeployPage;
+import whoacommunity.components.WCGuideModuloConfigPage;
 import whoacommunity.components.WCGuideRoutesPage;
 import whoacommunity.components.WCGuideServerPushPage;
 import whoacommunity.components.WCGuideVermilinguaPage;
@@ -160,6 +161,7 @@ public class Application extends NGApplication {
 				.map( "/guide/url-routing", WCGuideRoutesPage.class )
 				.map( "/guide/server-push", WCGuideServerPushPage.class )
 				.map( "/guide/deploying-with-vermilingua", WCGuideDeployPage.class )
+				.map( "/guide/configuring-modulo", WCGuideModuloConfigPage.class )
 				.map( "/deployment", WCGuidesPage.class )
 				.map( "/deployment-config", WCDeploymentPage.class )
 				.map( "/deployment-apache-modulo", WCDeploymentApacheModuloPage.class )
@@ -199,7 +201,7 @@ public class Application extends NGApplication {
 			xml.append( "</url>\n" );
 		};
 
-		for( String path : List.of( "/", "/writing", "/projects", "/guides", "/dev-feed", "/videos", "/deployment-config", "/deployment-apache-modulo", "/deployment-apache-mod-webobjects", "/guide/wonder-slim-development", "/guide/building-with-vermilingua", "/guide/url-routing", "/guide/server-push", "/guide/deploying-with-vermilingua" ) ) {
+		for( String path : List.of( "/", "/writing", "/projects", "/guides", "/dev-feed", "/videos", "/deployment-config", "/deployment-apache-modulo", "/deployment-apache-mod-webobjects", "/guide/wonder-slim-development", "/guide/building-with-vermilingua", "/guide/url-routing", "/guide/server-push", "/guide/deploying-with-vermilingua", "/guide/configuring-modulo" ) ) {
 			add.accept( path, null );
 		}
 

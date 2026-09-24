@@ -63,6 +63,17 @@ public class WCGuidesPage extends WCComponent {
 			new Guide( "vermilingua-deploy", "🚚", "Deploying with vermilingua:deploy", "/guide/deploying-with-vermilingua", "new hotness", true,
 					"One Maven command ships a build: the bundle is posted to JavaMonitor, and wotaskd swaps it into place and restarts the instances on every host. Configuration, use from a build server, what happens on each host, rollback.", List.of() ) );
 
+	/**
+	 * Guides about running the stack once it's installed
+	 */
+	private static final List<Guide> RUNNING_GUIDES = List.of(
+			new Guide( "modulo-config", "⚙️", "Configuring modulo", "/guide/configuring-modulo", "reference", true,
+					"Every setting in modulo.toml: ports and HTTP/3, the admin password, where wotaskd is, Let's Encrypt, sites in their own files, hostnames and canonical redirects, certificates, rewrite rules, and what modulo keeps on disk.", List.of() ) );
+
+	public List<Guide> runningGuides() {
+		return RUNNING_GUIDES;
+	}
+
 	public List<Guide> buildingGuides() {
 		return BUILDING_GUIDES;
 	}

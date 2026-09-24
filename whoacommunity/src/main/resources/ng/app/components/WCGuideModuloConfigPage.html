@@ -1,0 +1,218 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Configuring modulo<span>every setting, what it does, where it lives</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<div class="caveat">
+						<p>This is a first version of modulo's configuration reference, and it will move into modulo's own repository as it grows. It describes modulo as it is today, including a few rough edges that are marked as such. For installing modulo in the first place, see the <a href="/deployment-config">Pure modulo</a> deployment guide.</p>
+					</div>
+					<p>modulo reads one configuration file, <code>/opt/webobjects/modulo.toml</code>. It holds four kinds of thing: how modulo itself listens (<code>[frontend]</code>), who may use its admin pages (<code>[admin]</code>), where it learns about your applications (<code>[wotaskd]</code>), and the sites it serves (<code>[acme]</code>, <code>include</code> and <code>[[sites]]</code>). Everything else has a built-in default, and the few settings that can be changed from the command line are listed <a href="#overrides">at the end</a>.</p>
+
+					<h2 id="file">1. The file</h2>
+					<p>The file is TOML. Two features of TOML matter here. Keys that stand on their own, like <code>include</code>, have to come <strong>before the first table header</strong>; after <code>[frontend]</code> every key belongs to that table. And strings in single quotes are literal, with no escaping, which is how regular expressions in rewrite rules stay readable.</p>
+					<p>modulo parses the file strictly. An unknown field, a misspelled table, a hostname claimed by two sites or a malformed entry stops the front end from starting, with an error naming the file and the problem, rather than starting with half a configuration. The file is the source of truth, so a typo should be loud.</p>
+					<p>Some settings take effect on reload, the others need a restart:</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Settings</th><th>A change takes effect</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">include, [acme], [[sites]]</td><td>On reload, without dropping a connection: <code>curl -X POST -u :password https://your-admin-host/reload</code>, or the button on the admin overview.</td></tr>
+							<tr><td class="c-repo">[frontend], [admin], [wotaskd]</td><td>On restart: <code>systemctl restart modulo</code>. A reload that finds one of these changed says so explicitly instead of ignoring the edit.</td></tr>
+						</tbody>
+					</table></div>
+					<p>A reload validates first. A file that doesn't parse is refused with the exact error and HTTP 422, and the configuration already running is untouched.</p>
+
+					<h2 id="minimal">2. A complete, minimal configuration</h2>
+<pre><code class="language-none">include = [ "/opt/apps/*/conf/site.toml" ]
+
+[frontend]
+httpPort     = 80
+httpsPort    = 443
+accessLogDir = "/opt/webobjects/log/access"
+
+[admin]
+password = "…"
+
+[wotaskd]
+host     = "server.example.com"
+port     = 1085
+password = "…"
+
+[acme]
+email   = "you@example.com"
+storage = "/opt/webobjects/acme"
+
+[[sites]]
+hostnames = [ "server.example.com" ]
+app = "Modulo"
+
+[[sites]]
+hostnames = [ "www.example.com", "example.com" ]
+app = "MyApp"</code></pre>
+					<p>That is a server whose admin pages are at <code>https://server.example.com/</code>, with one application served at <code>www.example.com</code>, <code>example.com</code> redirecting to it, certificates from Let's Encrypt for both, and more sites picked up from files next to the applications. The sections below go through it table by table.</p>
+
+					<h2 id="frontend">3. [frontend]</h2>
+					<p>How modulo faces the internet. Restart to change.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Field</th><th>Default</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">httpPort</td><td>80</td><td>The plain-HTTP port. It redirects to HTTPS and answers Let's Encrypt's challenges, so for certificates to work it has to be reachable from the internet on port 80.</td></tr>
+							<tr><td class="c-repo">httpsPort</td><td>443</td><td>The TLS port, speaking HTTP/2 and HTTP/1.1. Certificates are chosen per hostname from the sites.</td></tr>
+							<tr><td class="c-repo">http3</td><td>false</td><td>Also listen for HTTP/3 on the same port number over UDP. Leave it off: it works, but Jetty's HTTP/3 has an open bug that makes it unreliable with many sites, and it needs one certificate covering every hostname on the server.</td></tr>
+							<tr><td class="c-repo">accessLogDir</td><td>none</td><td>A directory for access logs: one subdirectory per site, one file per day. Without it, nothing is logged. Logs are kept indefinitely; deleting them is your decision.</td></tr>
+							<tr><td class="c-repo">acmeWebroot</td><td>none</td><td>Only for moving from certbot: a directory whose <code>.well-known/acme-challenge/</code> files modulo serves on port 80, so certbot can keep renewing while its sites move over. Not needed once modulo manages the certificates itself.</td></tr>
+						</tbody>
+					</table></div>
+					<p>Without a <code>[frontend]</code> table the defaults apply. If the file has an error, modulo logs it and starts without the front end, so ports 80 and 443 stay closed until the file is fixed and modulo restarted. It still needs <code>[wotaskd]</code> to start at all.</p>
+
+					<h2 id="admin">4. [admin]</h2>
+<pre><code class="language-none">[admin]
+password = "…"</code></pre>
+					<p>The password for modulo's admin pages and its <code>/reload</code> endpoint, using HTTP Basic authentication with any username. When a password is set it is always required. When none is set, the admin pages are open in development and switched off in production, so on a server set one. Restart to change.</p>
+					<p>The admin pages are an application like any other as far as the sites are concerned: modulo itself answers as the application <code>Modulo</code>, so a site with <code>app = "Modulo"</code> serves them. They show the sites and applications modulo knows about, recent events, request statistics and, under <code>/config</code>, every setting modulo is running with, where it came from, and whether it can be configured yet.</p>
+
+					<h2 id="wotaskd">5. [wotaskd]</h2>
+					<p>Where modulo learns which applications exist and where their instances listen. modulo asks wotaskd every ten seconds, and sooner when an instance stops answering. Restart to change.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">host</td><td>The host wotaskd runs on, as wotaskd knows itself. If wotaskd was started with <code>-WOHost</code>, it only listens on that address, so use the same name here rather than <code>localhost</code>.</td></tr>
+							<tr><td class="c-repo">port</td><td>wotaskd's port, normally 1085.</td></tr>
+							<tr><td class="c-repo">password</td><td>The password wotaskd's configuration is protected with. wotaskd expects it in the hashed form stored in <code>SiteConfig.xml</code>, not the password you type into JavaMonitor.</td></tr>
+						</tbody>
+					</table></div>
+					<p>All three are required. The instance timeouts you set in JavaMonitor come along with the configuration: an instance's receive timeout becomes the time modulo waits for that instance's response.</p>
+
+					<h2 id="acme">6. [acme]</h2>
+					<p>Certificates from Let's Encrypt, obtained and renewed by modulo. Required as soon as any site uses automatic certificates, which is the default. Changes take effect on reload.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">email</td><td>Required. The account's contact address; Let's Encrypt writes here about problems with your certificates.</td></tr>
+							<tr><td class="c-repo">storage</td><td>Required. A directory modulo owns, holding the account key and every certificate. See <a href="#disk">what modulo keeps on disk</a>.</td></tr>
+							<tr><td class="c-repo">directory</td><td>Optional. <code>letsencrypt</code> (the default), <code>letsencrypt-staging</code> for experimenting without hitting Let's Encrypt's rate limits, or the address of another ACME directory.</td></tr>
+						</tbody>
+					</table></div>
+					<p>A new site starts with a self-signed placeholder certificate, so its port works immediately, and the real certificate arrives seconds later once Let's Encrypt has checked the domain. A visitor who arrives in those seconds sees a certificate warning. Renewal is checked every twelve hours; a certificate is renewed thirty days before it expires, or at once if a hostname was added to the site.</p>
+
+					<h2 id="include">7. include: sites in their own files</h2>
+<pre><code class="language-none">include = [ "/opt/apps/*/conf/site.toml" ]</code></pre>
+					<p>A list of files, or glob patterns, whose <code>[[sites]]</code> are added to the main file's. Relative paths are resolved against the main file's directory. A pattern without wildcards must name an existing file; a wildcard pattern that matches nothing is only a warning, so a pattern can be in place before the first application arrives.</p>
+					<p>This keeps each application's site next to the application, where whoever deploys it can find it:</p>
+<pre><code class="language-none"># /opt/apps/myapp/conf/site.toml
+[[sites]]
+hostnames = [ "www.example.com", "example.com" ]
+app = "MyApp"</code></pre>
+					<p>An included file may only contain sites. <code>include</code>, <code>[acme]</code> and the startup tables belong to the main file, and the strict parser rejects them anywhere else.</p>
+
+					<h2 id="sites">8. [[sites]]</h2>
+					<p>A site is a set of hostnames and what to do with requests for them. Each <code>[[sites]]</code> header adds one.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Field</th><th>Default</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">hostnames</td><td>required</td><td>Every hostname the site answers to. The first is the <strong>canonical</strong> hostname, the rest are aliases. A hostname can belong to one site only.</td></tr>
+							<tr><td class="c-repo">app</td><td>none</td><td>The application to send requests to, by the name wotaskd and JavaMonitor know it by. A site without one still terminates TLS and redirects, but has nothing to proxy to, which modulo warns about at startup.</td></tr>
+							<tr><td class="c-repo">canonicalRedirect</td><td>true</td><td>Redirect requests for an alias to the canonical hostname, with a 301 that keeps the path and query.</td></tr>
+							<tr><td class="c-repo">httpsRedirect</td><td>true</td><td>Redirect plain HTTP to HTTPS with a 301.</td></tr>
+							<tr><td class="c-repo">tls</td><td>automatic</td><td>Where the certificate comes from. See <a href="#tls">below</a>.</td></tr>
+							<tr><td class="c-repo">rewrites</td><td>none</td><td>URL rewrite and redirect rules, tried in order. See <a href="#rewrites">rewrite rules</a>.</td></tr>
+							<tr><td class="c-repo">woa</td><td>none</td><td>Path to the application's <code>.woa</code> on this server. modulo then serves <code>/WebObjects/&lt;App&gt;.woa/…</code> from the bundle's <code>WebServerResources</code> directories, the job Apache's document root used to do for classic applications. Never anything outside those directories. Applications that serve their own resources don't need it.</td></tr>
+						</tbody>
+					</table></div>
+
+					<h3 id="canonical">Canonical hostnames and aliases</h3>
+					<p>With the defaults, the order of <code>hostnames</code> is the whole story: the first one is where visitors end up, and every other one redirects there. To make the apex the canonical name instead of <code>www</code>, put it first.</p>
+					<p>To serve every listed hostname directly, without redirects, set <code>canonicalRedirect = false</code>. The request then reaches the application with the hostname the visitor used, which is what you want when the application decides for itself what each domain shows, for example a multi-tenant application keyed on the hostname.</p>
+<pre><code class="language-none">[[sites]]
+hostnames = [ "shop.example.com", "shop.example.net", "brand-a.example.org" ]
+app = "Shop"
+canonicalRedirect = false</code></pre>
+					<div class="caveat">
+						<p><strong>A rough edge:</strong> today the first hostname also names the site's certificate directory and access log directory. Reordering the list, to change which domain is canonical, therefore moves both: a new certificate is ordered under the new name and the access log continues in a new directory. Separating a site's name from its canonical hostname is <a href="https://github.com/undur/modulo/issues/13">modulo issue #13</a>.</p>
+					</div>
+
+					<h3 id="tls">Certificates</h3>
+					<p>Leave <code>tls</code> out and modulo obtains the site's certificate from Let's Encrypt, covering all of its hostnames. That needs the <a href="#acme">[acme]</a> table, and DNS for every hostname pointing at the server, since Let's Encrypt checks each name over port 80.</p>
+					<p>For a certificate you manage yourself, give the files:</p>
+<pre><code class="language-none">tls = { mode = "manual", cert = "/etc/ssl/example/fullchain.pem", key = "/etc/ssl/example/privkey.pem" }</code></pre>
+					<p>The certificate file holds the full chain in PEM; the key is unencrypted PEM. modulo checks the files every five minutes and loads a replaced certificate without a restart, so an external renewal job only has to write the files.</p>
+
+					<h2 id="rewrites">9. Rewrite rules</h2>
+					<p>For friendly URLs that an application's own routing doesn't handle, and for redirects. The rules replace Apache's <code>RewriteRule</code>:</p>
+<pre><code class="language-none">[[sites]]
+hostnames = [ "www.example.com" ]
+app = "MyApp"
+rewrites = [
+  { match = '^/$', to = '/Apps/WebObjects/MyApp.woa/wa/default' },
+  { match = '^/things/([^/]+)$', to = '/Apps/WebObjects/MyApp.woa/wa/thing?id=$1', encodeCaptures = true },
+  { match = '^/old-name$', to = '/new-name', redirect = "permanent" },
+  { match = '^/elsewhere$', to = 'https://www.example.org/', redirect = "temporary" },
+]</code></pre>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Field</th><th>Default</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">match</td><td>required</td><td>A Java regular expression, matched against the request path. It isn't anchored, so write <code>^</code> and <code>$</code> yourself.</td></tr>
+							<tr><td class="c-repo">to</td><td>required</td><td>The new URL, with <code>$1</code> to <code>$9</code> for the parts in parentheses and <code>$$</code> for a literal dollar sign. A path for a rewrite; a path or a full URL for a redirect.</td></tr>
+							<tr><td class="c-repo">redirect</td><td>none</td><td>Without it the request goes on to the application under the new path, and the visitor never sees it. <code>"temporary"</code> answers 302 and <code>"permanent"</code> 301 instead.</td></tr>
+							<tr><td class="c-repo">appendQuery</td><td>false</td><td>When <code>to</code> has a query of its own, add the request's query after it. Without it the target's query replaces the original. A target without a query always keeps the original.</td></tr>
+							<tr><td class="c-repo">encodeCaptures</td><td>false</td><td>Encode each captured part as a query value, for captures that end up after the <code>?</code>. A literal <code>&amp;</code> or <code>+</code> in the path then arrives as part of the value rather than splitting it.</td></tr>
+						</tbody>
+					</table></div>
+					<p>Three things to know about how rules are applied:</p>
+					<ul>
+						<li><strong>The first matching rule wins,</strong> like Apache with <code>[L]</code> on every rule.</li>
+						<li><strong>URLs already in the adaptor's space are never rewritten.</strong> Anything starting with <code>/Apps/WebObjects/</code> goes straight to the application, so the links an application generates pass through, and a catch-all rule can't loop.</li>
+						<li><strong>Rules see the path as the browser sent it,</strong> percent-encoded. To match <code>æ</code>, write <code>%C3%A6</code>. This is the opposite of Apache, which decoded first, and it means a captured path segment can never smuggle a <code>?</code> or <code>/</code> into the target.</li>
+					</ul>
+					<p>Applications using wonder-slim's routes, or ng-objects, usually need no rewrite rules at all: they answer <code>/</code> and their own clean URLs directly.</p>
+
+					<h2 id="disk">10. What modulo keeps on disk</h2>
+					<p>Two directories are modulo's own. You never have to edit either, but you can read both.</p>
+<pre><code class="language-none">&lt;acme storage&gt;/account-key.pem           the Let's Encrypt account key
+&lt;acme storage&gt;/sites/&lt;host&gt;/cert.pem     a site's certificate, full chain, PEM
+&lt;acme storage&gt;/sites/&lt;host&gt;/key.pem      its private key, PEM
+&lt;accessLogDir&gt;/&lt;host&gt;/2026_09_24.log     a site's access log for one day
+&lt;accessLogDir&gt;/_unmatched/…              requests for hostnames no site claims</code></pre>
+					<p><code>&lt;host&gt;</code> is the site's first hostname. Access log lines are the combined log format with the hostname the visitor actually used in front and the response time at the end, so one site's aliases can be told apart:</p>
+<pre><code class="language-none">example.com 203.0.113.9 - - [24/Sep/2026:08:12:44 +0000] "GET /about HTTP/2" 301 0 "-" "Mozilla/5.0 …" 1ms</code></pre>
+					<p>Deleting a site's directory under <code>sites/</code> makes modulo order a fresh certificate at the next check or restart, which is the way out of a certificate that is somehow wrong.</p>
+
+					<h2 id="overrides">11. Command-line overrides</h2>
+					<p>A few settings are given as <code>-D</code> properties when modulo starts, for example in its systemd unit. Most are for testing and unusual installations.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Property</th><th>Default</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">modulo.config-file</td><td>/opt/webobjects/modulo.toml</td><td>Read the configuration from somewhere else.</td></tr>
+							<tr><td class="c-repo">modulo.proxy-port</td><td>1400</td><td>The plain reverse-proxy port, which always runs alongside the front end. Useful for putting modulo behind another web server.</td></tr>
+							<tr><td class="c-repo">modulo.adaptor-url</td><td>/Apps/WebObjects/</td><td>The URL prefix of the adaptor space. Change it only if your applications generate URLs under a different prefix.</td></tr>
+							<tr><td class="c-repo">modulo.wotaskd.host, .port, .password</td><td>from the file</td><td>Override the <code>[wotaskd]</code> table.</td></tr>
+						</tbody>
+					</table></div>
+					<p>The admin pages listen on port 45678, given as <code>-WOPort 45678</code> in the unit. That port is internal: reach the pages through a site with <code>app = "Modulo"</code>.</p>
+
+					<h2 id="fixed">12. What isn't configurable yet</h2>
+					<p>Timeouts towards the applications (apart from the per-instance ones from JavaMonitor), thread pools, compression, how instances are chosen, certificate renewal timing and a handful of others are built in. modulo's <code>/config</code> admin page lists every one of them with its current value, so you can see exactly what a server runs with. They will move into the file as the need arises.</p>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#file">The file</a>
+				<a href="#minimal">A minimal configuration</a>
+				<a href="#frontend">[frontend]</a>
+				<a href="#admin">[admin]</a>
+				<a href="#wotaskd">[wotaskd]</a>
+				<a href="#acme">[acme]</a>
+				<a href="#include">include</a>
+				<a href="#sites">[[sites]]</a>
+				<a href="#canonical">Canonical hostnames</a>
+				<a href="#tls">Certificates</a>
+				<a href="#rewrites">Rewrite rules</a>
+				<a href="#disk">What modulo keeps on disk</a>
+				<a href="#overrides">Command-line overrides</a>
+				<a href="#fixed">Not configurable yet</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>
