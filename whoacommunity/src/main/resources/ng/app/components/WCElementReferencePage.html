@@ -41,6 +41,10 @@
 						</wo:if>
 						<div class="article-body elref-doc"><wo:str value="$currentElement.docHtml" escapeHTML="$false" /></div>
 
+						<wo:if condition="$currentElement.hasBindings" negate="$true">
+							<p class="elref-nobindings">No declared bindings.</p>
+						</wo:if>
+						<wo:if condition="$currentElement.hasBindings">
 						<div class="tw"><table class="feed-table elref-bindings">
 							<thead><tr><th>Binding</th><th>Type</th><th>Description</th></tr></thead>
 							<tbody>
@@ -65,6 +69,7 @@
 								</wo:repetition>
 							</tbody>
 						</table></div>
+						</wo:if>
 
 						<wo:if condition="$currentElement.hasConstraints">
 							<div class="elref-constraints">

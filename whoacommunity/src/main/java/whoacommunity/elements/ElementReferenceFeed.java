@@ -68,6 +68,10 @@ public class ElementReferenceFeed {
 			return tags != null && !tags.isEmpty();
 		}
 
+		public boolean hasBindings() {
+			return bindings != null && !bindings.isEmpty();
+		}
+
 		public boolean hasConstraints() {
 			return constraints != null && !constraints.isEmpty();
 		}

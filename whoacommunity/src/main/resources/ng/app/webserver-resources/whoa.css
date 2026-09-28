@@ -652,6 +652,7 @@ a:hover { color: var(--whoa-accent); }
 .elref-default { white-space: nowrap; font-size: .74rem; color: var(--whoa-dim); margin-left: .3rem; }
 .elref-bdeprecated { margin-top: .35rem; font-size: .82rem; color: var(--whoa-muted); }
 .elref-bdeprecated p { display: inline; }
+.elref-nobindings { margin: .4rem 0 0; font-family: "JetBrains Mono", monospace; font-size: .74rem; color: var(--whoa-dim); }
 .elref-constraints { margin-top: .7rem; display: flex; flex-direction: column; gap: .3rem; }
 .elref-constraint { background: rgba(245, 158, 11, .1); border-left: 3px solid #d97706; border-radius: 0 5px 5px 0; padding: .45rem .8rem; font-size: .84rem; }
 .elref-toc { max-height: calc(100vh - 6rem); overflow-y: auto; }
