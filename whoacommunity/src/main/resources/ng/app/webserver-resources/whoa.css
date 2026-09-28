@@ -621,6 +621,41 @@ a:hover { color: var(--whoa-accent); }
 .tree-entry.is-dir .tree-entry-glyph { color: var(--whoa-accent); }
 .tree-entry.is-dir .rail-text { color: var(--whoa-bright); }
 
+/* Element reference: one panel per element, bindings as a table, direction arrows as in the playground */
+.elref-tabs { margin-bottom: 1rem; background: transparent; border-bottom: 1px solid var(--whoa-line); padding-left: 0; }
+.elref-lead { margin-bottom: 1.1rem; }
+.elref-lead p { margin: 0 0 .6rem; font-size: .92rem; line-height: 1.6; }
+.elref-lead p:last-child { margin-bottom: 0; }
+.elref-legend { font-size: .82rem; color: var(--whoa-muted); }
+.elref-el { margin-bottom: 1rem; scroll-margin-top: 4.2rem; }
+.elref-head { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-bottom: .5rem; }
+.elref-name { font-family: "JetBrains Mono", monospace; font-size: 1.1rem; font-weight: 500; letter-spacing: -0.02em; color: var(--whoa-bright); margin: 0; }
+.elref-pill, .elref-tag { font-family: "JetBrains Mono", monospace; font-size: .62rem; letter-spacing: .04em; text-transform: uppercase; padding: 1px 6px; border-radius: 3px; border: 1px solid var(--whoa-line); color: var(--whoa-muted); white-space: nowrap; }
+.elref-tag-update { color: var(--whoa-accent); border-color: var(--whoa-accent-line); background: var(--whoa-accent-soft); }
+.elref-tag-widget { color: #2f6b4f; border-color: rgba(47,107,79,.4); background: rgba(47,107,79,.08); }
+.elref-tag-server { color: #5b3aa3; border-color: rgba(91,58,163,.35); background: rgba(91,58,163,.08); }
+.elref-tag-trigger { color: #b45309; border-color: rgba(245,158,11,.5); background: rgba(245,158,11,.12); }
+.elref-doc { font-size: .95rem; margin-bottom: .6rem; }
+.elref-doc > :last-child { margin-bottom: 0; }
+.elref-deprecated { margin: .2rem 0 .8rem; }
+.elref-deprecated p { display: inline; margin: 0; }
+.elref-el .tw { overflow-x: auto; border: 1px solid var(--whoa-line); border-radius: 6px; margin: .4rem 0 0; }
+.elref-bindings td { font-size: .86rem; vertical-align: top; }
+.elref-bname { white-space: nowrap; width: 1%; }
+.elref-btype { white-space: nowrap; width: 1%; font-family: "JetBrains Mono", monospace; font-size: .74rem; color: var(--whoa-muted); }
+.elref-bdoc p { margin: 0; } .elref-bdoc p + p { margin-top: .4rem; }
+.elref-req { color: var(--whoa-accent); font-size: .6rem; vertical-align: 1px; }
+.dir { font-weight: 700; margin-right: .15rem; cursor: help; }
+.dir-pull { color: var(--whoa-dim); font-weight: 400; }
+.dir-push { color: #d97706; }
+.dir-both { color: #c2410c; }
+.elref-default { white-space: nowrap; font-size: .74rem; color: var(--whoa-dim); margin-left: .3rem; }
+.elref-bdeprecated { margin-top: .35rem; font-size: .82rem; color: var(--whoa-muted); }
+.elref-bdeprecated p { display: inline; }
+.elref-constraints { margin-top: .7rem; display: flex; flex-direction: column; gap: .3rem; }
+.elref-constraint { background: rgba(245, 158, 11, .1); border-left: 3px solid #d97706; border-radius: 0 5px 5px 0; padding: .45rem .8rem; font-size: .84rem; }
+.elref-toc { max-height: calc(100vh - 6rem); overflow-y: auto; }
+
 /* Release notes on a project's releases page */
 .release-list { display: flex; flex-direction: column; gap: 1.1rem; }
 .release { scroll-margin-top: 4.2rem; }

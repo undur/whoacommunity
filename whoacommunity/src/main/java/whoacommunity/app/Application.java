@@ -46,6 +46,8 @@ import whoacommunity.components.WCVideoDetailPage;
 import whoacommunity.components.WCVideosPage;
 import whoacommunity.components.WCWritingPage;
 import whoacommunity.data.Article;
+import whoacommunity.components.WCElementReferencePage;
+import whoacommunity.elements.ElementReferenceFeed;
 import whoacommunity.github.GithubFeed;
 import whoacommunity.util.CachedFeed;
 import whoacommunity.util.Repos;
@@ -69,6 +71,7 @@ public class Application extends NGApplication {
 		// normally happens lazily on first page render. Load them now so the
 		// boot-time sweep below warms every cache before the first visitor.
 		GithubFeed.shared.getClass();
+		ElementReferenceFeed.shared.getClass();
 
 		try {
 			Class.forName( "whoacommunity.components.WCSidebar" );
@@ -155,6 +158,8 @@ public class Application extends NGApplication {
 				.map( "/robots.txt", this::robots )
 				.map( "/sitemap.xml", this::sitemap )
 				.map( "/refresh-data", this::refreshData )
+				.map( "/element-reference", WCElementReferencePage.class )
+				.map( "/element-reference/*", this::viewElementReference )
 				.map( "/guides", WCGuidesPage.class )
 				.map( "/guide/wonder-slim-development", WCGuideWonderSlimDevPage.class )
 				.map( "/guide/building-with-vermilingua", WCGuideVermilinguaPage.class )
@@ -220,6 +225,10 @@ public class Application extends NGApplication {
 			}
 		}
 
+		for( ElementReferenceFeed.Source source : ElementReferenceFeed.shared.sources() ) {
+			add.accept( "/element-reference/" + source.slug(), null );
+		}
+
 		for( Videos.Playlist playlist : Videos.playlists() ) {
 			for( Video video : playlist.videos() ) {
 				add.accept( video.pageURL(), video.published() == null ? null : video.published().toString() );
@@ -283,6 +292,16 @@ public class Application extends NGApplication {
 		catch( FeedException e ) {
 			throw new RuntimeException( e );
 		}
+	}
+
+	/**
+	 * /element-reference/{slug} → that library's reference; the slugs come from the playground's index
+	 */
+	public NGActionResults viewElementReference( NGRequest request ) {
+		final String[] parts = request.uri().split( "\\?" )[ 0 ].split( "/" ); // "", "element-reference", slug
+		final WCElementReferencePage page = pageWithName( WCElementReferencePage.class, request.context() );
+		page.slug = parts.length > 2 && !parts[ 2 ].isBlank() ? parts[ 2 ] : WCElementReferencePage.DEFAULT_SLUG;
+		return page;
 	}
 
 	/**

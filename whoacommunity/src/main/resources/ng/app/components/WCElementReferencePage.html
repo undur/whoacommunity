@@ -1,0 +1,97 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Element reference<span><wo:if condition="$hasSource"><wo:str value="$elementCount" /> elements, rendered from the libraries' .apiext files</wo:if></span></div>
+
+			<div class="feed-tabs elref-tabs">
+				<wo:repetition list="$sources" item="$currentSource">
+					<wo:link href="$currentSourceURL" class="$currentSourceClass"><wo:str value="$currentSource.title" /></wo:link>
+				</wo:repetition>
+			</div>
+
+			<wo:if condition="$isLoaded" negate="$true">
+				<div class="whoa-panel"><p class="project-empty">The element reference hasn't loaded yet. It comes from the playground at <wo:str value="$playgroundURL" />; try again in a moment.</p></div>
+			</wo:if>
+
+			<wo:if condition="$hasSource">
+				<div class="whoa-panel elref-lead">
+					<p><wo:str value="$source.leadHtml" escapeHTML="$false" /></p>
+					<p class="elref-legend">
+						<span class="elref-pill">Container</span> usually wraps content ·
+						<span class="elref-pill">Passthrough</span> forwards attributes it doesn't handle (<code>class</code>, <code>data-*</code>, …) onto the rendered tag ·
+						<span class="elref-req">●</span> required ·
+						<span class="dir dir-pull">↓</span> pulled, <span class="dir dir-push">↑</span> pushed back, <span class="dir dir-both">↕</span> two-way.
+						Full presentation, with the rest of the playground, <wo:link href="$playgroundURL">on the playground</wo:link>.
+					</p>
+				</div>
+
+				<wo:repetition list="$elements" item="$currentElement">
+					<wo:container elementName="section" class="whoa-panel elref-el" id="$currentElement.className">
+						<div class="elref-head">
+							<h2 class="elref-name"><wo:str value="$currentElement.className" /></h2>
+							<wo:repetition list="$currentElement.tags" item="$currentTag">
+								<wo:container elementName="span" class="$currentTagClass"><wo:str value="$currentTagLabel" /></wo:container>
+							</wo:repetition>
+							<wo:if condition="$currentElement.expectsContent"><span class="elref-pill">Container</span></wo:if>
+							<wo:if condition="$currentElement.passthrough"><span class="elref-pill">Passthrough</span></wo:if>
+							<wo:if condition="$currentElement.deprecated"><span class="post-tag beta-tag">deprecated</span></wo:if>
+						</div>
+						<wo:if condition="$currentElement.deprecated">
+							<div class="caveat elref-deprecated"><wo:str value="$currentElement.deprecatedHtml" escapeHTML="$false" /></div>
+						</wo:if>
+						<div class="article-body elref-doc"><wo:str value="$currentElement.docHtml" escapeHTML="$false" /></div>
+
+						<div class="tw"><table class="feed-table elref-bindings">
+							<thead><tr><th>Binding</th><th>Type</th><th>Description</th></tr></thead>
+							<tbody>
+								<wo:repetition list="$currentElement.bindings" item="$currentBinding">
+									<tr>
+										<td class="c-repo elref-bname"><wo:str value="$currentBinding.name" /><wo:if condition="$currentBinding.required"> <span class="elref-req" title="Required">●</span></wo:if></td>
+										<td class="elref-btype">
+											<wo:if condition="$currentBinding.typeSplit">
+												<div><span class="dir dir-pull" title="Pulled: read from the component">↓</span> <wo:str value="$currentBinding.pullType" /></div>
+												<div><span class="dir dir-push" title="Pushed: written back to the component">↑</span> <wo:str value="$currentBinding.pushType" /></div>
+											</wo:if>
+											<wo:if condition="$currentBinding.typeSplit" negate="$true">
+												<wo:if condition="$currentBinding.hasDirection"><wo:container elementName="span" class="$currentBinding.directionClass" title="$currentBinding.directionTitle"><wo:str value="$currentBinding.directionArrow" /></wo:container> </wo:if><wo:str value="$currentBinding.displayType" />
+											</wo:if>
+										</td>
+										<td class="elref-bdoc">
+											<wo:str value="$currentBinding.docHtml" escapeHTML="$false" />
+											<wo:if condition="$currentBinding.hasDefault"> <span class="elref-default">default <code><wo:str value="$currentBinding.defaultValue" /></code></span></wo:if>
+											<wo:if condition="$currentBinding.deprecated"><div class="elref-bdeprecated"><span class="post-tag beta-tag">deprecated</span> <wo:str value="$currentBinding.deprecatedHtml" escapeHTML="$false" /></div></wo:if>
+										</td>
+									</tr>
+								</wo:repetition>
+							</tbody>
+						</table></div>
+
+						<wo:if condition="$currentElement.hasConstraints">
+							<div class="elref-constraints">
+								<wo:repetition list="$currentElement.constraints" item="$currentConstraint">
+									<div class="elref-constraint"><wo:str value="$currentConstraint.message" escapeHTML="$false" /></div>
+								</wo:repetition>
+							</div>
+						</wo:if>
+					</wo:container>
+				</wo:repetition>
+			</wo:if>
+
+			<wo:if condition="$hasSource" negate="$true">
+				<wo:if condition="$isLoaded">
+					<div class="whoa-panel"><p class="project-empty">No element reference named "<wo:str value="$slug" />". Pick one of the tabs above.</p></div>
+				</wo:if>
+			</wo:if>
+		</div>
+		<div>
+			<wo:if condition="$hasSource">
+				<nav class="toc elref-toc">
+					<div class="toc-head">Elements</div>
+					<wo:repetition list="$elements" item="$currentElement">
+						<wo:link href="$currentElementAnchor"><wo:str value="$currentElement.className" /></wo:link>
+					</wo:repetition>
+				</nav>
+			</wo:if>
+		</div>
+	</div>
+</wo:WCLook>
