@@ -51,6 +51,10 @@ public class WCGuidesPage extends WCComponent {
 					"A JDK that redefines classes while the application runs, Eclipse with Parslips, and Maven pointed at the WOCommunity repository. The JetBrains Runtime through SDKMAN!, HotswapAgent in one copy, and the VM arguments that make it all work.", List.of() ),
 			new Guide( "url-routing", "🧭", "URL routing in wonder-slim", "/guide/url-routing", "wonder-slim", false,
 					"Clean URLs from one route table: pages, lambdas and method references as handlers, path and query parameters, pages, JSON and redirects as results, and why the same URLs work on localhost and behind modulo in production.", List.of() ),
+			new Guide( "startup", "🚀", "How an application starts", "/guide/startup", "wonder-slim", true,
+					"The configuration composed from every source before the application is constructed, where each value came from, reading and watching properties, and plugins: frameworks that take part in startup at three named points, and moving over from ERXFrameworkPrincipal.", List.of() ),
+			new Guide( "logging", "📜", "Configuring logging", "/guide/logging", "wonder-slim", true,
+					"reload4j or logback behind slf4j, levels and a layout set with properties every backend understands, the backend's own configuration on top, levels changed on a running instance, and existing log4j configuration that keeps working.", List.of() ),
 			new Guide( "server-push", "📡", "Server push: events and WebSockets", "/guide/server-push", "wo-adaptor-jetty", true,
 					"Pushing from the server to the browser with wo-adaptor-jetty: server-sent events that stream over an ordinary HTTP response, broadcasting to every connected client, WebSockets when the browser needs to talk back, and the client-side traps worth knowing before you start.", List.of() ) );
 

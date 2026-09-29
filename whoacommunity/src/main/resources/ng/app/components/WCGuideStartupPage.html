@@ -1,0 +1,161 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">How an application starts<span>configuration first, then everything else</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<p>Startup is where a WebObjects application has traditionally been hardest to reason about: properties loaded twice, frameworks initializing on notifications at points nobody could quite name, and logging that only started working partway through. <a href="/project/wonder-slim">wonder-slim</a> makes it a fixed sequence, in which the configuration is complete before anything else runs, and every framework and the application itself come in at named points.</p>
+					<p>This guide goes through that sequence, what's in place at each step, and how a framework takes part in it. It describes wonder-slim as of 8.0.12.</p>
+
+					<h2 id="sequence">1. The sequence</h2>
+					<ol>
+						<li><strong>Before <code>main()</code></strong>: the JVM initializes the application class and its superclasses, so their static initializers run first. No configuration exists yet (see section 8).</li>
+						<li><strong><code>ERXApplication.main()</code></strong> starts console logging in a default layout, then finds the plugins (section 5) and orders them.</li>
+						<li><strong>The configuration is composed</strong> from all its sources (section 2) and written to the system properties. Every property now has the value the application will run with.</li>
+						<li><strong>Logging is configured</strong> from it. From here on, everything logged reaches the configured log (see the <a href="/guide/logging">logging guide</a>).</li>
+						<li><strong>Each plugin's <code>beforeApplicationConstruction()</code></strong> runs.</li>
+						<li><strong>The application is constructed.</strong> WebObjects' constructor, then <code>ERXApplication</code>'s, then your <code>Application</code>'s. All of them see the composed configuration. At the end of <code>ERXApplication</code>'s constructor, the configuration's files start being watched and the startup report is printed.</li>
+						<li><strong>Each plugin's <code>finishInitialization( application )</code></strong> runs, then your application's <code>finishInitialization()</code>. The application is complete, and nothing is listening for requests yet.</li>
+						<li><strong>The adaptors start listening.</strong> Requests may arrive from this moment.</li>
+						<li><strong>Each plugin's <code>didFinishLaunching( application )</code></strong> runs, then your application's <code>didFinishLaunching()</code>, possibly while the first requests are already being handled.</li>
+					</ol>
+
+					<h2 id="configuration">2. Where the configuration comes from</h2>
+					<p>The configuration is composed from an ordered list of sources, each overriding the ones before it. From lowest precedence to highest:</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Source</th><th>Read</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">The JVM's own properties</td><td>Beneath everything: the system properties as they were at launch.</td></tr>
+							<tr><td class="c-repo">Each framework's <code>Properties</code></td><td>From a jar or, in development, the framework's project. A framework in a project directory adds its <code>Properties.dev</code> (in development) and <code>Properties.&lt;user&gt;</code>. The order between frameworks is in section 7.</td></tr>
+							<tr><td class="c-repo">The application's <code>Properties</code></td><td>Always.</td></tr>
+							<tr><td class="c-repo"><code>~/WebObjects.properties</code></td><td>In the home directory of the user the application runs as.</td></tr>
+							<tr><td class="c-repo">Optional configuration files</td><td>Each file <code>er.extensions.ERXProperties.OptionalConfigurationFiles</code> lists: an absolute path, or a resource in the application.</td></tr>
+							<tr><td class="c-repo">Optional variants</td><td>The application's <code>Properties.log4j</code>, <code>.database</code> and the like, only with <code>er.extensions.ERXProperties.loadOptionalProperties=true</code>. Off by default; it costs a couple of lookups per framework.</td></tr>
+							<tr><td class="c-repo">The machine's <code>Properties</code></td><td><code>/etc/WebObjects/Properties</code>, or if there's none, <code>/etc/WebObjects/&lt;App&gt;/Properties</code>. The directory is <code>er.extensions.ERXProperties.machinePropertiesPath</code>.</td></tr>
+							<tr><td class="c-repo">The application's <code>Properties.dev</code></td><td>In development only.</td></tr>
+							<tr><td class="c-repo">The application's <code>Properties.&lt;user&gt;</code></td><td>For the user the application runs as.</td></tr>
+							<tr><td class="c-repo">JVM options</td><td>The <code>-Dkey=value</code> options on the java command line.</td></tr>
+							<tr><td class="c-repo">Arguments</td><td>The application's arguments: <code>-Key value</code> after the main class, as JavaMonitor passes them.</td></tr>
+							<tr><td class="c-repo">Set on this instance</td><td>Properties set on the running application (section 4).</td></tr>
+						</tbody>
+					</table></div>
+					<p>Properties that decide which files are read, such as <code>OptionalConfigurationFiles</code> or <code>machinePropertiesPath</code>, can be set in any of these sources: after composing, the files are looked for again, and the configuration composed again if they changed.</p>
+					<p>Every value keeps the source it came from. The startup report prints each property with it:</p>
+<pre><code class="language-none">============== PROPERTIES FILES ================
+(applied in this order - a later source overrides an earlier one)
+ERExtensions.framework             : jar:file:///…/ERExtensions-8.0.12.jar!/Resources/Properties
+MyApp.app                          : /…/MyApp.woa/Contents/Resources/Properties
+{$user.home}/WebObjects.properties : /home/webobjects/WebObjects.properties (no file present)
+Application-Machine Properties     : /etc/WebObjects/Properties
+Arguments                          : (22)
+
+================= PROPERTIES ===================
+WOPort                              Arguments                      = 2001
+er.extensions.logging.level.root    ERExtensions.framework         = INFO
+file.encoding                                                      = UTF-8</code></pre>
+					<p>Files that were looked for and aren't there are listed too, as "no file present", since a missing <code>/etc/WebObjects/Properties</code> is as much a fact about the machine as a present one. The admin console's Configuration page (<code>/wonder/admin/configuration</code>) shows the same, live: the plugins, the sources with how many of each one's values are in effect, and each property with its source and the sources it overrides. Passwords, tokens and keys are masked in both, including where they appear inside another value, such as the java command line.</p>
+
+					<h2 id="reading">3. Reading properties</h2>
+					<p>The configuration lives in the system properties, so any way of reading those works. The typed readers convert as well:</p>
+<pre><code class="language-clike">final int timeout = ERXProperties.intForKeyWithDefault( "com.example.timeout", 30 );
+final boolean enabled = ERXProperties.booleanForKey( "com.example.feature.enabled" );
+final NSArray&lt;String&gt; hosts = ERXProperties.arrayForKey( "com.example.hosts" );    // (a, b, c)</code></pre>
+					<p><code>NSProperties</code> offers the same methods (<code>NSProperties.intForKeyWithDefault</code> and so on), and returns the same values; <code>ERXProperties</code> hands them to it. Values are read as they are at the time, never from a cache.</p>
+					<p>Read a property where it's used, rather than once into a static field, and a changed value (section 4) takes effect by itself. When something has to react to a change, listen for it:</p>
+<pre><code class="language-clike">ERXConfigurationManager.onChange( "com.example.cacheSize", change -&gt; {
+    cache.resize( Integer.parseInt( change.newValue() ) );
+} );</code></pre>
+					<p>A listener hears every change in the value in effect, with <code>propertyName()</code>, <code>oldValue()</code> and <code>newValue()</code> (null where the property had no value, or has none any more). A predicate listens to a family of keys: <code>onChange( key -&gt; key.startsWith( "com.example." ), … )</code>. <code>onChange()</code> returns the listener, to <code>remove()</code> it when its owner goes away.</p>
+
+					<h2 id="changing">4. When the configuration changes</h2>
+					<p>The configuration is composed again when one of its files changes, and a listener hears only the properties whose value actually changed:</p>
+					<ul>
+						<li><strong>In development</strong>, the files the configuration was read from are watched, and so are those it looked for where no file is present, so creating one is noticed too.</li>
+						<li><strong>In deployment</strong>, files aren't watched, since much of the configuration is only read at startup and a reload would seem to change what it can't. A touch file can be: set <code>er.extensions.ERXConfigurationManager.PropertiesTouchFile</code>, and touching it reloads. A path with <code>/{AppName}/</code> in it names one file per application, plus one for every application on the machine.</li>
+						<li><strong>On a running instance</strong>, a property can be set from the admin console's Configuration page, or in code:</li>
+					</ul>
+<pre><code class="language-clike">ERXConfigurationManager.setProperty( "com.example.feature.enabled", "true" );
+ERXConfigurationManager.unsetProperty( "com.example.feature.enabled" );</code></pre>
+					<p>A property set this way is a source of its own, above all the others, the arguments included. It survives a reload, shows where it came from, and when it's unset, the property gets back the value the other sources give it. Nothing is written to disk; it lasts until the instance stops.</p>
+
+					<h2 id="plugins">5. Plugins</h2>
+					<p>A framework, or part of an application, takes part in startup as a plugin: a class implementing <code>ERXPlugin</code>, listed in the jar's <code>META-INF/services/er.extensions.ERXPlugin</code>. Java's <code>ServiceLoader</code> finds it, so a framework on the classpath is a framework that initializes.</p>
+<pre><code class="language-clike">package com.example.billing;
+
+public class Billing implements ERXPlugin {
+
+    @Override
+    public List&lt;Class&lt;? extends ERXPlugin&gt;&gt; requires() {
+        return List.of( ERXExtensions.class );
+    }
+
+    @Override
+    public void finishInitialization( final ERXApplication application ) {
+        RouteTable.defaultRouteTable().map( "/billing", BillingPage.class );
+    }
+}</code></pre>
+<pre><code class="language-none"># src/main/resources/META-INF/services/er.extensions.ERXPlugin
+com.example.billing.Billing</code></pre>
+					<p><code>requires()</code> names the plugins this one builds on. Plugins run in that order, a plugin after the plugins it requires, and plugins that don't depend on each other in the order of their class names, never in classpath order. A required plugin that isn't there, or plugins requiring each other in a circle, stop the launch with a message naming them. A plugin's constructor does nothing: when it runs, nothing is configured yet.</p>
+					<p>There are three points to come in at, each with something guaranteed:</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Method</th><th>When, and what's in place</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">beforeApplicationConstruction()</td><td>In <code>main()</code>, before the application object exists. The configuration is composed and logging configured. <code>WOApplication.application()</code> is null.</td></tr>
+							<tr><td class="c-repo">finishInitialization( app )</td><td>The application is constructed, your own constructor included, and its adaptors aren't listening yet, so no request has arrived or can. Request handlers registered in constructors are in place. An adaptor added here, with <code>application.adaptorWithName( … )</code>, starts with the others.</td></tr>
+							<tr><td class="c-repo">didFinishLaunching( app )</td><td>The adaptors are listening. Requests may already be arriving, and being handled while this runs: start background work here, or tell something outside that the application is up.</td></tr>
+						</tbody>
+					</table></div>
+
+					<h2 id="application">6. The application's own part</h2>
+					<p>The application takes part at the same points, under the same names, and always after every plugin. Override them in your <code>Application</code> class:</p>
+<pre><code class="language-clike">@Override
+public void finishInitialization() {
+    // Every framework has initialized; no request has arrived yet
+}
+
+@Override
+public void didFinishLaunching() {
+    // Accepting requests
+}</code></pre>
+					<p>The constructor is the other place for setup, and now a reliable one: it runs with the whole configuration in place and logging configured.</p>
+
+					<h2 id="frameworks">7. Frameworks and their properties</h2>
+					<p>Every framework's <code>Properties</code> is a source, beneath the application's. Where two frameworks set the same key, a framework with a plugin comes after the frameworks its plugin requires, so a framework overrides the frameworks it builds on. Frameworks without a plugin come first, in reverse classpath order, beneath all of those.</p>
+					<p>In practice this rarely matters, since the application's own <code>Properties</code> comes after every framework and can settle any conflict. The Configuration page shows each value with the framework it came from, and what it overrides.</p>
+					<p><strong>Moving from <code>ERXFrameworkPrincipal</code>.</strong> wonder-slim's frameworks used to initialize through Project Wonder's <code>ERXFrameworkPrincipal</code>; it's gone, and a framework that still subclasses it fails at launch. Converting takes a few minutes:</p>
+					<ul>
+						<li>The class implements <code>ERXPlugin</code> instead, and its name goes in <code>META-INF/services/er.extensions.ERXPlugin</code>.</li>
+						<li>The static initializer calling <code>setUpFrameworkPrincipalClass()</code> goes, and so does the framework's principal class in <code>build.properties</code> (<code>principalClass=</code>).</li>
+						<li><code>REQUIRES</code> becomes <code>requires()</code>.</li>
+						<li><code>initialize()</code> becomes <code>beforeApplicationConstruction()</code>, which now has the configuration and logging in place.</li>
+						<li><code>finishInitialization()</code> becomes <code>finishInitialization( application )</code>. It runs a little later than before: after your application's constructor rather than at the end of <code>ERXApplication</code>'s, which is what code registering routes or handlers wants anyway.</li>
+					</ul>
+					<p>WebObjects' own principal classes (<code>NSPrincipalClass</code> in a framework's Info.plist) still work, for frameworks that aren't built on wonder-slim: WebObjects initializes them while it loads its bundles, which happens while the configuration is being composed, before it's complete.</p>
+
+					<h2 id="traps">8. Things to know</h2>
+					<ul>
+						<li><strong>Static initializers run before any configuration.</strong> The JVM initializes the application class and its superclasses before it calls <code>main()</code>, so a static field initialized from a property sees only the JVM's <code>-D</code> options. Read properties in methods, or in the constructor. WebObjects' own <code>EOEventCenter</code> is caught by this: <code>EOEventLoggingEnabled</code>, <code>EOEventLoggingOverflowDisplay</code>, <code>EOEventLoggingLimit</code> and <code>EOEventLoggingPassword</code> only take effect as <code>-D</code> options.</li>
+						<li><strong>The command line wins.</strong> A JVM <code>-D</code> option overrides every file, and an application argument overrides a <code>-D</code> option. Only a property set on the running instance goes above them.</li>
+						<li><strong>A property set with <code>System.setProperty()</code></strong> isn't known to the configuration: nothing records where it came from, listeners don't hear it, and a reload keeps it unless a source sets the same key. Use <code>ERXConfigurationManager.setProperty()</code>.</li>
+						<li><strong>A setting that did nothing before may now.</strong> Project Wonder applied <code>Properties.dev</code>, <code>Properties.&lt;user&gt;</code>, optional files and <code>/etc/WebObjects</code> only after the application was constructed, so settings the constructor reads (the port, caching and others) were silently ignored there. Now they apply.</li>
+					</ul>
+					<p>The classes are <code>ERXConfigurationManager</code> for the configuration, <code>ERXPlugin</code> and <code>ERXPlugins</code> for plugins, and <code>ERXProperties</code> for reading, all in ERExtensions. The <a href="https://github.com/undur/wonder-slim">wonder-slim repository</a> has them, and its <code>docs/CONFIGURATION.md</code> goes into the details.</p>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#sequence">The sequence</a>
+				<a href="#configuration">Where the configuration comes from</a>
+				<a href="#reading">Reading properties</a>
+				<a href="#changing">When the configuration changes</a>
+				<a href="#plugins">Plugins</a>
+				<a href="#application">The application's own part</a>
+				<a href="#frameworks">Frameworks and their properties</a>
+				<a href="#traps">Things to know</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>

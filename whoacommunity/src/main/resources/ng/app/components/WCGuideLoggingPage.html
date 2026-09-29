@@ -1,0 +1,141 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Configuring logging<span>one set of keys, any backend</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<p>A <a href="/project/wonder-slim">wonder-slim</a> application logs through <a href="https://www.slf4j.org">slf4j</a>, like most Java code today, and a separate module decides where the output goes. This guide covers choosing that module, configuring it in keys that work with any of them, how that combines with the configuration a Project Wonder application already has, and changing levels while the application runs.</p>
+					<p>It describes wonder-slim as of 8.0.12. Most applications never need more than the first three sections: pick a backend, and set a level or two.</p>
+
+					<h2 id="backend">1. Choosing a backend</h2>
+					<p>ERExtensions logs through slf4j and depends on no logging implementation. The application adds exactly one of two modules, and that module brings the implementation:</p>
+					<ul>
+						<li><strong>ERLoggingReload4j</strong>: log4j 1.x, in its maintained form <a href="https://reload4j.qos.ch">reload4j</a>. What Project Wonder applications have always used, and the one to keep if your configuration relies on log4j's appenders.</li>
+						<li><strong>ERLoggingLogback</strong>: <a href="https://logback.qos.ch">logback</a>, log4j's modern successor from the same author.</li>
+					</ul>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;is.rebbi.slim&lt;/groupId&gt;
+    &lt;artifactId&gt;ERLoggingLogback&lt;/artifactId&gt;
+    &lt;version&gt;${wonder.version}&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+					<p>Only one may be on the classpath. With two, the application stops at launch and names both, so if a framework you use brings ERLoggingReload4j along, exclude it from that dependency when you switch:</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;com.example&lt;/groupId&gt;
+    &lt;artifactId&gt;SomeFramework&lt;/artifactId&gt;
+    &lt;version&gt;1.0.0&lt;/version&gt;
+    &lt;exclusions&gt;
+        &lt;exclusion&gt;
+            &lt;groupId&gt;is.rebbi.slim&lt;/groupId&gt;
+            &lt;artifactId&gt;ERLoggingReload4j&lt;/artifactId&gt;
+        &lt;/exclusion&gt;
+    &lt;/exclusions&gt;
+&lt;/dependency&gt;</code></pre>
+					<p>A module's backend is found through Java's <code>ServiceLoader</code>, so there is nothing to register. Without either module, the application still runs, says once on the console that no logging backend is present, and leaves logging to slf4j's defaults.</p>
+					<p>One detail explains a dependency you might otherwise wonder about: WebObjects itself calls the log4j API in a place or two (encoding a direct action's query parameters is one), so some log4j API has to be on the classpath whichever backend you choose. ERLoggingReload4j has the real one; ERLoggingLogback brings <code>log4j-over-slf4j</code>, which hands those calls to slf4j and so to logback. The two can't be on the classpath together, which is one more reason for choosing exactly one module.</p>
+
+					<h2 id="keys">2. Levels and the layout</h2>
+					<p>Logging is configured in the application's <code>Properties</code>, in keys every backend understands:</p>
+<pre><code class="language-ini"># A logger's level: TRACE, DEBUG, INFO, WARN, ERROR or OFF
+er.extensions.logging.level.com.example.billing=DEBUG
+er.extensions.logging.level.cayenne-sql=WARN
+
+# The root logger's
+er.extensions.logging.level.root=INFO
+
+# The layout of the console output
+er.extensions.logging.pattern=%d{MMM dd HH:mm:ss} %-5p %c - %m%n</code></pre>
+					<p>A level applies to the logger named and everything beneath it, so <code>er.extensions.logging.level.er.extensions</code> covers all of ERExtensions. The level names are the same in every backend, and <code>WARNING</code> is read as <code>WARN</code>.</p>
+					<p>ERExtensions' own <code>Properties</code> sets the defaults: the root at <code>INFO</code>, and the layout above. Most applications need nothing more than a level or two of their own. The environment variants work as they do for any property, so <code>Properties.dev</code> is the place for what you want to see only in development:</p>
+<pre><code class="language-ini"># Properties: quiet in production
+er.extensions.logging.level.cayenne-sql=WARN
+
+# Properties.dev: every SQL statement while developing
+er.extensions.logging.level.cayenne-sql=INFO</code></pre>
+					<p>In your own code, log through slf4j as you would anywhere else:</p>
+<pre><code class="language-clike">private static final Logger log = LoggerFactory.getLogger( InvoicePage.class );
+
+log.debug( "Rendering invoice {}", invoice.number() );</code></pre>
+
+					<h2 id="layers">3. When configuration meets configuration</h2>
+					<p>A backend can do far more than levels and a layout: files, rotation, remote targets, filters. That configuration stays available, in the backend's own form, and takes precedence where it overlaps. The whole picture is four layers, a later one winning over an earlier one where both name the same logger:</p>
+					<ol>
+						<li><strong>Project Wonder style log4j levels</strong>: <code>log4j.logger.X</code>, <code>log4j.rootLogger</code> and <code>log4j.rootCategory</code>. Only for logback, which reads the levels from them (reload4j reads all of <code>log4j.*</code> itself, at layer 3).</li>
+						<li><strong>The keys above</strong>, <code>er.extensions.logging.*</code>, from wherever they're set: ERExtensions' defaults, the application's <code>Properties</code>, <code>Properties.dev</code>, the command line.</li>
+						<li><strong>The backend's own configuration</strong>: <code>log4j.*</code> properties for reload4j, read exactly as log4j always read them; for logback, the file the <code>logback.configurationFile</code> property names, or <code>logback.xml</code> on the classpath. If logback's configuration gives the root logger output of its own, the console output from layer 2 steps aside.</li>
+						<li><strong>Levels set on the running instance</strong>, from the admin console or in code (section 4). These win over everything, until they're unset.</li>
+					</ol>
+					<p>When a logger ends up at a level you didn't expect, the startup report and the admin console's Configuration page (<code>/wonder/admin/configuration</code>) show each property with the source it came from, and which sources it overrides.</p>
+
+					<h2 id="runtime">4. Changing levels while the application runs</h2>
+					<p>Logging follows the configuration: whenever a logging property changes (<code>er.extensions.logging.*</code>, <code>log4j.*</code> or <code>logback.configurationFile</code>), logging is configured again, and nothing else is needed. A logging property changes in three ways:</p>
+					<ul>
+						<li><strong>In development</strong>, edit the application's <code>Properties</code> or <code>Properties.dev</code> and save. The files the configuration was read from are watched, and a change is picked up within a second.</li>
+						<li><strong>In deployment</strong>, files aren't watched, since much of the configuration is only read at startup. A touch file can be: set <code>er.extensions.ERXConfigurationManager.PropertiesTouchFile</code> to a path, and touching that file makes the application read its configuration again.</li>
+						<li><strong>On a running instance</strong>, from the admin console's Configuration page ("Set a property on this instance"), or in code:</li>
+					</ul>
+<pre><code class="language-clike">ERXConfigurationManager.setProperty( "er.extensions.logging.level.com.example.billing", "DEBUG" );
+
+// …and back to what the configuration says
+ERXConfigurationManager.unsetProperty( "er.extensions.logging.level.com.example.billing" );</code></pre>
+					<p>A level set on the running instance wins over every other layer, the backend's own configuration included, until it's unset or the instance stops; the Configuration page marks it as set on this instance, with a button to unset it. Setting a level through the log4j API (<code>Logger.getLogger( … ).setLevel( … )</code>) works on reload4j only: with logback, those calls go through <code>log4j-over-slf4j</code>, which can't set levels. The property works with both.</p>
+
+					<h2 id="existing">5. Existing log4j configuration</h2>
+					<p>A Project Wonder application usually carries a block of log4j configuration in its <code>Properties</code>:</p>
+<pre><code class="language-ini">log4j.loggerFactory=er.extensions.logging.ERXLogger$Factory
+log4j.rootCategory=INFO, A1
+log4j.appender.A1=org.apache.log4j.ConsoleAppender
+log4j.appender.A1.layout=er.extensions.logging.ERXPatternLayout
+log4j.appender.A1.layout.ConversionPattern=%d{MMM dd HH:mm:ss} %$[%#] (%F:%L) %-5p %c %x - %t - %m%n
+log4j.logger.er=INFO
+log4j.logger.cayenne-sql=WARN</code></pre>
+					<p><strong>With ERLoggingReload4j</strong>, it keeps working unchanged: it's the backend's own configuration, layer 3.</p>
+					<p><strong>With ERLoggingLogback</strong>, the levels are used (<code>log4j.logger.*</code> and the root's), but logback can't read log4j's appenders and layouts. It names those keys in one warning at startup, and uses <code>er.extensions.logging.pattern</code> for its console output instead.</p>
+					<p><strong>Converted</strong>, most of such a block turns out to repeat the defaults. The block above comes down to:</p>
+<pre><code class="language-ini">er.extensions.logging.level.cayenne-sql=WARN
+er.extensions.logging.pattern=%d{MMM dd HH:mm:ss} (%F:%L) %-5p %c - %t - %m%n</code></pre>
+					<p>The root at <code>INFO</code> is the default, and so is <code>er</code> beneath it; <code>log4j.loggerFactory</code> only applies to reload4j. Once converted, the configuration works with either backend. Leave the layout out entirely if the default suits you.</p>
+
+					<h2 id="webobjects">6. WebObjects' own output</h2>
+					<p>WebObjects writes through its own <code>NSLog</code>. wonder-slim sends that to slf4j too, from the first line of <code>main()</code>, so it lands in the same log, in the same layout, with whichever backend: <code>NSLog.out</code> to the logger <code>NSLog</code> at <code>INFO</code>, <code>NSLog.err</code> at <code>WARN</code>, <code>NSLog.debug</code> at <code>DEBUG</code>.</p>
+					<p>WebObjects writes a good deal of debug output while it starts (every one of its properties, its URLs, "Waiting for requests…"), and the startup report already says what matters of it, so it's held back: <code>NSLog.debug</code> reaches the log only from WebObjects' informational debug level up, and that level is capped at critical by default, whatever WebObjects' own properties say. To see the debug output, raise the cap with a JVM option (it's read before the configuration exists):</p>
+<pre><code class="language-bash">-Der.extensions.NSLog.debugLevel=2</code></pre>
+					<p>Set <code>er.extensions.ERXNSLogLog4jBridge.ignoreNSLogSettings=true</code> to hand all of <code>NSLog.debug</code> to slf4j and decide with the <code>NSLog</code> logger's level instead.</p>
+
+					<h2 id="when">7. When logging starts</h2>
+					<p>Logging works from the first line of <code>ERXApplication.main()</code>, first to the console in the default layout, since the configuration doesn't exist yet. As soon as the configuration is composed, still in <code>main()</code>, logging is configured from it, before any framework initializes and before the application object is constructed. From there on, everything logged reaches the configured log: framework plugins, WebObjects' own startup, your application's constructor. The <a href="/guide/startup">startup guide</a> goes through the order in full.</p>
+					<p>In deployment, WebObjects sends the console to the <code>WOOutputPath</code> file while it constructs the application, and the console output follows it there: logback by itself, reload4j because wonder-slim tells it to.</p>
+
+					<h2 id="layout">8. The layout</h2>
+					<p><code>er.extensions.logging.pattern</code> is handed to whichever backend is in use, so write it in the conversions both understand:</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Conversion</th><th>Gives</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo"><code>%d{MMM dd HH:mm:ss}</code></td><td>the date and time, in any <code>SimpleDateFormat</code> pattern</td></tr>
+							<tr><td class="c-repo"><code>%p</code>, <code>%-5p</code></td><td>the level, optionally padded</td></tr>
+							<tr><td class="c-repo"><code>%c</code></td><td>the logger's name</td></tr>
+							<tr><td class="c-repo"><code>%m</code></td><td>the message</td></tr>
+							<tr><td class="c-repo"><code>%t</code></td><td>the thread</td></tr>
+							<tr><td class="c-repo"><code>%F</code>, <code>%L</code></td><td>the source file and line; fairly slow, so not for performance sensitive logging</td></tr>
+							<tr><td class="c-repo"><code>%n</code></td><td>the line separator</td></tr>
+						</tbody>
+					</table></div>
+					<p>Literal parentheses, as in <code>(%F:%L)</code>, stay literal with both. Project Wonder's own additions to log4j's layout, <code>%$</code> for the application's name and <code>%#</code> for its port, exist only in reload4j's <code>ERXPatternLayout</code>.</p>
+					<p>The classes behind all this are few: <code>ERXLoggingBackend</code> and <code>ERXLoggingConfiguration</code> in ERExtensions, and one backend in each logging module. The <a href="https://github.com/undur/wonder-slim">wonder-slim repository</a> has them, and its <code>docs/LOGGING.md</code> goes into the details.</p>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#backend">Choosing a backend</a>
+				<a href="#keys">Levels and the layout</a>
+				<a href="#layers">When configuration meets configuration</a>
+				<a href="#runtime">Changing levels while running</a>
+				<a href="#existing">Existing log4j configuration</a>
+				<a href="#webobjects">WebObjects' own output</a>
+				<a href="#when">When logging starts</a>
+				<a href="#layout">The layout</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>
