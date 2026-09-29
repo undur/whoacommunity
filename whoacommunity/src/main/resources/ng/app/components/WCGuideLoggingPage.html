@@ -36,21 +36,21 @@
 					<h2 id="keys">2. Levels and the layout</h2>
 					<p>Logging is configured in the application's <code>Properties</code>, in keys every backend understands:</p>
 <pre><code class="language-ini"># A logger's level: TRACE, DEBUG, INFO, WARN, ERROR or OFF
-er.extensions.logging.level.com.example.billing=DEBUG
-er.extensions.logging.level.cayenne-sql=WARN
+er.logging.level.com.example.billing=DEBUG
+er.logging.level.cayenne-sql=WARN
 
 # The root logger's
-er.extensions.logging.level.root=INFO
+er.logging.level.root=INFO
 
 # The layout of the console output
-er.extensions.logging.pattern=%d{MMM dd HH:mm:ss} %-5p %c - %m%n</code></pre>
-					<p>A level applies to the logger named and everything beneath it, so <code>er.extensions.logging.level.er.extensions</code> covers all of ERExtensions. The level names are the same in every backend, and <code>WARNING</code> is read as <code>WARN</code>.</p>
+er.logging.pattern=%d{MMM dd HH:mm:ss} %-5p %c - %m%n</code></pre>
+					<p>A level applies to the logger named and everything beneath it, so <code>er.logging.level.er.extensions</code> covers all of ERExtensions. The level names are the same in every backend, and <code>WARNING</code> is read as <code>WARN</code>.</p>
 					<p>ERExtensions' own <code>Properties</code> sets the defaults: the root at <code>INFO</code>, and the layout above. Most applications need nothing more than a level or two of their own. The environment variants work as they do for any property, so <code>Properties.dev</code> is the place for what you want to see only in development:</p>
 <pre><code class="language-ini"># Properties: quiet in production
-er.extensions.logging.level.cayenne-sql=WARN
+er.logging.level.cayenne-sql=WARN
 
 # Properties.dev: every SQL statement while developing
-er.extensions.logging.level.cayenne-sql=INFO</code></pre>
+er.logging.level.cayenne-sql=INFO</code></pre>
 					<p>In your own code, log through slf4j as you would anywhere else:</p>
 <pre><code class="language-clike">private static final Logger log = LoggerFactory.getLogger( InvoicePage.class );
 
@@ -60,23 +60,23 @@ log.debug( "Rendering invoice {}", invoice.number() );</code></pre>
 					<p>A backend can do far more than levels and a layout: files, rotation, remote targets, filters. That configuration stays available, in the backend's own form, and takes precedence where it overlaps. The whole picture is four layers, a later one winning over an earlier one where both name the same logger:</p>
 					<ol>
 						<li><strong>Project Wonder style log4j levels</strong>: <code>log4j.logger.X</code>, <code>log4j.rootLogger</code> and <code>log4j.rootCategory</code>. Only for logback, which reads the levels from them (reload4j reads all of <code>log4j.*</code> itself, at layer 3).</li>
-						<li><strong>The keys above</strong>, <code>er.extensions.logging.*</code>, from wherever they're set: ERExtensions' defaults, the application's <code>Properties</code>, <code>Properties.dev</code>, the command line.</li>
+						<li><strong>The keys above</strong>, <code>er.logging.*</code>, from wherever they're set: ERExtensions' defaults, the application's <code>Properties</code>, <code>Properties.dev</code>, the command line.</li>
 						<li><strong>The backend's own configuration</strong>: <code>log4j.*</code> properties for reload4j, read exactly as log4j always read them; for logback, the file the <code>logback.configurationFile</code> property names, or <code>logback.xml</code> on the classpath. If logback's configuration gives the root logger output of its own, the console output from layer 2 steps aside.</li>
 						<li><strong>Levels set on the running instance</strong>, from the admin console or in code (section 4). These win over everything, until they're unset.</li>
 					</ol>
 					<p>When a logger ends up at a level you didn't expect, the startup report and the admin console's Configuration page (<code>/wonder/admin/configuration</code>) show each property with the source it came from, and which sources it overrides.</p>
 
 					<h2 id="runtime">4. Changing levels while the application runs</h2>
-					<p>Logging follows the configuration: whenever a logging property changes (<code>er.extensions.logging.*</code>, <code>log4j.*</code> or <code>logback.configurationFile</code>), logging is configured again, and nothing else is needed. A logging property changes in three ways:</p>
+					<p>Logging follows the configuration: whenever a logging property changes (<code>er.logging.*</code>, <code>log4j.*</code> or <code>logback.configurationFile</code>), logging is configured again, and nothing else is needed. A logging property changes in three ways:</p>
 					<ul>
 						<li><strong>In development</strong>, edit the application's <code>Properties</code> or <code>Properties.dev</code> and save. The files the configuration was read from are watched, and a change is picked up within a second.</li>
 						<li><strong>In deployment</strong>, files aren't watched, since much of the configuration is only read at startup. A touch file can be: set <code>er.extensions.ERXConfigurationManager.PropertiesTouchFile</code> to a path, and touching that file makes the application read its configuration again.</li>
 						<li><strong>On a running instance</strong>, from the admin console's Configuration page ("Set a property on this instance"), or in code:</li>
 					</ul>
-<pre><code class="language-clike">ERXConfigurationManager.setProperty( "er.extensions.logging.level.com.example.billing", "DEBUG" );
+<pre><code class="language-clike">ERXConfigurationManager.setProperty( "er.logging.level.com.example.billing", "DEBUG" );
 
 // …and back to what the configuration says
-ERXConfigurationManager.unsetProperty( "er.extensions.logging.level.com.example.billing" );</code></pre>
+ERXConfigurationManager.unsetProperty( "er.logging.level.com.example.billing" );</code></pre>
 					<p>A level set on the running instance wins over every other layer, the backend's own configuration included, until it's unset or the instance stops; the Configuration page marks it as set on this instance, with a button to unset it. Setting a level through the log4j API (<code>Logger.getLogger( … ).setLevel( … )</code>) works on reload4j only: with logback, those calls go through <code>log4j-over-slf4j</code>, which can't set levels. The property works with both.</p>
 
 					<h2 id="existing">5. Existing log4j configuration</h2>
@@ -89,10 +89,10 @@ log4j.appender.A1.layout.ConversionPattern=%d{MMM dd HH:mm:ss} %$[%#] (%F:%L) %-
 log4j.logger.er=INFO
 log4j.logger.cayenne-sql=WARN</code></pre>
 					<p><strong>With ERLoggingReload4j</strong>, it keeps working unchanged: it's the backend's own configuration, layer 3.</p>
-					<p><strong>With ERLoggingLogback</strong>, the levels are used (<code>log4j.logger.*</code> and the root's), but logback can't read log4j's appenders and layouts. It names those keys in one warning at startup, and uses <code>er.extensions.logging.pattern</code> for its console output instead.</p>
+					<p><strong>With ERLoggingLogback</strong>, the levels are used (<code>log4j.logger.*</code> and the root's), but logback can't read log4j's appenders and layouts. It names those keys in one warning at startup, and uses <code>er.logging.pattern</code> for its console output instead.</p>
 					<p><strong>Converted</strong>, most of such a block turns out to repeat the defaults. The block above comes down to:</p>
-<pre><code class="language-ini">er.extensions.logging.level.cayenne-sql=WARN
-er.extensions.logging.pattern=%d{MMM dd HH:mm:ss} (%F:%L) %-5p %c - %t - %m%n</code></pre>
+<pre><code class="language-ini">er.logging.level.cayenne-sql=WARN
+er.logging.pattern=%d{MMM dd HH:mm:ss} (%F:%L) %-5p %c - %t - %m%n</code></pre>
 					<p>The root at <code>INFO</code> is the default, and so is <code>er</code> beneath it; <code>log4j.loggerFactory</code> only applies to reload4j. Once converted, the configuration works with either backend. Leave the layout out entirely if the default suits you.</p>
 
 					<h2 id="webobjects">6. WebObjects' own output</h2>
@@ -106,7 +106,7 @@ er.extensions.logging.pattern=%d{MMM dd HH:mm:ss} (%F:%L) %-5p %c - %t - %m%n</c
 					<p>In deployment, WebObjects sends the console to the <code>WOOutputPath</code> file while it constructs the application, and the console output follows it there: logback by itself, reload4j because wonder-slim tells it to.</p>
 
 					<h2 id="layout">8. The layout</h2>
-					<p><code>er.extensions.logging.pattern</code> is handed to whichever backend is in use, so write it in the conversions both understand:</p>
+					<p><code>er.logging.pattern</code> is handed to whichever backend is in use, so write it in the conversions both understand:</p>
 					<div class="tw"><table class="feed-table">
 						<thead><tr><th>Conversion</th><th>Gives</th></tr></thead>
 						<tbody>

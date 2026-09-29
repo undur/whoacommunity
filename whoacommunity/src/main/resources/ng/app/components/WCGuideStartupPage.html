@@ -50,9 +50,9 @@ Application-Machine Properties     : /etc/WebObjects/Properties
 Arguments                          : (22)
 
 ================= PROPERTIES ===================
-WOPort                              Arguments                      = 2001
-er.extensions.logging.level.root    ERExtensions.framework         = INFO
-file.encoding                                                      = UTF-8</code></pre>
+WOPort                 Arguments                      = 2001
+er.logging.level.root  ERExtensions.framework         = INFO
+file.encoding                                         = UTF-8</code></pre>
 					<p>Files that were looked for and aren't there are listed too, as "no file present", since a missing <code>/etc/WebObjects/Properties</code> is as much a fact about the machine as a present one. The admin console's Configuration page (<code>/wonder/admin/configuration</code>) shows the same, live: the plugins, the sources with how many of each one's values are in effect, and each property with its source and the sources it overrides. Passwords, tokens and keys are masked in both, including where they appear inside another value, such as the java command line.</p>
 
 					<h2 id="reading">3. Reading properties</h2>
