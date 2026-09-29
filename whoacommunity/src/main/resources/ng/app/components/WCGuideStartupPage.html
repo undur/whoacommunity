@@ -102,7 +102,7 @@ com.example.billing.Billing</code></pre>
 						<thead><tr><th>Method</th><th>When, and what's in place</th></tr></thead>
 						<tbody>
 							<tr><td class="c-repo">beforeApplicationConstruction()</td><td>In <code>main()</code>, before the application object exists. The configuration is composed and logging configured. <code>WOApplication.application()</code> is null.</td></tr>
-							<tr><td class="c-repo">finishInitialization( app )</td><td>The application is constructed, your own constructor included, and its adaptors aren't listening yet, so no request has arrived or can. Request handlers registered in constructors are in place. An adaptor added here, with <code>application.adaptorWithName( … )</code>, starts with the others.</td></tr>
+							<tr><td class="c-repo">finishInitialization( app )</td><td>The application is constructed, your own constructor included, and its adaptors aren't listening yet, so no request has arrived or can. Request handlers registered in constructors are in place.</td></tr>
 							<tr><td class="c-repo">didFinishLaunching( app )</td><td>The adaptors are listening. Requests may already be arriving, and being handled while this runs: start background work here, or tell something outside that the application is up.</td></tr>
 						</tbody>
 					</table></div>
@@ -160,7 +160,7 @@ public void didFinishLaunching() {
 						<thead><tr><th>Observing</th><th>With wonder-slim, runs</th></tr></thead>
 						<tbody>
 							<tr><td class="c-repo">ApplicationWillFinishLaunchingNotification</td><td>After every plugin's <code>finishInitialization()</code> and the application's, before the adaptors start listening. The configuration is complete and logging configured. The same moment in plain WebObjects and Project Wonder, so the one to use.</td></tr>
-							<tr><td class="c-repo">ApplicationDidFinishLaunchingNotification</td><td>Once the adaptors are listening, before every plugin's <code>didFinishLaunching()</code> and the application's: observers run in the order they registered, and a principal class registers first.</td></tr>
+							<tr><td class="c-repo">ApplicationDidFinishLaunchingNotification</td><td>Once the adaptors are listening, at the same moment as every plugin's <code>didFinishLaunching()</code> and the application's, in no defined order among them: WebObjects' notification center doesn't order a notification's observers.</td></tr>
 						</tbody>
 					</table></div>
 
