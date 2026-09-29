@@ -31,7 +31,7 @@
     &lt;/exclusions&gt;
 &lt;/dependency&gt;</code></pre>
 					<p>A module's backend is found through Java's <code>ServiceLoader</code>, so there is nothing to register. Without either module, the application still runs, says once on the console that no logging backend is present, and leaves logging to slf4j's defaults.</p>
-					<p>One detail explains a dependency you might otherwise wonder about: WebObjects itself calls the log4j API in a place or two (encoding a direct action's query parameters is one), so some log4j API has to be on the classpath whichever backend you choose. ERLoggingReload4j has the real one; ERLoggingLogback brings <code>log4j-over-slf4j</code>, which hands those calls to slf4j and so to logback. The two can't be on the classpath together, which is one more reason for choosing exactly one module.</p>
+					<p>One detail you might otherwise trip over: WebObjects itself calls the log4j API in one place (encoding a direct action's query parameters), which used to mean some log4j API had to be on the classpath. wonder-slim rewrites that class at startup to log through slf4j, so it no longer does. If your own code, or a library you use, calls the log4j API, bring one yourself: with ERLoggingLogback, add <code>log4j-over-slf4j</code>, which hands those calls to slf4j and so to logback; ERLoggingReload4j already is one. The two can't be on the classpath together.</p>
 
 					<h2 id="keys">2. Levels and the layout</h2>
 					<p>Logging is configured in the application's <code>Properties</code>, in keys every backend understands:</p>
@@ -77,7 +77,7 @@ log.debug( "Rendering invoice {}", invoice.number() );</code></pre>
 
 // …and back to what the configuration says
 ERXConfigurationManager.unsetProperty( "er.logging.level.com.example.billing" );</code></pre>
-					<p>A level set on the running instance wins over every other layer, the backend's own configuration included, until it's unset or the instance stops; the Configuration page marks it as set on this instance, with a button to unset it. Setting a level through the log4j API (<code>Logger.getLogger( … ).setLevel( … )</code>) works on reload4j only: with logback, those calls go through <code>log4j-over-slf4j</code>, which can't set levels. The property works with both.</p>
+					<p>A level set on the running instance wins over every other layer, the backend's own configuration included, until it's unset or the instance stops; the Configuration page marks it as set on this instance, with a button to unset it. Setting a level through the log4j API (<code>Logger.getLogger( … ).setLevel( … )</code>) works on reload4j only: with logback, those calls go through <code>log4j-over-slf4j</code> (if you have it), which can't set levels. The property works with both.</p>
 
 					<h2 id="existing">5. Existing log4j configuration</h2>
 					<p>A Project Wonder application usually carries a block of log4j configuration in its <code>Properties</code>:</p>
