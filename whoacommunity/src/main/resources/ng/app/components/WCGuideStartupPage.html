@@ -131,7 +131,38 @@ public void didFinishLaunching() {
 						<li><code>initialize()</code> becomes <code>beforeApplicationConstruction()</code>, which now has the configuration and logging in place.</li>
 						<li><code>finishInitialization()</code> becomes <code>finishInitialization( application )</code>. It runs a little later than before: after your application's constructor rather than at the end of <code>ERXApplication</code>'s, which is what code registering routes or handlers wants anyway.</li>
 					</ul>
-					<p>WebObjects' own principal classes (<code>NSPrincipalClass</code> in a framework's Info.plist) still work, for frameworks that aren't built on wonder-slim: WebObjects initializes them while it loads its bundles, which happens while the configuration is being composed, before it's complete.</p>
+					<p><strong>Frameworks that can't depend on wonder-slim.</strong> A framework meant for plain WebObjects and Project Wonder as well can't implement <code>ERXPlugin</code>. It takes part through WebObjects' own mechanism, a principal class (<code>NSPrincipalClass</code> in its Info.plist), which still works. WebObjects initializes principal classes as it loads its bundles: it loads the class, so its static initializer runs, and creates no instance. With wonder-slim that happens while the configuration is being composed, in step 3 of the sequence above. At that point:</p>
+					<ul>
+						<li>logging works, to the console at INFO, but the application's levels aren't applied yet;</li>
+						<li>the configuration is incomplete: the bundles' <code>Properties</code>, <code>~/WebObjects.properties</code>, the JVM options and the arguments are in, but <code>Properties.dev</code>, <code>Properties.&lt;user&gt;</code>, <code>/etc/WebObjects</code> and optional files aren't;</li>
+						<li>there's no application yet.</li>
+					</ul>
+					<p>So a principal class's static initializer should do no more than register for a later moment, as Project Wonder's frameworks did, by observing one of WebObjects' notifications:</p>
+<pre><code class="language-clike">public class MyFramework {
+
+    // WebObjects' notification center holds its observers weakly: this keeps it
+    private static final MyFramework OBSERVER = new MyFramework();
+
+    static {
+        NSNotificationCenter.defaultCenter().addObserver(
+                OBSERVER,
+                new NSSelector&lt;&gt;( "applicationWillFinishLaunching", new Class[] { NSNotification.class } ),
+                WOApplication.ApplicationWillFinishLaunchingNotification,
+                null );
+    }
+
+    public void applicationWillFinishLaunching( final NSNotification notification ) {
+        // The configuration is complete, logging is configured, the application is constructed
+    }
+}</code></pre>
+					<p>Keep the observer in a static field, as above: WebObjects' notification center holds its observers weakly, so one nothing else references can be garbage collected before the notification is posted, and never be called.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Observing</th><th>With wonder-slim, runs</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">ApplicationWillFinishLaunchingNotification</td><td>After every plugin's <code>finishInitialization()</code> and the application's, before the adaptors start listening. The configuration is complete and logging configured. The same moment in plain WebObjects and Project Wonder, so the one to use.</td></tr>
+							<tr><td class="c-repo">ApplicationDidFinishLaunchingNotification</td><td>Once the adaptors are listening, before every plugin's <code>didFinishLaunching()</code> and the application's: observers run in the order they registered, and a principal class registers first.</td></tr>
+						</tbody>
+					</table></div>
 
 					<h2 id="traps">8. Things to know</h2>
 					<ul>
