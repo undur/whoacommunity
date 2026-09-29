@@ -13,11 +13,11 @@
 						<li><strong><code>ERXApplication.main()</code></strong> starts console logging in a default layout, then finds the plugins (section 5) and orders them.</li>
 						<li><strong>The configuration is composed</strong> from all its sources (section 2) and written to the system properties. Every property now has the value the application will run with.</li>
 						<li><strong>Logging is configured</strong> from it. From here on, everything logged reaches the configured log (see the <a href="/guide/logging">logging guide</a>).</li>
-						<li><strong>Each plugin's <code>beforeApplicationConstruction()</code></strong> runs.</li>
+						<li><strong>All plugins' <code>beforeApplicationConstruction()</code></strong> run, in plugin order.</li>
 						<li><strong>The application is constructed.</strong> WebObjects' constructor, then <code>ERXApplication</code>'s, then your <code>Application</code>'s. All of them see the composed configuration. At the end of <code>ERXApplication</code>'s constructor, the configuration's files start being watched and the startup report is printed.</li>
-						<li><strong>Each plugin's <code>finishInitialization( application )</code></strong> runs, then your application's <code>finishInitialization()</code>. The application is complete, and nothing is listening for requests yet.</li>
+						<li><strong>All plugins' <code>finishInitialization( application )</code></strong> run, in plugin order, then your application's <code>finishInitialization()</code>, once. The application is complete, and nothing is listening for requests yet.</li>
 						<li><strong>The adaptors start listening.</strong> Requests may arrive from this moment.</li>
-						<li><strong>Each plugin's <code>didFinishLaunching( application )</code></strong> runs, then your application's <code>didFinishLaunching()</code>, possibly while the first requests are already being handled.</li>
+						<li><strong>All plugins' <code>didFinishLaunching( application )</code></strong> run, then your application's <code>didFinishLaunching()</code>, once, possibly while the first requests are already being handled.</li>
 					</ol>
 
 					<h2 id="configuration">2. Where the configuration comes from</h2>
@@ -108,7 +108,7 @@ com.example.billing.Billing</code></pre>
 					</table></div>
 
 					<h2 id="application">6. The application's own part</h2>
-					<p>The application takes part at the same points, under the same names, and always after every plugin. Override them in your <code>Application</code> class:</p>
+					<p>The application takes part at the same points, under the same names, and always once all plugins have run theirs. Override them in your <code>Application</code> class:</p>
 <pre><code class="language-clike">@Override
 public void finishInitialization() {
     // Every framework has initialized; no request has arrived yet
@@ -159,8 +159,8 @@ public void didFinishLaunching() {
 					<div class="tw"><table class="feed-table">
 						<thead><tr><th>Observing</th><th>With wonder-slim, runs</th></tr></thead>
 						<tbody>
-							<tr><td class="c-repo">ApplicationWillFinishLaunchingNotification</td><td>After every plugin's <code>finishInitialization()</code> and the application's, before the adaptors start listening. The configuration is complete and logging configured. The same moment in plain WebObjects and Project Wonder, so the one to use.</td></tr>
-							<tr><td class="c-repo">ApplicationDidFinishLaunchingNotification</td><td>Once the adaptors are listening, at the same moment as every plugin's <code>didFinishLaunching()</code> and the application's, in no defined order among them: WebObjects' notification center doesn't order a notification's observers.</td></tr>
+							<tr><td class="c-repo">ApplicationWillFinishLaunchingNotification</td><td>After all plugins and the application have run <code>finishInitialization()</code>, before the adaptors start listening. The configuration is complete and logging configured. The same moment in plain WebObjects and Project Wonder, so the one to use.</td></tr>
+							<tr><td class="c-repo">ApplicationDidFinishLaunchingNotification</td><td>Once the adaptors are listening, at the same moment as the plugins' and the application's <code>didFinishLaunching()</code>, in no defined order among them: WebObjects' notification center doesn't order a notification's observers.</td></tr>
 						</tbody>
 					</table></div>
 
