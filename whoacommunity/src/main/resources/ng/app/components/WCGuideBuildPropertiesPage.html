@@ -1,0 +1,163 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">build.properties<span>what belongs in it today, and what can go</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<p>Almost every WebObjects project has a <code>build.properties</code> at its root, and most have collected keys over the years from tools that have come and gone. This guide describes what the file is for today: the keys a modern project uses, what each means and which tool reads it, and, separately, every legacy key you're likely to find, with what replaced it.</p>
+					<p>"Modern" here means a project built with <a href="/guide/building-with-vermilingua">vermilingua</a>, edited with <a href="/project/parslips">Parslips</a>, and, for WebObjects applications, running on wonder-slim. It describes wonder-slim 8.0.12, vermilingua 1.1.10 and the current Parslips.</p>
+
+					<h2 id="purpose">1. What belongs in it</h2>
+					<p><code>build.properties</code> holds facts about the project that tools need <em>without running it</em>: what the project is called, whether it's an application or a framework, which class starts it, how its templates are written, and how the built application is launched and deployed. The build reads it, the editor reads it, and so does the framework when an application runs from its project folder.</p>
+					<p>Configuration of the running application, the port, the database, logging levels, belongs in the application's <code>Properties</code>. A rule of thumb: if a deployed application should be able to change it without being rebuilt, it isn't a <code>build.properties</code> key.</p>
+					<p>It's a plain Java properties file, one <code>key=value</code> per line, next to <code>pom.xml</code>. These read it, each for its own keys, ignoring the rest:</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Reader</th><th>When</th><th>What it takes from the file</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">vermilingua</td><td>Building and deploying</td><td>The bundle's name, the application's main class, how the launch script starts the JVM, and where to deploy. It refuses to build a project without the file.</td></tr>
+							<tr><td class="c-repo">Parslips</td><td>Editing</td><td>Whether the project is WebObjects or ng-objects, how its templates write bindings, and whether it's an application it can launch.</td></tr>
+							<tr><td class="c-repo">ERFoundation</td><td>Running from the project folder</td><td>The project's name, whether it's an application or a framework, and its principal class. This is how a project open in Eclipse becomes a bundle without being built into one.</td></tr>
+							<tr><td class="c-repo">wonder-slim</td><td>Starting an application</td><td>Only whether the file exists (see <a href="#presence">section 4</a>).</td></tr>
+						</tbody>
+					</table></div>
+					<p>ng-objects applications don't read the file at runtime; for them it's the build and the editor that do. Older readers, WOLips and its Ant builds, and the wolifecycle Maven plugin, account for most of the <a href="#legacy">legacy keys</a>.</p>
+					<p>A <code>build.properties</code> with keys like <code>bin.includes</code>, <code>source..</code> and <code>output..</code> belongs to an Eclipse plugin project, which uses the same name for an unrelated file. Nothing here applies to it.</p>
+
+					<h2 id="modern">2. The modern file</h2>
+					<p>This is a complete <code>build.properties</code> for an application, every current key included. Only the first four are required; the rest are there when the project needs them.</p>
+<pre><code class="language-ini"># What the project is (required)
+project.base=wo
+project.name=MyApp
+project.type=application
+principalClass=com.example.Application
+
+# How its templates write bindings (only when not the defaults)
+component.inlineBindingPrefix=$
+component.inlineBindingSuffix=
+component.wellFormedTemplateRequired=true
+
+# How the built application's launch script starts the JVM
+launch.jvm=/opt/jdk-25/bin/java
+launch.jvmOptions=-Xmx2g
+
+# Where vermilingua:deploy ships it
+deploy.monitorHost=https://javamonitor.example.com
+deploy.appName=MyApp</code></pre>
+					<p>Most projects need only this:</p>
+<pre><code class="language-ini">project.base=wo
+project.name=MyApp
+project.type=application
+principalClass=com.example.Application</code></pre>
+					<p>A framework has no main class, so three lines:</p>
+<pre><code class="language-ini">project.base=wo
+project.name=MyFramework
+project.type=framework</code></pre>
+					<p>That's what Parslips writes when it creates a project.</p>
+
+					<h2 id="current">3. The current keys</h2>
+
+					<h3 id="identity">What the project is</h3>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Key</th><th>Read by</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">project.base <span class="badge text-bg-success fw-normal">required</span></td><td>Parslips</td><td><code>wo</code> for WebObjects, <code>ng</code> for ng-objects. It tells the editor which elements and components exist and how templates are validated. Without it, Parslips looks at the classpath and usually guesses right; with it, there's nothing to guess.</td></tr>
+							<tr><td class="c-repo">project.name <span class="badge text-bg-success fw-normal">required</span></td><td>vermilingua, ERFoundation, Parslips</td><td>The bundle's name: <code>MyApp</code> gives <code>MyApp.woa</code>, and it's the name the bundle has at runtime, in development and deployed alike. Without it vermilingua takes the Maven project's <code>&lt;name&gt;</code>, and a project running from its folder takes the folder's name, with a warning, so the two can drift apart. A missing name is the usual cause of "main bundle not found" when launching from Eclipse.</td></tr>
+							<tr><td class="c-repo">project.type <span class="badge text-bg-success fw-normal">required</span></td><td>ERFoundation, Parslips</td><td><code>application</code> or <code>framework</code>. When the project runs from its folder, it decides whether it becomes the application's main bundle or a framework bundle. vermilingua goes by the pom's <code>&lt;packaging&gt;</code> instead, <code>woapplication</code> or <code>woframework</code>, so keep the two in agreement.</td></tr>
+							<tr><td class="c-repo">principalClass <span class="badge text-bg-success fw-normal">applications</span></td><td>vermilingua, Parslips, ERFoundation</td><td>For an application, the fully qualified class with its <code>main()</code>. vermilingua writes it into the bundle's <code>config.txt</code>, where the launch script reads it, and won't build an application without it. Parslips takes a project with a <code>principalClass</code> to be an application, and creates its Eclipse launch configuration from it. A framework may name one too, the class loaded when the framework is, but wonder-slim frameworks take part in startup as plugins instead (see <a href="/guide/startup">How an application starts</a>).</td></tr>
+						</tbody>
+					</table></div>
+
+					<h3 id="templates">How templates write bindings</h3>
+					<p>For the editor: Parslips reads these to parse and validate the project's templates. They change nothing at runtime, and a key set to its default can be left out.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">component.inlineBindingPrefix</td><td><code>$</code></td><td>What marks an inline binding's value as a key path rather than a literal, as in <code>value="$name"</code>.</td></tr>
+							<tr><td class="c-repo">component.inlineBindingSuffix</td><td>empty</td><td>What ends one. A project writing <code>value="[name]"</code> would set the prefix to <code>[</code> and the suffix to <code>]</code>.</td></tr>
+							<tr><td class="c-repo">component.wellFormedTemplateRequired</td><td>the workspace preference</td><td><code>true</code> to require well-formed templates, every element closed.</td></tr>
+						</tbody>
+					</table></div>
+
+					<h3 id="launch">Launching: launch.*</h3>
+					<p>vermilingua writes these into the built bundle's <code>config.txt</code>, and its launch script reads them to start the JVM.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">launch.jvm</td><td><code>java</code></td><td>The <code>java</code> to run, when it isn't the one on the <code>PATH</code>, as in <code>/opt/jdk-25/bin/java</code>.</td></tr>
+							<tr><td class="c-repo">launch.jvmOptions</td><td>empty</td><td>Arguments for the JVM, as in <code>-Xmx2g</code>. The <code>--add-exports</code> and <code>--add-opens</code> arguments WebObjects needs on a modern JDK are added for you, unless they're already there.</td></tr>
+						</tbody>
+					</table></div>
+
+					<h3 id="deploy">Deploying: deploy.*</h3>
+					<p>Read by <code>vermilingua:deploy</code>, which ships a build to JavaMonitor; the <a href="/guide/deploying-with-vermilingua">deployment guide</a> covers it in full.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">deploy.monitorHost</td><td>none</td><td>The JavaMonitor to deploy to: a host name (port 56789), <code>host:port</code>, or a full <code>https://</code> URL for a JavaMonitor behind a front end.</td></tr>
+							<tr><td class="c-repo">deploy.appName</td><td>the bundle's name</td><td>The application's name in JavaMonitor, when it differs.</td></tr>
+							<tr><td class="c-repo">deploy.password</td><td>none</td><td>JavaMonitor's password. Pass it as <code>-Ddeploy.password=…</code>; it has no place in a file you commit.</td></tr>
+						</tbody>
+					</table></div>
+
+					<h3 id="environments">Per environment and on the command line</h3>
+					<p>The <code>launch.*</code> and <code>deploy.*</code> keys can be set at three levels when building, a later one winning:</p>
+					<ol>
+						<li><code>build.properties</code>,</li>
+						<li><code>build.properties.&lt;env&gt;</code>, when building with <code>-Dbuild.env=&lt;env&gt;</code>: a file holding only what differs in that environment, say <code>build.properties.prod</code>,</li>
+						<li>a system property, as in <code>mvn package -Dlaunch.jvm=…</code>.</li>
+					</ol>
+					<p>And a built application can still be started with different ones: <code>./MyApp -launch.jvm=…</code> overrides what the bundle was built with.</p>
+
+					<h2 id="presence">4. When the file's presence matters</h2>
+					<p>wonder-slim takes a <code>build.properties</code> in the directory an application starts in as the sign that it's running from its project folder, in development, rather than from a built bundle. It turns on development mode, which among other things shows source code on the exception page, and has NSBundle load the application, and the framework projects open alongside it, from their project folders. The console says which it found:</p>
+<pre><code class="language-none">== build.properties found. Setting development mode. Setting NSProjectBundleEnabled=true ==</code></pre>
+					<p>A built <code>.woa</code> contains no <code>build.properties</code>, and its launch script starts the application inside the bundle, so a deployed application runs in production mode without any configuration.</p>
+
+					<h2 id="legacy">5. Legacy keys</h2>
+					<p>Everything else comes from WOLips' Ant builds, the wolifecycle Maven plugin, or Project Wonder's own build scripts. WOLips writes most of these into every project it creates, which is why they're everywhere. Nothing in a modern project reads them, and each can be removed, or, where it has one, replaced by its current equivalent.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Key</th><th>Read by</th><th>What it did</th><th>Today</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">jvm<br>jvmOptions <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>vermilingua (with a warning), wolifecycle, WOLips' Ant build</td><td>The JVM and its arguments for the launch script.</td><td>Renamed <code>launch.jvm</code> and <code>launch.jvmOptions</code>.</td></tr>
+							<tr><td class="c-repo">jdb<br>jdbOptions <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>wolifecycle</td><td>Running the application under the command-line debugger.</td><td>Removed from vermilingua; debug through JDWP from your IDE.</td></tr>
+							<tr><td class="c-repo">framework.name<br>application.name <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>ERFoundation, WOLips</td><td>The name and the type in one key.</td><td><code>project.name</code> and <code>project.type</code>.</td></tr>
+							<tr><td class="c-repo">classes.dir <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>WOLips, its Ant build</td><td>Where compiled classes go: WOLips' own build output, and the Ant build's.</td><td>Maven's <code>target/classes</code>. Keep only if you still build with WOLips.</td></tr>
+							<tr><td class="c-repo">project.name.lowercase <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>WOLips' Ant build</td><td>The project name in lower case, which WOLips keeps next to <code>project.name</code> for its Ant build.</td><td>Remove.</td></tr>
+							<tr><td class="c-repo">cfBundleID<br>cfBundleVersion<br>cfBundleShortVersion <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>WOLips' Ant build</td><td>The identifier and versions written into the built bundle's Info.plist.</td><td>The version comes from the pom; nothing reads the identifier. Remove.</td></tr>
+							<tr><td class="c-repo">javaVersion <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>WOLips' Ant build</td><td>The Java version the Ant build records for the bundle, typically <code>1.5+</code>.</td><td>The pom's <code>maven.compiler.release</code> decides what the code is compiled for. Remove.</td></tr>
+							<tr><td class="c-repo">customInfoPListContent <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>WOLips' Ant build, wolifecycle</td><td>Extra entries appended to the generated Info.plist.</td><td>vermilingua generates a minimal Info.plist and doesn't use it. Almost always empty; remove.</td></tr>
+							<tr><td class="c-repo">eoAdaptorClassName <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>WOLips' Ant build, wolifecycle, ERFoundation</td><td>For a framework providing an EOF adaptor, the adaptor's class, recorded in its Info.plist.</td><td>vermilingua doesn't carry it. Almost always empty; remove.</td></tr>
+							<tr><td class="c-repo">webXML<br>webXML_CustomContent <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>WOLips' Ant build</td><td>Generating a <code>web.xml</code>, and extra content for it, to deploy the application as a servlet in a <code>.war</code>.</td><td>vermilingua doesn't build <code>.war</code> files. Remove.</td></tr>
+							<tr><td class="c-repo">embed.Local, embed.System, embed.User, embed.Network, embed.Project <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>WOLips</td><td>WOLips' "Embed Frameworks" setting: whether frameworks from each of WebObjects' framework locations are copied into the built application.</td><td>Frameworks are Maven dependencies, packaged with the application. Remove.</td></tr>
+							<tr><td class="c-repo">project.principal.class <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>Project Wonder's Ant build</td><td>The principal class, as Wonder's own build scripts name it. Found in frameworks that started from Wonder's.</td><td><code>principalClass</code>, where one is needed at all. Remove.</td></tr>
+							<tr><td class="c-repo">dependencies <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>ERFoundation</td><td>A comma-separated list of the bundles the project requires, for a project running from its folder.</td><td>The pom's dependencies. Remove.</td></tr>
+							<tr><td class="c-repo">servletDeployment, javaClient, javaWebStart, eogeneratorArgs, version, wo.version, projectFrameworkFolder <span class="badge text-bg-secondary fw-normal">legacy</span></td><td>WOLips</td><td>Project settings WOLips keeps: servlet deployment, Java Client and Web Start, EOGenerator's arguments, the project's and WebObjects' versions, a folder of project frameworks.</td><td>Remove.</td></tr>
+						</tbody>
+					</table></div>
+					<p>ERFoundation also reads a <code>woantbuild.properties</code> in place of <code>build.properties</code> when a project has one, a leftover from older Ant setups. A project that has both should keep only <code>build.properties</code>.</p>
+
+					<h2 id="cleanup">6. Bringing a project up to date</h2>
+					<ol>
+						<li>Make sure the four required keys are there: <code>project.base</code>, <code>project.name</code>, <code>project.type</code> and, for an application, <code>principalClass</code>.</li>
+						<li>Rename <code>jvm</code> and <code>jvmOptions</code> to <code>launch.jvm</code> and <code>launch.jvmOptions</code>, and drop <code>jdb</code> and <code>jdbOptions</code>.</li>
+						<li>Remove the <code>component.*</code> keys that are set to their defaults.</li>
+						<li>Remove every <a href="#legacy">legacy key</a>, keeping <code>classes.dir</code> only if the project is still built with WOLips.</li>
+						<li>Build with vermilingua and launch from Eclipse once, and check that the bundle is named as before.</li>
+					</ol>
+					<p>The result is usually four lines where there were fifteen.</p>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#purpose">What belongs in it</a>
+				<a href="#modern">The modern file</a>
+				<a href="#current">The current keys</a>
+				<a href="#presence">When the file's presence matters</a>
+				<a href="#legacy">Legacy keys</a>
+				<a href="#cleanup">Bringing a project up to date</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>

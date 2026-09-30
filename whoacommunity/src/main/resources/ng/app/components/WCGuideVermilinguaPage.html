@@ -89,7 +89,7 @@ project.type=application
 principalClass=com.example.Application
 launch.jvm=java
 launch.jvmOptions=-Xmx512m</code></pre>
-					<p>The <code>launch.*</code> keys end up in the bundle's <code>config.txt</code> and control how the launch script starts the JVM. They can be set here, overridden at build time with <code>mvn package -Dlaunch.jvm=/opt/jdk-25/bin/java</code>, or at launch time with <code>./MyApp -launch.jvm=…</code>, later layers winning. The <code>--add-opens</code> clauses that WebObjects needs on a modern JDK are included by default, so you don't have to remember them. Parslips reads <code>project.base</code> and the inline-binding keys from the same file.</p>
+					<p>The <code>launch.*</code> keys end up in the bundle's <code>config.txt</code> and control how the launch script starts the JVM. They can be set here, overridden at build time with <code>mvn package -Dlaunch.jvm=/opt/jdk-25/bin/java</code>, or at launch time with <code>./MyApp -launch.jvm=…</code>, later layers winning. The <code>--add-opens</code> clauses that WebObjects needs on a modern JDK are included by default, so you don't have to remember them. Parslips reads <code>project.base</code> and the inline-binding keys from the same file. The <a href="/guide/build-properties">build.properties guide</a> goes through every key, current and legacy.</p>
 
 					<h2 id="building">5. Building and running</h2>
 <pre><code class="language-none">mvn package
