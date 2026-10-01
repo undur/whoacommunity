@@ -8,28 +8,36 @@
 					<p>"Modern" here means a project built with <a href="/guide/building-with-vermilingua">vermilingua</a>, edited with <a href="/project/parslips">Parslips</a>, and, for WebObjects applications, running on wonder-slim. It describes wonder-slim 8.0.12, vermilingua 1.1.10 and the current Parslips.</p>
 
 					<h2 id="purpose">1. What belongs in it</h2>
-					<p><code>build.properties</code> holds facts about the project that tools need <em>without running it</em>: what the project is called, whether it's an application or a framework, which class starts it, how its templates are written, and how the built application is launched and deployed. The build reads it, the editor reads it, and so does the framework when an application runs from its project folder.</p>
+					<p><code>build.properties</code> holds facts about the project that tools need <em>without running it</em>: what the project is called, whether it's an application or a framework, which class starts it, where its components and resources are, how its templates are written, and how the built application is launched and deployed. The build reads it, the editor reads it, and so does the framework when an application runs from its project folder.</p>
 					<p>Configuration of the running application, the port, the database, logging levels, belongs in the application's <code>Properties</code>. A rule of thumb: if a deployed application should be able to change it without being rebuilt, it isn't a <code>build.properties</code> key.</p>
 					<p>It's a plain Java properties file, one <code>key=value</code> per line, next to <code>pom.xml</code>. These read it, each for its own keys, ignoring the rest:</p>
 					<div class="tw"><table class="feed-table">
 						<thead><tr><th>Reader</th><th>When</th><th>What it takes from the file</th></tr></thead>
 						<tbody>
-							<tr><td class="c-repo">vermilingua</td><td>Building and deploying</td><td>The bundle's name, the application's main class, how the launch script starts the JVM, and where to deploy. It refuses to build a project without the file.</td></tr>
+							<tr><td class="c-repo">vermilingua</td><td>Building and deploying</td><td>The bundle's name, the application's main class, which folders to package, how the launch script starts the JVM, and where to deploy. It refuses to build a project without the file.</td></tr>
 							<tr><td class="c-repo">Parslips</td><td>Editing</td><td>Whether the project is WebObjects or ng-objects, how its templates write bindings, and whether it's an application it can launch.</td></tr>
 							<tr><td class="c-repo">ERFoundation</td><td>Running from the project folder</td><td>The project's name, whether it's an application or a framework, and its principal class. This is how a project open in Eclipse becomes a bundle without being built into one.</td></tr>
-							<tr><td class="c-repo">wonder-slim</td><td>Starting an application</td><td>Only whether the file exists (see <a href="#presence">section 4</a>).</td></tr>
+							<tr><td class="c-repo">ERProjectLayout</td><td>Running from the project folder</td><td>Where the project's components and resources are, so a project runs from its folder whatever its layout, in any IDE. Part of wonder-slim, where it's always on, and usable from a plain WebObjects application.</td></tr>
+							<tr><td class="c-repo">wonder-slim</td><td>Starting an application</td><td>Whether the file exists, to tell development from deployment (see <a href="#presence">section 4</a>), and the folders, through ERProjectLayout.</td></tr>
 						</tbody>
 					</table></div>
 					<p>ng-objects applications don't read the file at runtime; for them it's the build and the editor that do. Older readers, WOLips and its Ant builds, and the wolifecycle Maven plugin, account for most of the <a href="#legacy">legacy keys</a>.</p>
 					<p>A <code>build.properties</code> with keys like <code>bin.includes</code>, <code>source..</code> and <code>output..</code> belongs to an Eclipse plugin project, which uses the same name for an unrelated file. Nothing here applies to it.</p>
 
 					<h2 id="modern">2. The modern file</h2>
-					<p>This is a complete <code>build.properties</code> for an application, every current key included. Only the first four are required; the rest are there when the project needs them.</p>
+					<p>This is a complete <code>build.properties</code> for an application, every current key included. Only the first three are required; the rest are there when the project needs them.</p>
 <pre><code class="language-ini"># What the project is (required)
-project.base=wo
 project.name=MyApp
 project.type=application
 principalClass=com.example.Application
+
+# WebObjects or ng-objects, for the editor (otherwise it looks at the classpath)
+project.base=wo
+
+# Where the folders are (only when not the standard Maven layout)
+dir.components=Components
+dir.woresources=Resources
+dir.webserverResources=WebServerResources
 
 # How its templates write bindings (only when not the defaults)
 component.inlineBindingPrefix=$
@@ -44,15 +52,13 @@ launch.jvmOptions=-Xmx2g
 deploy.monitorHost=https://javamonitor.example.com
 deploy.appName=MyApp</code></pre>
 					<p>Most projects need only this:</p>
-<pre><code class="language-ini">project.base=wo
-project.name=MyApp
+<pre><code class="language-ini">project.name=MyApp
 project.type=application
 principalClass=com.example.Application</code></pre>
-					<p>A framework has no main class, so three lines:</p>
-<pre><code class="language-ini">project.base=wo
-project.name=MyFramework
+					<p>A framework has no main class, so two lines:</p>
+<pre><code class="language-ini">project.name=MyFramework
 project.type=framework</code></pre>
-					<p>That's what Parslips writes when it creates a project.</p>
+					<p>Parslips writes these when it creates a project, with <code>project.base</code> added.</p>
 
 					<h2 id="current">3. The current keys</h2>
 
@@ -60,10 +66,10 @@ project.type=framework</code></pre>
 					<div class="tw"><table class="feed-table">
 						<thead><tr><th>Key</th><th>Read by</th><th>Meaning</th></tr></thead>
 						<tbody>
-							<tr><td class="c-repo">project.base <span class="badge text-bg-success fw-normal">required</span></td><td>Parslips</td><td><code>wo</code> for WebObjects, <code>ng</code> for ng-objects. It tells the editor which elements and components exist and how templates are validated. Without it, Parslips looks at the classpath and usually guesses right; with it, there's nothing to guess.</td></tr>
 							<tr><td class="c-repo">project.name <span class="badge text-bg-success fw-normal">required</span></td><td>vermilingua, ERFoundation, Parslips</td><td>The bundle's name: <code>MyApp</code> gives <code>MyApp.woa</code>, and it's the name the bundle has at runtime, in development and deployed alike. Without it vermilingua takes the Maven project's <code>&lt;name&gt;</code>, and a project running from its folder takes the folder's name, with a warning, so the two can drift apart. A missing name is the usual cause of "main bundle not found" when launching from Eclipse.</td></tr>
 							<tr><td class="c-repo">project.type <span class="badge text-bg-success fw-normal">required</span></td><td>ERFoundation, Parslips</td><td><code>application</code> or <code>framework</code>. When the project runs from its folder, it decides whether it becomes the application's main bundle or a framework bundle. vermilingua goes by the pom's <code>&lt;packaging&gt;</code> instead, <code>woapplication</code> or <code>woframework</code>, so keep the two in agreement.</td></tr>
 							<tr><td class="c-repo">principalClass <span class="badge text-bg-success fw-normal">applications</span></td><td>vermilingua, Parslips, ERFoundation</td><td>For an application, the fully qualified class with its <code>main()</code>. vermilingua writes it into the bundle's <code>config.txt</code>, where the launch script reads it, and won't build an application without it. Parslips takes a project with a <code>principalClass</code> to be an application, and creates its Eclipse launch configuration from it. A framework may name one too, the class loaded when the framework is, but wonder-slim frameworks take part in startup as plugins instead (see <a href="/guide/startup">How an application starts</a>).</td></tr>
+							<tr><td class="c-repo">project.base <span class="badge text-bg-secondary fw-normal">optional</span></td><td>Parslips</td><td><code>wo</code> for WebObjects, <code>ng</code> for ng-objects. It tells the editor which elements and components exist and how templates are validated. Without it, Parslips looks at the classpath and usually guesses right; with it, there's nothing to guess. Nothing else reads it: the project builds and runs the same without it.</td></tr>
 						</tbody>
 					</table></div>
 
@@ -77,6 +83,18 @@ project.type=framework</code></pre>
 							<tr><td class="c-repo">component.wellFormedTemplateRequired</td><td>the workspace preference</td><td><code>true</code> to require well-formed templates, every element closed.</td></tr>
 						</tbody>
 					</table></div>
+
+					<h3 id="folders">Where the folders are: dir.*</h3>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Key</th><th>Read by</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">dir.components</td><td>vermilingua, ERProjectLayout</td><td>The folder of the components, each a <code>Name.wo</code> folder with its template. Default: <code>src/main/components</code>.</td></tr>
+							<tr><td class="c-repo">dir.woresources</td><td>vermilingua, ERProjectLayout</td><td>The folder of the bundle's resources: models, <code>Properties</code>, strings and the like. Default: <code>src/main/woresources</code>.</td></tr>
+							<tr><td class="c-repo">dir.webserverResources</td><td>vermilingua, ERProjectLayout</td><td>The folder of the resources served to the browser: stylesheets, images, scripts. Default: <code>src/main/webserver-resources</code>.</td></tr>
+						</tbody>
+					</table></div>
+					<p>Paths are relative to the project folder. A key that isn't there takes its default, the standard Maven layout, so a project in that layout declares none of them. One laid out the "Fluffy Bunny" way, with <code>Components</code>, <code>Resources</code> and <code>WebServerResources</code> at its top, declares all three, as in the complete file above.</p>
+					<p>vermilingua packages the folders these keys name, and ERProjectLayout finds components and resources in the same folders when the application runs from its project folder, so the two always agree. Only the declared folders are searched: a resource kept anywhere else wouldn't be in the built application either. A key with an empty value is an error, not a way back to the default; to use the default, leave the key out. vermilingua's own settings in the pom (<code>componentsPath</code>, <code>woresourcesPath</code>, <code>webserverResourcesPath</code>) take precedence over these keys, but a project is easier to follow when <code>build.properties</code> is the one place that says where its folders are.</p>
 
 					<h3 id="launch">Launching: launch.*</h3>
 					<p>vermilingua writes these into the built bundle's <code>config.txt</code>, and its launch script reads them to start the JVM.</p>
@@ -138,13 +156,14 @@ project.type=framework</code></pre>
 
 					<h2 id="cleanup">6. Bringing a project up to date</h2>
 					<ol>
-						<li>Make sure the four required keys are there: <code>project.base</code>, <code>project.name</code>, <code>project.type</code> and, for an application, <code>principalClass</code>.</li>
+						<li>Make sure the required keys are there: <code>project.name</code>, <code>project.type</code> and, for an application, <code>principalClass</code>. Keep <code>project.base</code> if you edit with Parslips.</li>
+						<li>If the project isn't in the standard Maven layout, declare its folders with the <a href="#folders"><code>dir.*</code> keys</a>.</li>
 						<li>Rename <code>jvm</code> and <code>jvmOptions</code> to <code>launch.jvm</code> and <code>launch.jvmOptions</code>, and drop <code>jdb</code> and <code>jdbOptions</code>.</li>
 						<li>Remove the <code>component.*</code> keys that are set to their defaults.</li>
 						<li>Remove every <a href="#legacy">legacy key</a>, keeping <code>classes.dir</code> only if the project is still built with WOLips.</li>
 						<li>Build with vermilingua and launch from Eclipse once, and check that the bundle is named as before.</li>
 					</ol>
-					<p>The result is usually four lines where there were fifteen.</p>
+					<p>The result is usually three or four lines where there were fifteen.</p>
 				</div>
 			</div>
 		</div>
