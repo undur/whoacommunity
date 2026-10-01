@@ -20,8 +20,9 @@ public Application() {
     routes.map( "/news/*", new NewsRoute() );
     routes.map( "/go/*", new GoRoute() );
 }</code></pre>
-					<p>A pattern is either exact, or a prefix when it ends in <code>*</code>. Matching runs in registration order and the first match wins, so put specific patterns before broad ones. A request that matches nothing gets a 404 with the URL in the body. Every routed request is logged with its IP address and user agent, which doubles as a cheap access log during development.</p>
+					<p>A pattern is either exact, or a prefix when it ends in <code>*</code>. Routes are tried in the order they're mapped, and the first that answers wins, so put specific patterns before broad ones. A handler can also decline a URL and leave it to the routes after it (see <a href="#nothing">section 5</a>), which is also where you'll find what a URL nothing answers gets. Every routed request is logged with its IP address and user agent, which doubles as a cheap access log during development.</p>
 					<p>Note that <code>/news/</code> and <code>/news/*</code> are different patterns: the first is the index, the second everything beneath it. Some applications map a path both with and without its trailing slash so either form works; a two-line helper does that.</p>
+					<p>The first segment of a path can't be one of the application's request handler keys: <code>wa</code>, <code>wo</code>, <code>res</code> and the like. Those URLs always go to their request handlers, so a route like <code>/wa/report</code> could never be reached, and mapping one throws, naming the key.</p>
 
 					<h2 id="shapes">2. Four shapes of handler</h2>
 					<p>A handler is anything that turns a <code>RouteInvocation</code> into a <code>WOActionResults</code>: a page, a response, or something that yields one. In practice that means one of four things.</p>
@@ -58,7 +59,7 @@ private static WOActionResults laws( final RouteInvocation ri ) {
         paragraph = ri.routeURL().getInteger( 3, null );
     }
     catch( NumberFormatException e ) {
-        return notFound( "Not a valid reference: " + ri.url() );
+        return RouteHandler.DECLINED;
     }
 
     …
@@ -73,11 +74,10 @@ private static class GoRoute implements RouteHandler {
 
     @Override
     public WOActionResults handle( final RouteInvocation ri ) {
-        final String code = ri.routeURL().getString( 1 );
-        final Shop shop = Shop.forShortCode( code );
+        final Shop shop = Shop.forShortCode( ri.routeURL().getString( 1 ) );
 
         if( shop == null ) {
-            return notFound( "No shop for code " + code );
+            return DECLINED;
         }
 
         shop.countVisit();
@@ -88,6 +88,7 @@ private static class GoRoute implements RouteHandler {
         return response;
     }
 }</code></pre>
+					<p>A handler never returns null. When it has no answer for a URL, it returns <code>RouteHandler.DECLINED</code>, as above, and the URL goes on (<a href="#nothing">section 5</a>). A null is taken for a mistake and throws, naming the handler and the URL.</p>
 
 					<h2 id="parameters">3. Reading parameters</h2>
 					<p>The invocation's <code>routeURL()</code> splits the path on slashes, leading and trailing ones removed, and hands out the pieces by index. Index 0 is the first path element, which for <code>/laws/2026/12</code> is <code>laws</code>, so parameters start at 1:</p>
@@ -126,16 +127,6 @@ routes.map( "/company/*", ri -> {
     return response;
 } );
 
-// A file from the bundle: the favicon browsers ask for regardless of your markup
-routes.map( "/favicon.ico", ri -> {
-    final byte[] bytes = application().resourceManager().bytesForResourceNamed( "favicon.ico", "app", NSArray.emptyArray() );
-    final WOResponse response = new WOResponse();
-    response.setHeader( "image/x-icon", "content-type" );
-    response.setHeader( "public, max-age=3600", "cache-control" );
-    response.setContent( new NSData( bytes ) );
-    return response;
-} );
-
 // A redirect: 302 on purpose, so browsers don't cache it the way they cache a 301
 routes.map( "/login", ri -> {
     final WOResponse response = new WOResponse();
@@ -143,21 +134,53 @@ routes.map( "/login", ri -> {
     response.setHeader( "https://app.example.com/", "location" );
     return response;
 } );</code></pre>
-					<h2 id="dev-prod">5. The same URLs in development and production</h2>
+					<p>Files that browsers and crawlers ask a site's root for, <code>/favicon.ico</code>, <code>/robots.txt</code>, <code>/.well-known/…</code>, don't need a route each: they're public resources (<a href="#nothing">section 5</a>).</p>
+
+					<h2 id="nothing">5. When nothing answers</h2>
+					<p>Routing is a chain. A URL goes to the routes whose pattern matches it, in the order they're mapped, then to the route table's fallback, if one is set, and then to its not found handler. Each one answers the URL or declines it, and the first answer is the response.</p>
+					<p><strong>Declining.</strong> A handler that returns <code>RouteHandler.DECLINED</code> passes the URL on, to the next route that matches it or to what comes after the routes. So a route can match a pattern and still leave the URL alone: a <code>/*</code> route that answers only the slugs it knows, an object route that declines an identifier that names nothing, a parameter that doesn't parse. Declining is usually better than building a 404 yourself, because the not found handler answers it the same way as every other URL nothing answers, development pages included.</p>
+					<p><strong>Public resources: the fallback.</strong> An application that serves public resources answers the files in the <code>public</code> folder of its web server resources at the root of its URL space: <code>public/favicon.ico</code> at <code>/favicon.ico</code>, <code>public/.well-known/security.txt</code> at <code>/.well-known/security.txt</code>. A URL that isn't one of them goes on to not found. It's off unless the application turns it on:</p>
+<pre><code class="language-clike">routes.setFallbackRouteHandler( new ERXPublicResources() );</code></pre>
+					<p>The fallback comes after every route, so a route always wins over a file.</p>
+					<p><strong>Not found.</strong> The last in the chain, and the one that always answers. Deployed, that's a plain 404 with the URL in the body. In development, wonder-slim sets one that helps instead: an unmapped <code>/</code> shows a welcome page that says what's running and how to map a page of your own, and any other URL gets a 404 page with the URL, the routes that are mapped and how to map one. An application can set its own, a branded 404 page, say, or the plain one in development too, in its constructor:</p>
+<pre><code class="language-clike">// A page of your own, answered with the 404 status
+routes.setNotFoundRouteHandler( ri -> {
+    final WOResponse response = pageWithName( NotFoundPage.class, ri.context() ).generateResponse();
+    response.setStatus( 404 );
+    return response;
+} );
+
+// The plain 404, in development too
+routes.setNotFoundRouteHandler( new RouteTable.NotFoundRouteHandler() );</code></pre>
+					<p><strong>Passing the request on.</strong> An application that shares its server with another handler, an ng-objects application in the same Jetty server through wo-adaptor-jetty, has not found decline every URL, so the request is passed on to the next handler in the server:</p>
+<pre><code class="language-clike">routes.setNotFoundRouteHandler( new RouteTable.PassOnRouteHandler() );</code></pre>
+					<p>A URL that every handler in the chain declines is answered with a bare 404 marked unhandled, which wo-adaptor-jetty discards to let the next handler try the request. Nothing else is generated for it, since nobody sees it. Without another handler, leave not found as it is: there's nothing to pass the request on to.</p>
+
+					<h2 id="dev-prod">6. The same URLs in development and production</h2>
 					<p>This is the part worth understanding, because it's what makes routes pleasant rather than merely possible.</p>
-					<p><strong>In development</strong> the application listens on its own port and wonder-slim registers the routing request handler as the application's default request handler. A request for <code>/shops/</code> at <code>http://localhost:1200/shops/</code> is passed to the application as it is and lands in the table. There is no adaptor, no rewrite, nothing to configure: the URL you type is the URL your handler sees.</p>
-					<p><strong>In production behind <a href="/project/modulo">modulo</a></strong>, a site maps its hostnames to an application, and modulo forwards the request to an instance unchanged. The application's default request handler receives <code>/shops/</code> exactly as it did on localhost, so the same handler runs with the same <code>routeURL()</code>. Component actions, direct actions and resource URLs the application generates are adaptor URLs and are routed by modulo the way they always were, so nothing else changes.</p>
-					<p><strong>Behind Apache with mod_WebObjects</strong> only adaptor URLs reach the application by default, so friendly URLs need a <code>RewriteRule</code> in the virtual host that maps them into the application's adaptor URL space. Pointing Apache's 404 handler at the application works as well, and covers every path without a rule per URL. The application code is identical; only the front end differs, and the <a href="/guides">deployment guides</a> show each setup.</p>
-					<h2 id="practice">6. In practice</h2>
+					<p><strong>In development</strong> the application listens on its own port, and the URL you type is the URL your handler sees: a request for <code>http://localhost:1200/shops/</code> lands in the route table as <code>/shops/</code>. There is no adaptor, no rewrite, nothing to configure.</p>
+					<p><strong>The application's own URLs are short too.</strong> Component actions, direct actions and resources are generated without the adaptor prefix, <code>/wo/…</code>, <code>/wa/…</code>, <code>/res/…</code>, and the application accepts them that way. The long form, <code>/cgi-bin/WebObjects/MyApp.woa/wa/…</code>, keeps working, so existing links and bookmarks don't break.</p>
+					<p><strong>In production behind <a href="/project/modulo">modulo</a></strong>, a site maps its hostnames to an application, and modulo forwards the request to an instance unchanged. The application sees <code>/shops/</code> exactly as it did on localhost, so the same handler runs with the same <code>routeURL()</code>.</p>
+					<p><strong>Behind Apache with mod_WebObjects</strong> only adaptor URLs reach the application, so a rewrite rule in the virtual host forwards everything else into the application's adaptor URL space, under the <code>route</code> request handler key. With the adaptor at <code>/Apps/WebObjects</code>:</p>
+<pre><code class="language-none">RewriteEngine on
+RewriteRule ^/$ /Apps/WebObjects/MyApp.woa/route/ [L,PT]
+RewriteCond %{REQUEST_URI} !^/Apps/WebObjects/
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
+RewriteRule ^/(.*)$ /Apps/WebObjects/MyApp.woa/route/$1 [L,PT]</code></pre>
+					<p>The first rule forwards the root; the second everything else that isn't already an adaptor URL or a file Apache serves itself. The condition on the adaptor path matters: without it, the application's own long URLs would be rewritten a second time. Forwarding under <code>route</code> rather than the bare path matters too: mod_WebObjects reads a number right after <code>.woa</code> as an instance number, so a route like <code>/2026</code> forwarded bare would never arrive. The <code>route</code> key never appears in a URL anyone sees. The application code is identical; only the front end differs, and the <a href="/guides">deployment guides</a> show each setup.</p>
+
+					<h2 id="practice">7. In practice</h2>
 					<ul>
 						<li><strong>Keep the table in one place.</strong> A <code>Routes</code> class with a static <code>register()</code> method, called from the Application constructor, reads as the site's map. wonder-slim's AjaxPlayground does exactly this.</li>
-						<li><strong>Map the root.</strong> <code>/</code> is a route like any other; it is where the login decision usually lives.</li>
+						<li><strong>Map the root.</strong> <code>/</code> is a route like any other, and it is where the login decision usually lives. Until it's mapped, development shows the welcome page there and production a 404.</li>
 						<li><strong>Prefer flat, stable paths</strong> for pages, and reserve wildcards for things with identifiers: <code>/articles/&lt;slug&gt;</code>, <code>/i/&lt;entity&gt;/&lt;id&gt;</code>.</li>
-						<li><strong>Handle bad parameters yourself.</strong> <code>getInteger</code> throws on non-numbers, and a slug that matches nothing returns null from your lookup; answer with a 404 rather than letting an exception page out.</li>
+						<li><strong>Decline what you can't answer.</strong> <code>getInteger</code> throws on non-numbers, and a slug that matches nothing returns null from your lookup. Return <code>RouteHandler.DECLINED</code> rather than letting an exception page out, and the not found handler answers.</li>
 						<li><strong>Wildcards are prefixes</strong>, nothing more. There is no pattern language yet; the matching is deliberately simple, and everything beyond the prefix is yours to parse from <code>routeURL()</code>.</li>
-						<li><strong>Resources are routed too.</strong> With the app-based resource manager, wonder-slim maps its own resource URL prefix in the same table, which is how a routed page's stylesheets resolve in both environments.</li>
+						<li><strong>Request handler URLs come first.</strong> <code>/wa/</code>, <code>/wo/</code>, <code>/res/</code> and the application's other handler keys go to their request handlers before the route table sees anything, even under a catch-all <code>/*</code> route.</li>
+						<li><strong>Describe the current page with <code>RouteRequestHandler.routePath( request )</code></strong>, the path as the routes see it, rather than <code>request.uri()</code>, which carries the form the request arrived in.</li>
 					</ul>
-					<p>The classes are four: <code>RouteTable</code>, <code>RouteHandler</code>, <code>RouteInvocation</code> and <code>RouteURL</code>, all in <code>er.extensions.routes</code>. The <a href="https://github.com/undur/wonder-slim">wonder-slim repository</a> has them, and the changelog records how the routing has evolved.</p>
+					<p>The classes are in <code>er.extensions.routes</code>: <code>RouteTable</code>, <code>RouteHandler</code>, <code>RouteInvocation</code> and <code>RouteURL</code>, with <code>ERXPublicResources</code> in <code>er.extensions.resources</code>. The <a href="https://github.com/undur/wonder-slim">wonder-slim repository</a> has them, and the changelog records how the routing has evolved.</p>
 				</div>
 			</div>
 		</div>
@@ -168,6 +191,7 @@ routes.map( "/login", ri -> {
 				<a href="#shapes">Four shapes of handler</a>
 				<a href="#parameters">Reading parameters</a>
 				<a href="#returning">What a handler returns</a>
+				<a href="#nothing">When nothing answers</a>
 				<a href="#dev-prod">Development and production</a>
 				<a href="#practice">In practice</a>
 			</nav>
