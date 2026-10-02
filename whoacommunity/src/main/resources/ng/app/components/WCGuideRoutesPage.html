@@ -49,18 +49,9 @@ routes.map( "/laws/*", Application::laws );
 routes.map( "/oauth/callback", Application::oauthCallback );
 
 private static WOActionResults laws( final RouteInvocation ri ) {
-    int year = Year.now().getValue();
-    Integer article = null;
-    Integer paragraph = null;
-
-    try {
-        year = ri.routeURL().getInteger( 1, year );
-        article = ri.routeURL().getInteger( 2, null );
-        paragraph = ri.routeURL().getInteger( 3, null );
-    }
-    catch( NumberFormatException e ) {
-        return RouteHandler.DECLINED;
-    }
+    final int year = ri.routeURL().getInteger( 1, Year.now().getValue() );
+    final Integer article = ri.routeURL().getInteger( 2 );
+    final Integer paragraph = ri.routeURL().getInteger( 3 );
 
     …
 }</code></pre>
@@ -96,8 +87,10 @@ private static class GoRoute implements RouteHandler {
 
 url.getString( 1 );          // "2026" — or null if the URL is shorter
 url.getString( 1, "none" );  // with a default
-url.getInteger( 2, null );   // parsed as an Integer; NumberFormatException if it isn't one
+url.getInteger( 2 );         // 12, as an Integer — or null if it's missing or isn't a number
+url.getInteger( 2, 0 );      // with a default, for the same two cases
 url.length();                // how many elements the path has</code></pre>
+					<p>A segment that isn't a number counts as missing, since a URL is whatever the user typed: <code>/laws/abc</code> gets the default, not an exception. When a missing or mistyped number means the URL names nothing, check for null and decline, and the not found handler answers.</p>
 					<p>Query parameters are not part of the route; the query string is stripped before matching. Read them from the request, as you always have:</p>
 <pre><code class="language-clike">routes.map( "/oauth/callback", ri -> {
     final String code = ri.request().stringFormValueForKey( "code" );
@@ -175,7 +168,7 @@ RewriteRule ^/(.*)$ /Apps/WebObjects/MyApp.woa/route/$1 [L,PT]</code></pre>
 						<li><strong>Keep the table in one place.</strong> A <code>Routes</code> class with a static <code>register()</code> method, called from the Application constructor, reads as the site's map. wonder-slim's AjaxPlayground does exactly this.</li>
 						<li><strong>Map the root.</strong> <code>/</code> is a route like any other, and it is where the login decision usually lives. Until it's mapped, development shows the welcome page there and production a 404.</li>
 						<li><strong>Prefer flat, stable paths</strong> for pages, and reserve wildcards for things with identifiers: <code>/articles/&lt;slug&gt;</code>, <code>/i/&lt;entity&gt;/&lt;id&gt;</code>.</li>
-						<li><strong>Decline what you can't answer.</strong> <code>getInteger</code> throws on non-numbers, and a slug that matches nothing returns null from your lookup. Return <code>RouteHandler.DECLINED</code> rather than letting an exception page out, and the not found handler answers.</li>
+						<li><strong>Decline what you can't answer.</strong> A number that isn't there (or isn't a number) comes back as null from <code>getInteger</code>, and a slug that matches nothing as null from your lookup. Return <code>RouteHandler.DECLINED</code> rather than an error page of your own, and the not found handler answers.</li>
 						<li><strong>Wildcards are prefixes</strong>, nothing more. There is no pattern language yet; the matching is deliberately simple, and everything beyond the prefix is yours to parse from <code>routeURL()</code>.</li>
 						<li><strong>Request handler URLs come first.</strong> <code>/wa/</code>, <code>/wo/</code>, <code>/res/</code> and the application's other handler keys go to their request handlers before the route table sees anything, even under a catch-all <code>/*</code> route.</li>
 						<li><strong>Describe the current page with <code>RouteRequestHandler.routePath( request )</code></strong>, the path as the routes see it, rather than <code>request.uri()</code>, which carries the form the request arrived in.</li>
