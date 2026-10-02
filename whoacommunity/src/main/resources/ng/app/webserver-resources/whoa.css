@@ -542,6 +542,12 @@ a:hover { color: var(--whoa-accent); }
 .article-meta .sep { opacity: .5; }
 
 .article-body { font-size: 1rem; line-height: 1.72; color: var(--whoa-text); }
+/* Markdown tables: bordered, in the feed-table idiom, scrolling sideways when wider than the column */
+.article-body table { border-collapse: collapse; width: 100%; margin: 1.2rem 0; font-size: .9rem; line-height: 1.5; display: block; overflow-x: auto; }
+.article-body table thead th { text-align: left; font-family: "JetBrains Mono", monospace; font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--whoa-dim); background: var(--whoa-panel-2); border: 1px solid var(--whoa-line); padding: .5rem .75rem; }
+.article-body table td { border: 1px solid var(--whoa-line); padding: .45rem .75rem; vertical-align: top; }
+.article-body table tbody tr:nth-child(even) td { background: var(--whoa-panel-2); }
+.article-body table code { white-space: nowrap; }
 .article-body > * { max-width: 74ch; }
 .article-body > pre { max-width: none; }
 .article-body p { margin-bottom: 1.15rem; }
