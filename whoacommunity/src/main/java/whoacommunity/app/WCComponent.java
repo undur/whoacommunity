@@ -42,7 +42,7 @@ public abstract class WCComponent extends NGComponent {
 	public static final Crumb HOME_CRUMB = new Crumb( "whoacommunity", "/" );
 
 	/**
-	 * @return Which site section this page belongs to: "writing", "videos", "activity", "guides", "reference", "projects", "project" — or null
+	 * @return Which site section this page belongs to: "writing", "videos", "activity", "roadmap", "guides", "reference", "projects", "project" — or null
 	 */
 	public String pageIdentifier() {
 		return null;

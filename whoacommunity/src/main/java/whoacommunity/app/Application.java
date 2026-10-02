@@ -51,7 +51,9 @@ import whoacommunity.components.WCWritingPage;
 import whoacommunity.data.Article;
 import whoacommunity.components.WCElementReferencePage;
 import whoacommunity.elements.ElementReferenceFeed;
+import whoacommunity.components.WCRoadmapPage;
 import whoacommunity.github.GithubFeed;
+import whoacommunity.roadmap.RoadmapFeed;
 import whoacommunity.util.CachedFeed;
 import whoacommunity.util.Repos;
 import whoacommunity.util.Repos.Repo;
@@ -75,6 +77,7 @@ public class Application extends NGApplication {
 		// boot-time sweep below warms every cache before the first visitor.
 		GithubFeed.shared.getClass();
 		ElementReferenceFeed.shared.getClass();
+		RoadmapFeed.shared.getClass();
 
 		try {
 			Class.forName( "whoacommunity.components.WCSidebar" );
@@ -152,6 +155,7 @@ public class Application extends NGApplication {
 				.map( "/slack-archive", WCSlackArchivePage.class )
 				.map( "/slack-client", WCSlackClientPage.class )
 				.map( "/dev-feed", WCFeedPage.class )
+				.map( "/roadmap", WCRoadmapPage.class )
 				.map( "/article/*", this::viewArticle )
 				.map( "/videos", WCVideosPage.class )
 				.map( "/video/*", this::viewVideo )
@@ -212,7 +216,7 @@ public class Application extends NGApplication {
 			xml.append( "</url>\n" );
 		};
 
-		for( String path : List.of( "/", "/writing", "/projects", "/guides", "/dev-feed", "/videos", "/deployment-config", "/deployment-apache-modulo", "/deployment-apache-mod-webobjects", "/guide/wonder-slim-development", "/guide/building-with-vermilingua", "/guide/url-routing", "/guide/server-push", "/guide/startup", "/guide/logging", "/guide/deploying-with-vermilingua", "/guide/build-properties", "/guide/configuring-modulo" ) ) {
+		for( String path : List.of( "/", "/writing", "/projects", "/guides", "/dev-feed", "/roadmap", "/videos", "/deployment-config", "/deployment-apache-modulo", "/deployment-apache-mod-webobjects", "/guide/wonder-slim-development", "/guide/building-with-vermilingua", "/guide/url-routing", "/guide/server-push", "/guide/startup", "/guide/logging", "/guide/deploying-with-vermilingua", "/guide/build-properties", "/guide/configuring-modulo" ) ) {
 			add.accept( path, null );
 		}
 

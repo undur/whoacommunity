@@ -336,7 +336,7 @@ a:hover { color: var(--whoa-accent); }
 }
 
 .lead-top { display: flex; align-items: baseline; gap: .7rem; margin-bottom: .55rem; flex-wrap: wrap; }
-.lead-title { font-size: 1.62rem; font-weight: 600; letter-spacing: -0.028em; line-height: 1.18; color: var(--whoa-bright); margin: 0 0 .9rem; max-width: 26ch; }
+.lead-title { font-size: 1.62rem; font-weight: 600; letter-spacing: -0.028em; line-height: 1.18; color: var(--whoa-bright); margin: 0 0 .9rem; }
 .lead-title a { color: inherit; text-decoration: none; }
 .lead-title a:hover { color: var(--whoa-accent); }
 .lead-foot { margin-top: 1.4rem; padding-top: 1.1rem; border-top: 1px solid var(--whoa-line); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
@@ -537,7 +537,7 @@ a:hover { color: var(--whoa-accent); }
 /* ---------- Article ---------- */
 
 .article-head { margin-bottom: 1.8rem; padding-bottom: 1.4rem; border-bottom: 1px solid var(--whoa-line); }
-.article-title { font-size: 2.05rem; font-weight: 600; letter-spacing: -0.03em; line-height: 1.14; color: var(--whoa-bright); margin: 0 0 .6rem; max-width: 24ch; }
+.article-title { font-size: 2.05rem; font-weight: 600; letter-spacing: -0.03em; line-height: 1.14; color: var(--whoa-bright); margin: 0 0 .6rem; }
 .article-meta { display: flex; align-items: center; gap: .7rem; font-family: "JetBrains Mono", monospace; font-size: .7rem; color: var(--whoa-dim); flex-wrap: wrap; }
 .article-meta .sep { opacity: .5; }
 
@@ -662,6 +662,25 @@ a:hover { color: var(--whoa-accent); }
 .elref-constraints { margin-top: .7rem; display: flex; flex-direction: column; gap: .3rem; }
 .elref-constraint { background: rgba(245, 158, 11, .1); border-left: 3px solid #d97706; border-radius: 0 5px 5px 0; padding: .45rem .8rem; font-size: .84rem; }
 .elref-toc { max-height: calc(100vh - 6rem); overflow-y: auto; }
+
+/* Stack roadmap: the board's columns as sections, each a set of theme panels */
+.roadmap-page { max-width: none; }
+.rail-prose p { margin: 0; padding: .55rem .95rem; font-size: .8rem; line-height: 1.55; color: var(--whoa-muted); border-bottom: 1px solid var(--whoa-line-2); }
+.rail-prose p:last-child { border-bottom: 0; padding-bottom: .8rem; }
+.rail-prose strong { color: var(--whoa-bright); font-weight: 600; }
+.rail-prose em { font-style: normal; color: var(--whoa-text); }
+.roadmap-intro { margin-bottom: 1.4rem; }
+.roadmap-intro p { margin: 0; font-size: .92rem; line-height: 1.6; color: var(--whoa-muted); }
+.roadmap-section { margin-top: 1.6rem; }
+.roadmap-now .roadmap-section { color: var(--whoa-accent); }
+.roadmap-table .c-kind, .roadmap-table .c-effort { white-space: nowrap; width: 1%; }
+.roadmap-theme-row td { padding: .7rem .95rem .35rem; font-family: "JetBrains Mono", monospace; font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--whoa-dim); background: var(--whoa-panel-2); border-bottom: 1px solid var(--whoa-line); }
+.roadmap-theme-row .n { margin-left: .6rem; letter-spacing: 0; color: var(--whoa-muted); }
+.roadmap-table tbody tr.roadmap-theme-row:hover td { background: var(--whoa-panel-2); }
+.roadmap-kind, .roadmap-effort { font-family: "JetBrains Mono", monospace; font-size: .6rem; letter-spacing: .04em; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--whoa-line); color: var(--whoa-dim); white-space: nowrap; }
+.roadmap-kind-bug, .roadmap-kind-security { color: #b45309; border-color: rgba(245,158,11,.5); background: rgba(245,158,11,.12); }
+.roadmap-kind-feature { color: var(--whoa-accent); border-color: var(--whoa-accent-line); background: var(--whoa-accent-soft); }
+.roadmap-kind-decision { color: #5b3aa3; border-color: rgba(91,58,163,.35); background: rgba(91,58,163,.08); }
 
 /* Release notes on a project's releases page */
 .release-list { display: flex; flex-direction: column; gap: 1.1rem; }

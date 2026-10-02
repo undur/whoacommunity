@@ -1,0 +1,53 @@
+<wo:WCLook>
+	<div class="feed-layout roadmap-page">
+		<div>
+		<div class="whoa-section">Stack roadmap<span><wo:if condition="$isLoaded"><wo:str value="$itemCount" /> open issues across the stack, by theme</wo:if></span><wo:link href="$projectURL" target="_blank" rel="noopener">The board on GitHub ↗</wo:link></div>
+
+		<wo:if condition="$isLoaded" negate="$true">
+			<div class="whoa-panel"><p class="project-empty">The roadmap hasn't loaded yet; it comes from the project board on GitHub. Try again in a moment.</p></div>
+		</wo:if>
+
+		<wo:if condition="$isLoaded">
+			<wo:repetition list="$groups" item="$currentGroup">
+				<wo:container elementName="section" class="$currentGroupClass">
+					<div class="whoa-section roadmap-section"><wo:str value="$currentGroup.title" /><span><wo:str value="$currentGroup.count" /> · <wo:str value="$currentGroup.subtitle" /></span></div>
+					<wo:if condition="$currentGroupIsEmpty">
+						<div class="whoa-panel"><p class="project-empty">Nothing here right now.</p></div>
+					</wo:if>
+					<wo:if condition="$currentGroupIsEmpty" negate="$true">
+						<div class="feed-table-wrap">
+							<table class="feed-table roadmap-table">
+								<thead><tr><th>Repository</th><th>Issue</th><th>Kind</th><th>Effort</th></tr></thead>
+								<tbody>
+									<wo:repetition list="$currentGroup.themes" item="$currentTheme">
+										<tr class="roadmap-theme-row"><td colspan="4"><wo:str value="$currentTheme.theme" /><span class="n"><wo:str value="$currentTheme.items.size" /></span></td></tr>
+										<wo:repetition list="$currentTheme.items" item="$currentItem">
+											<tr>
+												<td class="c-repo"><wo:str value="$currentItem.emoji" /> <wo:str value="$currentItemRef" /></td>
+												<td class="c-msg"><wo:link href="$currentItem.url" target="_blank" rel="noopener"><wo:str value="$currentItem.title" /></wo:link></td>
+												<td class="c-kind"><wo:if condition="$currentItemHasKind"><wo:container elementName="span" class="$currentItemKindClass"><wo:str value="$currentItem.kind" /></wo:container></wo:if></td>
+												<td class="c-effort"><wo:if condition="$currentItemHasEffort"><span class="roadmap-effort"><wo:str value="$currentItem.effort" /></span></wo:if></td>
+											</tr>
+										</wo:repetition>
+									</wo:repetition>
+								</tbody>
+							</table>
+						</div>
+					</wo:if>
+				</wo:container>
+			</wo:repetition>
+		</wo:if>
+		</div>
+		<div>
+			<div class="rail-block rail-prose">
+				<div class="rail-head">How the board works</div>
+				<p>Every open issue in every stack repository, in both the undur and ngobjects organizations, is on one GitHub project. Issues stay where they were filed; the board is the view across them.</p>
+				<p><strong>Status</strong> is the column. <em>Now</em> is what's being worked on, <em>Next</em> what's lined up after it, <em>Waiting on a decision</em> what can't move until a call is made, and <em>The notebook</em> holds ideas and design notes kept on file. Issues are a design notebook as much as a bug tracker, so most of the board is the notebook, and that's by design.</p>
+				<p><strong>Theme</strong> is the grouping, because a piece of work usually touches two or three repositories: client-address trust spans modulo and wonder-slim, routing spans wonder-slim and ng-objects, launch spans vermilingua and the deployment stack.</p>
+				<p><strong>Kind</strong> says what an issue is: a bug, a security item, a feature, a decision, a design note, a cleanup, or docs. <strong>Effort</strong> is a rough size, S, M or L.</p>
+				<p>Pairs of issues that must ship together, and the chains where one issue blocks another, are recorded on the issues themselves on GitHub.</p>
+				<p>To get something on the board, file an issue in the repository it belongs to; it's picked up from there. Items the triage found done or superseded are reviewed before being closed and don't appear here.</p>
+			</div>
+		</div>
+	</div>
+</wo:WCLook>
