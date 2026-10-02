@@ -29,6 +29,8 @@ public class Repos {
 					new Repo( Org.undur, "⚙️️", "wonder-slim-deployment", "https://github.com/undur/wonder-slim-deployment", true ),
 					new Repo( Org.undur, "🦡", "vermilingua", "https://github.com/undur/vermilingua-maven-plugin", true ),
 					new Repo( Org.undur, "📚", "whoacommunity.com", "https://github.com/undur/whoacommunity", true ),
+					new Repo( Org.undur, "🍲", "jambalaya5", "https://github.com/undur/jambalaya5", true ),
+					new Repo( Org.undur, "🎈", "helium5", "https://github.com/undur/helium5", true ),
 					new Repo( Org.undur, "🔌", "wo-adaptor-jetty", "https://github.com/undur/wo-adaptor-jetty", true ),
 					// new Repo( Org.undur, "👨‍⚕️", "examiner", "https://github.com/undur/examiner", true ), // in limbo for now — Hugi 2026-09-04
 					new Repo( Org.undur, "💋", "parslips", "https://github.com/undur/parslips", true ),
@@ -71,7 +73,7 @@ public class Repos {
 	/**
 	 * Repos in our own orgs that aren't part of the stack
 	 */
-	private static final Set<String> AROUND_THE_STACK = Set.of( "whoacommunity.com", "examiner" );
+	private static final Set<String> AROUND_THE_STACK = Set.of( "whoacommunity.com", "examiner", "jambalaya5", "helium5" );
 
 	public static Group groupOf( final Repo repo ) {
 		if( repo.organization() != Org.undur && repo.organization() != Org.ng ) {
