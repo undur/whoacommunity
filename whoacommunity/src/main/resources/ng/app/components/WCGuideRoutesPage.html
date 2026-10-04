@@ -89,12 +89,12 @@ private static WOActionResults go( final RouteInvocation ri ) {
 
 Route&lt;Books&gt; books = Route.of( Books.class );                    // in Routes
 
-routes.route( "/books/", Routes.books, BookListPage.class );    // in the declaration</code></pre>
+routes.map( "/books/", Routes.books, BookListPage.class );      // in the declaration</code></pre>
 					<p>Each component of the record is a query parameter, converted to its type. The page gets them by name, like path parameters. One that isn't in the URL isn't set, so the page keeps its own default (<code>public Sort sort = Sort.title;</code>). Links give them the same way: <code>&lt;wo:route to="$routes.books" :sort="author"&gt;</code>, which is checked: <code>author</code> must be one of <code>Sort</code>'s values.</p>
 					<p>A form posting to a route works the same way. The record's components are the form's fields, and a handler gets the record:</p>
 <pre><code class="language-clike">public record CreateBook( String title, String author ) {}
 
-routes.route( "/books", Routes.createBook, Application::createBook, Method.POST );</code></pre>
+routes.map( "/books", Routes.createBook, Application::createBook, Method.POST );</code></pre>
 <pre><code class="language-html">&lt;wo:routeForm to="$routes.createBook"&gt;
     &lt;input name="title"&gt; &lt;input name="author"&gt; &lt;button&gt;Add&lt;/button&gt;
 &lt;/wo:routeForm&gt;</code></pre>
