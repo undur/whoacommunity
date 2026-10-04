@@ -480,6 +480,8 @@ a:hover { color: var(--whoa-accent); }
 
 .feed-table td { padding: .42rem .95rem; border-bottom: 1px solid var(--whoa-line-2); font-size: .82rem; vertical-align: baseline; color: var(--whoa-text); }
 .feed-table tr:last-child td { border-bottom: 0; }
+/* A heavier line where one day ends and the next begins */
+.feed-table tr.day-start td { border-top: 2px solid var(--whoa-line); }
 .feed-table tbody tr:hover td { background: var(--whoa-hover); }
 .feed-table .c-repo { font-family: "JetBrains Mono", monospace; font-size: .72rem; color: var(--whoa-muted); white-space: nowrap; width: 1%; }
 .feed-table .c-when { font-family: "JetBrains Mono", monospace; font-size: .7rem; color: var(--whoa-dim); white-space: nowrap; width: 1%; font-variant-numeric: tabular-nums; }

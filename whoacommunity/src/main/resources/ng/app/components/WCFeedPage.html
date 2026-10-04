@@ -22,7 +22,7 @@
 						</thead>
 						<tbody>
 							<wo:repetition list="$allItems" item="$currentItem">
-								<wo:container elementName="tr" class="$currentItem.rowClass">
+								<wo:container elementName="tr" class="$currentItemRowClass">
 									<td class="c-repo"><wo:str value="$currentItem.repo.emoji" /> <wo:str value="$currentItem.repo.name" /></td>
 									<td class="c-when"><wo:str value="$currentItem.shortDateFormatted" /></td>
 									<td class="c-msg">
@@ -44,12 +44,12 @@
 						</thead>
 						<tbody>
 							<wo:repetition list="$allCommits" item="$current">
-								<tr>
+								<wo:container elementName="tr" class="$currentCommitRowClass">
 									<td class="c-repo"><wo:str value="$current.repo.emoji" /> <wo:str value="$current.repo.name" /></td>
 									<td class="c-when"><wo:str value="$current.shortDateFormatted" /></td>
 									<td class="c-msg"><wo:link href="$current.link"><wo:str value="$current.title" /></wo:link></td>
 									<td class="c-who"><wo:str value="$current.author" /></td>
-								</tr>
+								</wo:container>
 							</wo:repetition>
 						</tbody>
 					</table>
@@ -62,11 +62,11 @@
 						</thead>
 						<tbody>
 							<wo:repetition list="$allReleases" item="$currentRelease">
-								<tr>
+								<wo:container elementName="tr" class="$currentReleaseRowClass">
 									<td class="c-repo"><wo:str value="$currentRelease.repo.emoji" /> <wo:str value="$currentRelease.repo.name" /></td>
 									<td class="c-when"><wo:str value="$currentRelease.shortDateFormatted" /></td>
 									<td class="c-msg"><wo:link href="$currentRelease.url"><wo:str value="$currentRelease.displayName" /></wo:link></td>
-								</tr>
+								</wo:container>
 							</wo:repetition>
 						</tbody>
 					</table>
@@ -79,12 +79,12 @@
 						</thead>
 						<tbody>
 							<wo:repetition list="$allIssues" item="$currentIssue">
-								<tr>
+								<wo:container elementName="tr" class="$currentIssueRowClass">
 									<td class="c-repo"><wo:str value="$currentIssue.repo.emoji" /> <wo:str value="$currentIssue.repo.name" /></td>
 									<td class="c-when"><wo:str value="$currentIssue.shortDateFormatted" /></td>
 									<td class="c-msg"><wo:link href="$currentIssue.url"><wo:str value="$currentIssue.title" /></wo:link></td>
 									<td class="c-who"><wo:str value="$currentIssue.authorLogin" /></td>
-								</tr>
+								</wo:container>
 							</wo:repetition>
 						</tbody>
 					</table>

@@ -49,6 +49,50 @@ public class WCFeedPage extends WCComponent {
 		}
 	}
 
+	/**
+	 * The rows that start a new day in the list being rendered, so the table can draw a heavier line above them
+	 */
+	private final Set<Object> _dayStarts = java.util.Collections.newSetFromMap( new java.util.IdentityHashMap<>() );
+
+	private <T> List<T> markDayStarts( final List<T> rows, final java.util.function.Function<T, Instant> when ) {
+		java.time.LocalDate previous = null;
+
+		for( final T row : rows ) {
+			final Instant instant = when.apply( row );
+			final java.time.LocalDate day = instant == null ? null : instant.atZone( java.time.ZoneId.systemDefault() ).toLocalDate();
+
+			if( previous != null && day != null && !day.equals( previous ) ) {
+				_dayStarts.add( row );
+			}
+
+			if( day != null ) {
+				previous = day;
+			}
+		}
+
+		return rows;
+	}
+
+	private String dayStartClass( final Object row, final String base ) {
+		return _dayStarts.contains( row ) ? base + " day-start" : base;
+	}
+
+	public String currentItemRowClass() {
+		return dayStartClass( currentItem, currentItem.rowClass() );
+	}
+
+	public String currentCommitRowClass() {
+		return dayStartClass( current, "" );
+	}
+
+	public String currentReleaseRowClass() {
+		return dayStartClass( currentRelease, "" );
+	}
+
+	public String currentIssueRowClass() {
+		return dayStartClass( currentIssue, "" );
+	}
+
 	public RepoGroup currentGroup;
 	public Repo currentRepo;
 	public Tab currentTab;
@@ -159,7 +203,7 @@ public class WCFeedPage extends WCComponent {
 		}
 
 		out.sort( Comparator.comparing( FeedItem::when ).reversed() );
-		return out;
+		return markDayStarts( out, FeedItem::when );
 	}
 
 	/**
@@ -201,15 +245,15 @@ public class WCFeedPage extends WCComponent {
 	 * @return All commits across the tracked repos, optionally filtered by the selected repo
 	 */
 	public List<Commit> allCommits() {
-		return GithubFeed.shared.commits().stream().filter( c -> _shown.contains( c.repo() ) ).toList();
+		return markDayStarts( GithubFeed.shared.commits().stream().filter( c -> _shown.contains( c.repo() ) ).toList(), Commit::committedAt );
 	}
 
 	public List<Release> allReleases() {
-		return GithubFeed.shared.releases().stream().filter( r -> _shown.contains( r.repo() ) ).toList();
+		return markDayStarts( GithubFeed.shared.releases().stream().filter( r -> _shown.contains( r.repo() ) ).toList(), Release::createdAt );
 	}
 
 	public List<OpenIssue> allIssues() {
-		return GithubFeed.shared.issues().stream().filter( i -> _shown.contains( i.repo() ) ).toList();
+		return markDayStarts( GithubFeed.shared.issues().stream().filter( i -> _shown.contains( i.repo() ) ).toList(), OpenIssue::updatedAt );
 	}
 
 	/**
