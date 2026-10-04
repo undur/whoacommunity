@@ -49,8 +49,8 @@ public class WCGuidesPage extends WCComponent {
 	private static final List<Guide> DEVELOPMENT_GUIDES = List.of(
 			new Guide( "wonder-slim-development", "🛠️", "Setting up for wonder-slim development", "/guide/wonder-slim-development", "macOS", false,
 					"A JDK that redefines classes while the application runs, Eclipse with Parslips, and Maven pointed at the WOCommunity repository. The JetBrains Runtime through SDKMAN!, HotswapAgent in one copy, and the VM arguments that make it all work.", List.of() ),
-			new Guide( "url-routing", "🧭", "URL routing in wonder-slim", "/guide/url-routing", "wonder-slim", false,
-					"Clean URLs from one route table: pages, lambdas and method references as handlers, path and query parameters, pages, JSON and redirects as results, and why the same URLs work on localhost and behind modulo in production.", List.of() ),
+			new Guide( "url-routing", "🧭", "URL routing in wonder-slim", "/guide/url-routing", "wonder-slim", true,
+					"From the first route to groups and filters: declaring routes, parameters converted to your objects, links built from the routes so they can't go stale, handlers, forms, and the same URLs on localhost and in production.", List.of() ),
 			new Guide( "startup", "🚀", "How an application starts", "/guide/startup", "wonder-slim", true,
 					"The configuration composed from every source before the application is constructed, where each value came from, reading and watching properties, and plugins: frameworks that take part in startup at three named points, and moving over from ERXFrameworkPrincipal.", List.of() ),
 			new Guide( "logging", "📜", "Configuring logging", "/guide/logging", "wonder-slim", true,

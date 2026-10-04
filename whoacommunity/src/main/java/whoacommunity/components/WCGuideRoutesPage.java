@@ -26,7 +26,7 @@ public class WCGuideRoutesPage extends WCComponent {
 
 	@Override
 	public String pageDescription() {
-		return "Clean URLs for WebObjects applications with wonder-slim's route table: mapping paths to pages, lambdas and methods, reading path and query parameters, returning pages, data and redirects, and why the same URLs work in development and behind modulo or Apache in production.";
+		return "A beginner's guide to wonder-slim's router: declaring routes, parameters and converters, links built from the routes, handlers, query parameters and forms, groups and filters, what answers when nothing does, and the same URLs in development and production.";
 	}
 
 	@Override
