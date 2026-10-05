@@ -6,7 +6,7 @@ import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
 
 /**
- * URL routing in wonder-slim: RouteTable, handler shapes, parameters, and why the same URLs work in development and production.
+ * URL routing in wonder-slim: routes, links, handlers, parameters, and why the same URLs work in development and production.
  */
 public class WCGuideRoutesPage extends WCComponent {
 

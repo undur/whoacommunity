@@ -6,7 +6,7 @@
 				<div class="article-body">
 					<p>A WebObjects application's URLs are usually long and opaque, like <code>/cgi-bin/WebObjects/MyApp.woa/wo/3.0.1.2</code>. That's fine for a page you reach by clicking, but not for one you want to bookmark, share or have a search engine find.</p>
 					<p><a href="/project/wonder-slim">wonder-slim</a>'s router lets an application answer URLs like <code>/books/</code>, <code>/books/7</code> or <code>/clubs/acme/members/hugi</code>. You declare each URL once, with what answers it, and then link to it by name. The router builds the URL for every link, so a link can't point at a page that isn't there, and changing a URL is changing one line.</p>
-					<p>This guide starts from nothing and builds up. It describes wonder-slim 8.1.0, where the router replaced the route table. If you're coming from the route table, <a href="#migrating">the last section</a> shows what changes.</p>
+					<p>This guide starts from nothing and builds up. It describes the router of wonder-slim 8.1.0 and later.</p>
 
 					<h2 id="first">1. Your first route</h2>
 					<p>Routes are declared in the Application's constructor:</p>
@@ -145,20 +145,7 @@ RewriteRule ^/(.*)$ /Apps/WebObjects/MyApp.woa/route/$1 [L,PT]</code></pre>
 						<li><strong>Frameworks bring their own routes.</strong> A framework declares its routes in a table of its own, through its plugin, and your application's routes win over them. helium's object pages (<code>/i/…</code>) and the control panel (<code>/wonder/admin</code>) arrive that way, with nothing to set up.</li>
 					</ul>
 
-					<h2 id="migrating">10. From the route table</h2>
-					<p>The route table of wonder-slim 8.0 is gone in 8.1.0. Moving an application over is mechanical:</p>
-					<table>
-						<thead><tr><th>8.0, the route table</th><th>8.1, the router</th></tr></thead>
-						<tbody>
-							<tr><td><code>RouteTable.defaultRouteTable().map( "/shops/", ShopsPage.class )</code></td><td><code>ERXRouter.declare( routes -&gt; routes.map( "/shops/", ShopsPage.class ) )</code></td></tr>
-							<tr><td><code>map( "/news/*", new NewsRoute() )</code>, reading <code>routeURL().getString( 1 )</code></td><td><code>map( "/news/{slug}", … )</code>, reading <code>ri.parameter( "slug" )</code></td></tr>
-							<tr><td>Routes tried in the order they're mapped</td><td>The most specific route answers, in any order</td></tr>
-							<tr><td><code>setFallbackRouteHandler( new ERXPublicResources() )</code></td><td><code>routes.fallback( new ERXPublicResources() )</code></td></tr>
-							<tr><td><code>setNotFoundRouteHandler( … )</code></td><td><code>routes.notFound( … )</code></td></tr>
-							<tr><td>Links written by hand: <code>"/news/" + slug</code></td><td><code>&lt;wo:route to="$routes.news" :slug="$slug"&gt;</code></td></tr>
-						</tbody>
-					</table>
-					<p>Two things to check while converting. A route that takes posts from other sites needs <code>CrossSite.ALLOWED</code>. And a handler that constructed a direct action to make its pages should make them in <code>ri.context()</code> instead (<a href="#handlers">section 4</a>).</p>
+					<h2 id="where">10. Where things are</h2>
 					<p>The classes are in <code>er.extensions.routing</code>, with the conditions and options (<code>Method</code>, <code>TrailingSlash</code>, <code>CrossSite</code>) in <code>er.routing.options</code> and converters in <code>er.routing.conversion</code>. The <a href="https://github.com/undur/wonder-slim">wonder-slim repository</a>'s <code>docs/ROUTING.md</code> is the complete reference, and its Bookclubs example application uses every feature.</p>
 				</div>
 			</div>
@@ -175,7 +162,7 @@ RewriteRule ^/(.*)$ /Apps/WebObjects/MyApp.woa/route/$1 [L,PT]</code></pre>
 				<a href="#nothing">When nothing answers</a>
 				<a href="#dev-prod">Development and production</a>
 				<a href="#practice">Good to know</a>
-				<a href="#migrating">From the route table</a>
+				<a href="#where">Where things are</a>
 			</nav>
 		</div>
 	</div>
