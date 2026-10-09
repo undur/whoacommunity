@@ -6,7 +6,7 @@
 				<div class="article-body">
 					<p>A WebObjects application's URLs are usually long and opaque, like <code>/cgi-bin/WebObjects/MyApp.woa/wo/3.0.1.2</code>. That's fine for a page you reach by clicking, but not for one you want to bookmark, share or have a search engine find.</p>
 					<p><a href="/project/wonder-slim">wonder-slim</a>'s router lets an application answer URLs like <code>/books/</code>, <code>/books/7</code> or <code>/clubs/acme/members/hugi</code>. You declare each URL once, with what answers it, and then link to it by name. The router builds the URL for every link, so a link can't point at a page that isn't there, and changing a URL is changing one line.</p>
-					<p>This guide starts from nothing and builds up. It describes the router of wonder-slim 8.1.0 and later.</p>
+					<p>This guide starts from nothing and builds up. It describes the router of wonder-slim 8.1.1 and later.</p>
 
 					<h2 id="first">1. Your first route</h2>
 					<p>Routes are declared in the Application's constructor:</p>
@@ -20,7 +20,7 @@ public Application() {
 }</code></pre>
 					<p>That's a working application: <code>http://localhost:1200/</code> shows <code>Main</code>, and <code>/about</code> shows <code>AboutPage</code>. A URL that isn't declared gets a 404. In development, that 404 is a page listing the routes you have and how to add one, so you can't get lost.</p>
 					<p>The order you declare routes in doesn't matter. When several could answer a URL, the most specific one does: <code>/books/new</code> before <code>/books/{book}</code>, whichever was declared first.</p>
-					<p>While you're developing, you don't need to restart to see a change to your routes. Edit the declaration, save, and the next request has the new routes.</p>
+					<p>While you're developing, you don't need to restart to see a change to your routes. Edit the declaration, save, and the next request has the new routes. That holds for the declarations the application made when it started: a new <code>ERXRouter.declare</code> call takes a restart.</p>
 
 					<h2 id="parameters">2. Parameters</h2>
 					<p>Most URLs carry something: a book's number, a club's name. A part of the pattern in braces is a <em>parameter</em>:</p>
@@ -37,6 +37,11 @@ public Application() {
         text -&gt; Book.withNumber( Integer.parseInt( text ) ),   // "7" → the book
         book -&gt; String.valueOf( book.number() ) ) );           // the book → "7"</code></pre>
 					<p>Text, numbers, dates, UUIDs and enums are converted without registering anything. What happens to a bad value is the nice part. For <code>/books/abc</code>, or <code>/books/999</code> when there's no such book, the converter answers null or fails, and the route simply doesn't answer. The URL gets a 404, and you never write a null check for it.</p>
+					<p>A last parameter can be optional. One route then answers both <code>/search</code> and <code>/search/dickens</code>:</p>
+<pre><code class="language-clike">routes.map( "/search/{text?}", SearchPage.class );</code></pre>
+					<p>Without it, the page's <code>text</code> is left as it was, and a link whose value is null leaves it out. With it, it's a value like any other: one that doesn't convert is a 404, not the shorter page.</p>
+					<p>A pattern can also take everything beneath a path, for serving files or forwarding to something else:</p>
+<pre><code class="language-clike">routes.map( "/files/{path*}", Application::file );     // /files/minutes/2026.txt gives path "minutes/2026.txt"</code></pre>
 
 					<h2 id="links">3. Linking to a route</h2>
 					<p>To link to a route, give it a name. Names are constants on an interface your pages implement:</p>
@@ -99,6 +104,8 @@ routes.map( "/books", Routes.createBook, Application::createBook, Method.POST );
     &lt;input name="title"&gt; &lt;input name="author"&gt; &lt;button&gt;Add&lt;/button&gt;
 &lt;/wo:routeForm&gt;</code></pre>
 					<p><code>Method.POST</code> means only posts reach it. Anything else at <code>/books</code> gets <code>405 Method Not Allowed</code>, so a link, a crawler or a prefetch can't add a book. Editing forms built from WebObjects' bound elements stay component actions; routes are for what has an address.</p>
+					<p>A field that doesn't convert (a date that isn't one, a number that isn't) makes the request a 404, as a wrong URL does. A form that should be shown again with what's wrong says so with <code>Fields.REPORTED</code>: the record is built anyway, the bad field null, and <code>ri.conversionErrors()</code> lists what was given. A route can instead answer bad input itself with <code>.whenInvalid( ( ri, reason ) -&gt; … )</code>, which also catches what the record's constructor refuses.</p>
+<pre><code class="language-clike">routes.map( "/books", Routes.createBook, Application::createBook, Method.POST, Fields.REPORTED );</code></pre>
 
 					<h2 id="groups">6. Groups</h2>
 					<p>Routes that share the start of their URLs form a group. The group's part is written once:</p>
@@ -113,7 +120,15 @@ private static WOActionResults requireAdmin( final RouteInvocation ri, final Rou
 }</code></pre>
 					<p>A <em>filter</em> (<code>wrap</code>) runs before every route of the group, and decides whether the request goes on. That's where access control belongs: one place, rather than a check at the top of every page. A group can also have parameters of its own, like <code>routes.group( "/clubs/{club}" )</code>, which every route in it then has.</p>
 
-					<h2 id="nothing">7. When nothing answers</h2>
+					<h2 id="hosts">7. Another host</h2>
+					<p>Most applications answer one host, and their routes never name it. A route can belong to a host of its own, for an administrators' site, say:</p>
+<pre><code class="language-clike">routes.map( "/", Routes.adminHome, AdminPage.class, Host.of( "admin.@" ) );</code></pre>
+					<p><code>@</code> stands for the application's own domain. In development that's <code>localhost</code>, and every name ending in <code>.localhost</code> is your own machine, so <code>http://admin.localhost:1200/</code> works with nothing to set up. Deployed, the domain comes from the public address:</p>
+<pre><code class="language-clike">er.routing.publicAddress=https://www.example.com</code></pre>
+					<p>The route then answers <code>admin.example.com</code>. Without a public address, a deployed application with such a route doesn't start, and says why. A request to another host goes on to the next route, so <code>/</code> can be the admin page on one host and the front page on the other. A link to a route on another host is complete (<code>https://admin.example.com/</code>), and a group can put all its routes on a host at once: <code>routes.group( "", admin -&gt; { … }, Host.of( "admin.@" ) )</code>.</p>
+					<p>The public address is also what complete URLs use, such as the links in an email.</p>
+
+					<h2 id="nothing">8. When nothing answers</h2>
 					<p>A URL goes to the routes that match it, most specific first, and the first one that doesn't decline answers. If none does, it goes to the application's <em>fallback</em>, and then to <em>not found</em>. Both are set in the declaration:</p>
 <pre><code class="language-clike">ERXRouter.declare( routes -&gt; {
     …
@@ -123,7 +138,7 @@ private static WOActionResults requireAdmin( final RouteInvocation ri, final Rou
 					<p><strong>The fallback</strong> is usually the public resources. The files in the <code>public</code> folder of your web server resources are served at the root: <code>public/favicon.ico</code> at <code>/favicon.ico</code>, <code>public/robots.txt</code> at <code>/robots.txt</code>. A route always wins over a file.</p>
 					<p><strong>Not found</strong> answers whatever's left. Without one of your own, development shows its pages (the welcome page at <code>/</code> until you've mapped it, and the 404 that explains itself), and a deployed application answers a plain 404. A not found handler that declines passes the request on to the next handler in the server, for an application sharing its Jetty server with an ng-objects application.</p>
 
-					<h2 id="dev-prod">8. The same URLs in development and production</h2>
+					<h2 id="dev-prod">9. The same URLs in development and production</h2>
 					<p><strong>In development</strong> the application listens on its own port, and the URL you type is the URL the routes see: <code>http://localhost:1200/books/7</code> arrives as <code>/books/7</code>. There's no adaptor, no rewrite, nothing to configure. The application's own URLs are short too, <code>/wo/…</code>, <code>/wa/…</code>, <code>/res/…</code>, and the long form (<code>/cgi-bin/WebObjects/MyApp.woa/wa/…</code>) keeps working, so existing links and bookmarks don't break.</p>
 					<p><strong>In production behind <a href="/project/modulo">modulo</a></strong>, a site maps its hostnames to an application, and modulo forwards each request unchanged. The application sees <code>/books/7</code> exactly as it did on localhost.</p>
 					<p><strong>Behind Apache with mod_WebObjects</strong>, only adaptor URLs reach the application, so a rewrite rule in the virtual host forwards everything else into the application's adaptor URL space, under the <code>route</code> request handler key. With the adaptor at <code>/Apps/WebObjects</code>:</p>
@@ -135,17 +150,18 @@ RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
 RewriteRule ^/(.*)$ /Apps/WebObjects/MyApp.woa/route/$1 [L,PT]</code></pre>
 					<p>The first rule forwards the root, and the second everything else that isn't already an adaptor URL or a file Apache serves itself. The condition on the adaptor path matters: without it, the application's own long URLs would be rewritten a second time. Forwarding under <code>route</code>, rather than the bare path, matters too: mod_WebObjects reads a number right after <code>.woa</code> as an instance number, so a route like <code>/2026</code> forwarded bare would never arrive. The <code>route</code> key never appears in a URL anyone sees. The <a href="/guides">deployment guides</a> show each setup.</p>
 
-					<h2 id="practice">9. Good to know</h2>
+					<h2 id="practice">10. Good to know</h2>
 					<ul>
 						<li><strong>Request handler URLs come first.</strong> <code>/wa/…</code>, <code>/wo/…</code>, <code>/res/…</code> and the application's other request handler keys go to their request handlers before the router sees anything. A route starting with one of them could never be reached, so declaring one fails.</li>
 						<li><strong>Posts from other sites are refused.</strong> A page on another site can't post a form to your routes with your users' cookies: the router answers 403. A route that should take posts from elsewhere, like an API, a webhook or a partner's form, says so: <code>map( "/api/orders", …, CrossSite.ALLOWED )</code>.</li>
-						<li><strong>Trailing slashes.</strong> <code>/books/</code> and <code>/books</code> are the same route unless you say otherwise. <code>TrailingSlash.REDIRECT</code> sends the other form to the declared one, so each page has one address.</li>
+						<li><strong>Trailing slashes.</strong> <code>/books/</code> and <code>/books</code> are the same route unless you say otherwise. <code>TrailingSlash.REDIRECT</code> sends the other form to the declared one, so each page has one address. It can be set on a route, on a group, or for every route at once: <code>ERXRouter.declare( routes -&gt; { … }, TrailingSlash.REDIRECT )</code>.</li>
 						<li><strong>Moving a page.</strong> <code>routes.redirect( "/book/{book}", Routes.book )</code> answers the old address with a permanent redirect to the new one, so bookmarks and search engines follow.</li>
 						<li><strong>Some characters in a path.</strong> A value with <code>%</code> or <code>\</code> in it is encoded into the URL, but some front ends and adaptors refuse those in a path, the Jetty adaptor among them. Free text, a search for example, is better off in the query (<code>?q=…</code>) than in the path.</li>
+						<li><strong>Seeing your routes.</strong> The control panel at <code>/wonder/admin/routes</code> lists every route the application has, in the order they're tried, with what each answers with and the parameters it takes.</li>
 						<li><strong>Frameworks bring their own routes.</strong> A framework declares its routes in a table of its own, through its plugin, and your application's routes win over them. helium's object pages (<code>/i/…</code>) and the control panel (<code>/wonder/admin</code>) arrive that way, with nothing to set up.</li>
 					</ul>
 
-					<h2 id="where">10. Where things are</h2>
+					<h2 id="where">11. Where things are</h2>
 					<p>The classes are in <code>er.extensions.routing</code>, with the conditions and options (<code>Method</code>, <code>TrailingSlash</code>, <code>CrossSite</code>) in <code>er.routing.options</code> and converters in <code>er.routing.conversion</code>. The <a href="https://github.com/undur/wonder-slim">wonder-slim repository</a>'s <code>docs/ROUTING.md</code> is the complete reference, and its Bookclubs example application uses every feature.</p>
 				</div>
 			</div>
@@ -159,6 +175,7 @@ RewriteRule ^/(.*)$ /Apps/WebObjects/MyApp.woa/route/$1 [L,PT]</code></pre>
 				<a href="#handlers">Other answers</a>
 				<a href="#query">Query parameters and forms</a>
 				<a href="#groups">Groups</a>
+				<a href="#hosts">Another host</a>
 				<a href="#nothing">When nothing answers</a>
 				<a href="#dev-prod">Development and production</a>
 				<a href="#practice">Good to know</a>
