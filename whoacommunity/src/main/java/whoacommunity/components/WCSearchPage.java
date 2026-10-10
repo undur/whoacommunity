@@ -7,7 +7,6 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.ObjectSelect;
 
-import is.rebbi.core.util.StringUtilities;
 import ng.appserver.NGActionResults;
 import ng.appserver.NGContext;
 import ng.appserver.templating.NGComponent;
@@ -46,7 +45,7 @@ public class WCSearchPage extends NGComponent {
 
 		final List<Expression> l = new ArrayList<>();
 
-		if( StringUtilities.hasValue( searchString ) ) {
+		if( searchString != null && !searchString.isEmpty() ) {
 			l.add( SlackMessage.TEXT.containsIgnoreCase( searchString ) );
 		}
 
