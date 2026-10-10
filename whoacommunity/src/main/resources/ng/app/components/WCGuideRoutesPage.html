@@ -141,14 +141,14 @@ private static WOActionResults requireAdmin( final RouteInvocation ri, final Rou
 					<h2 id="dev-prod">9. The same URLs in development and production</h2>
 					<p><strong>In development</strong> the application listens on its own port, and the URL you type is the URL the routes see: <code>http://localhost:1200/books/7</code> arrives as <code>/books/7</code>. There's no adaptor, no rewrite, nothing to configure. The application's own URLs are short too, <code>/wo/…</code>, <code>/wa/…</code>, <code>/res/…</code>, and the long form (<code>/cgi-bin/WebObjects/MyApp.woa/wa/…</code>) keeps working, so existing links and bookmarks don't break.</p>
 					<p><strong>In production behind <a href="/project/modulo">modulo</a></strong>, a site maps its hostnames to an application, and modulo forwards each request unchanged. The application sees <code>/books/7</code> exactly as it did on localhost.</p>
-					<p><strong>Behind Apache with mod_WebObjects</strong>, only adaptor URLs reach the application, so a rewrite rule in the virtual host forwards everything else into the application's adaptor URL space, under the <code>route</code> request handler key. With the adaptor at <code>/Apps/WebObjects</code>:</p>
+					<p><strong>Behind Apache with mod_WebObjects</strong>, only adaptor URLs reach the application, so a rewrite rule in the virtual host forwards everything else into the application's adaptor URL space, under the <code>_erxroute_</code> request handler key (<code>route</code> before wonder-slim 8.1.2). With the adaptor at <code>/Apps/WebObjects</code>:</p>
 <pre><code class="language-none">RewriteEngine on
-RewriteRule ^/$ /Apps/WebObjects/MyApp.woa/route/ [L,PT]
+RewriteRule ^/$ /Apps/WebObjects/MyApp.woa/_erxroute_/ [L,PT]
 RewriteCond %{REQUEST_URI} !^/Apps/WebObjects/
 RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
 RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
-RewriteRule ^/(.*)$ /Apps/WebObjects/MyApp.woa/route/$1 [L,PT]</code></pre>
-					<p>The first rule forwards the root, and the second everything else that isn't already an adaptor URL or a file Apache serves itself. The condition on the adaptor path matters: without it, the application's own long URLs would be rewritten a second time. Forwarding under <code>route</code>, rather than the bare path, matters too: mod_WebObjects reads a number right after <code>.woa</code> as an instance number, so a route like <code>/2026</code> forwarded bare would never arrive. The <code>route</code> key never appears in a URL anyone sees. The <a href="/guides">deployment guides</a> show each setup.</p>
+RewriteRule ^/(.*)$ /Apps/WebObjects/MyApp.woa/_erxroute_/$1 [L,PT]</code></pre>
+					<p>The first rule forwards the root, and the second everything else that isn't already an adaptor URL or a file Apache serves itself. The condition on the adaptor path matters: without it, the application's own long URLs would be rewritten a second time. Forwarding under the key, rather than the bare path, matters too: mod_WebObjects reads a number right after <code>.woa</code> as an instance number, so a route like <code>/2026</code> forwarded bare would never arrive. The key never appears in a URL anyone sees. The <a href="/guides">deployment guides</a> show each setup.</p>
 
 					<h2 id="practice">10. Good to know</h2>
 					<ul>
