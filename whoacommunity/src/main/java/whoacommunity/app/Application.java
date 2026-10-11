@@ -22,12 +22,14 @@ import ng.appserver.NGSessionRestorationException;
 import ng.appserver.http.NGRequest;
 import ng.appserver.http.NGResponse;
 import ng.appserver.http.NGResponses;
+import ng.appserver.privates.NGParsedURI;
 import ng.plugins.Elements;
 import ng.plugins.Routes;
 import whoacommunity.components.WCArticleDetailPage;
 import whoacommunity.components.WCDeploymentApacheClassicPage;
 import whoacommunity.components.WCDeploymentApacheModuloPage;
 import whoacommunity.components.WCDeploymentPage;
+import whoacommunity.components.WCElementReferencePage;
 import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCGuideBuildPropertiesPage;
 import whoacommunity.components.WCGuideDeployPage;
@@ -43,15 +45,14 @@ import whoacommunity.components.WCMain;
 import whoacommunity.components.WCProjectPage;
 import whoacommunity.components.WCProjectPage.SubPage;
 import whoacommunity.components.WCProjectsPage;
+import whoacommunity.components.WCRoadmapPage;
 import whoacommunity.components.WCSlackArchivePage;
 import whoacommunity.components.WCSlackClientPage;
 import whoacommunity.components.WCVideoDetailPage;
 import whoacommunity.components.WCVideosPage;
 import whoacommunity.components.WCWritingPage;
 import whoacommunity.data.Article;
-import whoacommunity.components.WCElementReferencePage;
 import whoacommunity.elements.ElementReferenceFeed;
-import whoacommunity.components.WCRoadmapPage;
 import whoacommunity.github.GithubFeed;
 import whoacommunity.roadmap.RoadmapFeed;
 import whoacommunity.util.CachedFeed;
@@ -308,9 +309,9 @@ public class Application extends NGApplication {
 	 * /element-reference/{slug} → that library's reference; the slugs come from the playground's index
 	 */
 	public NGActionResults viewElementReference( NGRequest request ) {
-		final String[] parts = request.uri().split( "\\?" )[ 0 ].split( "/" ); // "", "element-reference", slug
+		final String[] parts = request.uri().split( "\\?" )[0].split( "/" ); // "", "element-reference", slug
 		final WCElementReferencePage page = pageWithName( WCElementReferencePage.class, request.context() );
-		page.slug = parts.length > 2 && !parts[ 2 ].isBlank() ? parts[ 2 ] : WCElementReferencePage.DEFAULT_SLUG;
+		page.slug = parts.length > 2 && !parts[2].isBlank() ? parts[2] : WCElementReferencePage.DEFAULT_SLUG;
 		return page;
 	}
 
@@ -346,7 +347,7 @@ public class Application extends NGApplication {
 	}
 
 	public NGActionResults viewVideo( NGRequest request ) {
-		final String youtubeID = request.parsedURI().getString( 1 );
+		final String youtubeID = NGParsedURI.of( request.uri() ).getString( 1 );
 		final Video video = Videos.videoWithID( youtubeID ).orElse( null );
 
 		if( video == null ) {
@@ -359,7 +360,7 @@ public class Application extends NGApplication {
 	}
 
 	public NGActionResults viewArticle( NGRequest request ) {
-		final String uuidString = request.parsedURI().getString( 1 );
+		final String uuidString = NGParsedURI.of( request.uri() ).getString( 1 );
 		final UUID uuid;
 
 		try {
