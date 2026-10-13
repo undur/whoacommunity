@@ -111,6 +111,7 @@ app = "MyApp"</code></pre>
 						<thead><tr><th>Field</th><th>Default</th><th>Meaning</th></tr></thead>
 						<tbody>
 							<tr><td class="c-repo">hostnames</td><td>required</td><td>Every hostname the site answers to. The first is the <strong>canonical</strong> hostname, the rest are aliases. A hostname can belong to one site only.</td></tr>
+							<tr><td class="c-repo">name</td><td>first hostname</td><td>The site's identity: it names the site's certificate and access-log directories, and is what modulo's admin pages, logs and events call it. Set it, and the site's hostnames can change, including which one is canonical, without anything moving on disk. Lowercase letters, digits, <code>.</code>, <code>-</code> and <code>_</code>, starting with a letter or digit, and unique across sites.</td></tr>
 							<tr><td class="c-repo">app</td><td>none</td><td>The application to send requests to, by the name wotaskd and JavaMonitor know it by. A site without one still terminates TLS and redirects, but has nothing to proxy to, which modulo warns about at startup.</td></tr>
 							<tr><td class="c-repo">canonicalRedirect</td><td>true</td><td>Redirect requests for an alias to the canonical hostname, with a 301 that keeps the path and query.</td></tr>
 							<tr><td class="c-repo">httpsRedirect</td><td>true</td><td>Redirect plain HTTP to HTTPS with a 301.</td></tr>
@@ -127,9 +128,12 @@ app = "MyApp"</code></pre>
 hostnames = [ "shop.example.com", "shop.example.net", "brand-a.example.org" ]
 app = "Shop"
 canonicalRedirect = false</code></pre>
-					<div class="caveat">
-						<p><strong>A rough edge:</strong> today the first hostname also names the site's certificate directory and access log directory. Reordering the list, to change which domain is canonical, therefore moves both: a new certificate is ordered under the new name and the access log continues in a new directory. Separating a site's name from its canonical hostname is <a href="https://github.com/undur/modulo/issues/13">modulo issue #13</a>.</p>
-					</div>
+					<p>The site's <code>name</code> is what names its certificate and access-log directories, and it defaults to the first hostname. So to change which domain is canonical on an existing site, first pin the name to what it is today, then reorder:</p>
+<pre><code class="language-none">[[sites]]
+name = "www.example.net"
+hostnames = [ "www.example.com", "www.example.net" ]
+app = "MyApp"</code></pre>
+					<p>After a reload, <code>www.example.net</code> redirects to <code>www.example.com</code>, while the certificate, the access logs and the site's name in the admin pages stay as they were. The certificate already covers every hostname in the list, so nothing is reissued.</p>
 
 					<h3 id="tls">Certificates</h3>
 					<p>Leave <code>tls</code> out and modulo obtains the site's certificate from Let's Encrypt, covering all of its hostnames. That needs the <a href="#acme">[acme]</a> table, and DNS for every hostname pointing at the server, since Let's Encrypt checks each name over port 80.</p>
@@ -169,11 +173,11 @@ rewrites = [
 					<h2 id="disk">10. What modulo keeps on disk</h2>
 					<p>Two directories are modulo's own. You never have to edit either, but you can read both.</p>
 <pre><code class="language-none">&lt;acme storage&gt;/account-key.pem           the Let's Encrypt account key
-&lt;acme storage&gt;/sites/&lt;host&gt;/cert.pem     a site's certificate, full chain, PEM
-&lt;acme storage&gt;/sites/&lt;host&gt;/key.pem      its private key, PEM
-&lt;accessLogDir&gt;/&lt;host&gt;/2026_09_24.log     a site's access log for one day
+&lt;acme storage&gt;/sites/&lt;name&gt;/cert.pem     a site's certificate, full chain, PEM
+&lt;acme storage&gt;/sites/&lt;name&gt;/key.pem      its private key, PEM
+&lt;accessLogDir&gt;/&lt;name&gt;/2026_09_24.log     a site's access log for one day
 &lt;accessLogDir&gt;/_unmatched/…              requests for hostnames no site claims</code></pre>
-					<p><code>&lt;host&gt;</code> is the site's first hostname. Access log lines are the combined log format with the hostname the visitor actually used in front and the response time at the end, so one site's aliases can be told apart:</p>
+					<p><code>&lt;name&gt;</code> is the site's <a href="#sites">name</a>, by default its first hostname. Access log lines are the combined log format with the hostname the visitor actually used in front and the response time at the end, so one site's aliases can be told apart:</p>
 <pre><code class="language-none">example.com 203.0.113.9 - - [24/Sep/2026:08:12:44 +0000] "GET /about HTTP/2" 301 0 "-" "Mozilla/5.0 …" 1ms</code></pre>
 					<p>Deleting a site's directory under <code>sites/</code> makes modulo order a fresh certificate at the next check or restart, which is the way out of a certificate that is somehow wrong.</p>
 
