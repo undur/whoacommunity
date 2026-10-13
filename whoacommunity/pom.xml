@@ -9,7 +9,7 @@
 	<packaging>woapplication</packaging>
 	<properties>
 		<cayenne.version>5.0-M3</cayenne.version>
-		<ng.version>0.1.4-SNAPSHOT</ng.version>
+		<ng.version>0.1.4</ng.version>
 	</properties>
 	<build>
 		<finalName>${project.artifactId}</finalName>
