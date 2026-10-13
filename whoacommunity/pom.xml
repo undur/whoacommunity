@@ -9,6 +9,7 @@
 	<packaging>woapplication</packaging>
 	<properties>
 		<cayenne.version>5.0-M3</cayenne.version>
+		<ng.version>0.1.4-SNAPSHOT</ng.version>
 	</properties>
 	<build>
 		<finalName>${project.artifactId}</finalName>
@@ -50,17 +51,17 @@
 		<dependency>
 			<groupId>is.rebbi.ng</groupId>
 			<artifactId>ng-appserver</artifactId>
-			<version>0.1.3</version>
+			<version>${ng.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>is.rebbi.ng</groupId>
 			<artifactId>ng-adaptor-jetty</artifactId>
-			<version>0.1.3</version>
+			<version>${ng.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>is.rebbi.ng</groupId>
 			<artifactId>ng-control</artifactId>
-			<version>0.1.3</version>
+			<version>${ng.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cayenne</groupId>
