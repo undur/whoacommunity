@@ -14,9 +14,9 @@ import whoacommunity.data.SlackChannel;
 import whoacommunity.data.SlackMessage;
 import whoacommunity.data.SlackUser;
 import whoacommunity.slack.SlackImporter.ImportedSlackChannel;
-import whoacommunity.slack.SlackImporter.SlackImportResult;
 import whoacommunity.slack.SlackImporter.ImportedSlackMessage;
 import whoacommunity.slack.SlackImporter.ImportedSlackUser;
+import whoacommunity.slack.SlackImporter.SlackImportResult;
 
 public class SlackDBImporter {
 

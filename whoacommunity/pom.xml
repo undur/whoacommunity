@@ -8,7 +8,7 @@
 	<name>whoacommunity</name>
 	<packaging>woapplication</packaging>
 	<properties>
-		<cayenne.version>5.0-M3</cayenne.version>
+		<cayenne.version>5.0-SNAPSHOT</cayenne.version>
 		<ng.version>0.1.6-SNAPSHOT</ng.version>
 	</properties>
 	<build>

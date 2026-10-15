@@ -1,8 +1,5 @@
 package whoacommunity.data.auto;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,8 +25,6 @@ import whoacommunity.data.Comment;
  * If you need to make any customizations, please use subclass.
  */
 public abstract class _Article extends PersistentObject {
-
-    private static final long serialVersionUID = 1L;
 
     public static final SelfProperty<Article> SELF = PropertyFactory.createSelf(Article.class);
 
@@ -240,43 +235,4 @@ public abstract class _Article extends PersistentObject {
                 super.writePropertyDirectly(propName, val);
         }
     }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        writeSerialized(out);
-    }
-
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        readSerialized(in);
-    }
-
-    @Override
-    protected void writeState(ObjectOutputStream out) throws IOException {
-        super.writeState(out);
-        out.writeObject(this.content);
-        out.writeObject(this.creationDate);
-        out.writeObject(this.date);
-        out.writeObject(this.formatCode);
-        out.writeObject(this.modificationDate);
-        out.writeBoolean(this.published);
-        out.writeObject(this.title);
-        out.writeObject(this.uniqueID);
-        out.writeObject(this.articleTags);
-        out.writeObject(this.comments);
-    }
-
-    @Override
-    protected void readState(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        super.readState(in);
-        this.content = (String)in.readObject();
-        this.creationDate = (LocalDateTime)in.readObject();
-        this.date = (LocalDate)in.readObject();
-        this.formatCode = (String)in.readObject();
-        this.modificationDate = (LocalDateTime)in.readObject();
-        this.published = in.readBoolean();
-        this.title = (String)in.readObject();
-        this.uniqueID = (UUID)in.readObject();
-        this.articleTags = in.readObject();
-        this.comments = in.readObject();
-    }
-
 }

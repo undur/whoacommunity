@@ -1,9 +1,9 @@
 package whoacommunity.components;
 
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.ArrayList;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;

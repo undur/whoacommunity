@@ -2,13 +2,13 @@ package whoacommunity.app;
 
 import java.sql.Types;
 
+import org.apache.cayenne.CayenneRuntime;
 import org.apache.cayenne.ObjectContext;
-import org.apache.cayenne.configuration.DataNodeDescriptor;
 import org.apache.cayenne.map.DataMap;
 import org.apache.cayenne.map.DbAttribute;
 import org.apache.cayenne.map.DbEntity;
+import org.apache.cayenne.project.DataNodeDescriptor;
 import org.apache.cayenne.reflect.NonPrefixedBeanAccessor;
-import org.apache.cayenne.runtime.CayenneRuntime;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

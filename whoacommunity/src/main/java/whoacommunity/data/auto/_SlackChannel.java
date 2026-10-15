@@ -1,8 +1,5 @@
 package whoacommunity.data.auto;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -26,8 +23,6 @@ import whoacommunity.data.SlackMessage;
  * If you need to make any customizations, please use subclass.
  */
 public abstract class _SlackChannel extends PersistentObject {
-
-    private static final long serialVersionUID = 1L;
 
     public static final SelfProperty<SlackChannel> SELF = PropertyFactory.createSelf(SlackChannel.class);
 
@@ -165,35 +160,4 @@ public abstract class _SlackChannel extends PersistentObject {
                 super.writePropertyDirectly(propName, val);
         }
     }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        writeSerialized(out);
-    }
-
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        readSerialized(in);
-    }
-
-    @Override
-    protected void writeState(ObjectOutputStream out) throws IOException {
-        super.writeState(out);
-        out.writeObject(this.creationDate);
-        out.writeObject(this.modificationDate);
-        out.writeObject(this.name);
-        out.writeObject(this.slackID);
-        out.writeObject(this.uniqueID);
-        out.writeObject(this.messages);
-    }
-
-    @Override
-    protected void readState(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        super.readState(in);
-        this.creationDate = (LocalDateTime)in.readObject();
-        this.modificationDate = (LocalDateTime)in.readObject();
-        this.name = (String)in.readObject();
-        this.slackID = (String)in.readObject();
-        this.uniqueID = (UUID)in.readObject();
-        this.messages = in.readObject();
-    }
-
 }

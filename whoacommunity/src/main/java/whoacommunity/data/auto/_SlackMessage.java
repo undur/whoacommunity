@@ -1,8 +1,5 @@
 package whoacommunity.data.auto;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -26,8 +23,6 @@ import whoacommunity.data.SlackUser;
  * If you need to make any customizations, please use subclass.
  */
 public abstract class _SlackMessage extends PersistentObject {
-
-    private static final long serialVersionUID = 1L;
 
     public static final SelfProperty<SlackMessage> SELF = PropertyFactory.createSelf(SlackMessage.class);
 
@@ -209,41 +204,4 @@ public abstract class _SlackMessage extends PersistentObject {
                 super.writePropertyDirectly(propName, val);
         }
     }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        writeSerialized(out);
-    }
-
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        readSerialized(in);
-    }
-
-    @Override
-    protected void writeState(ObjectOutputStream out) throws IOException {
-        super.writeState(out);
-        out.writeObject(this.creationDate);
-        out.writeObject(this.dateTime);
-        out.writeObject(this.modificationDate);
-        out.writeObject(this.slackSubtype);
-        out.writeObject(this.slackType);
-        out.writeObject(this.text);
-        out.writeObject(this.uniqueID);
-        out.writeObject(this.channel);
-        out.writeObject(this.user);
-    }
-
-    @Override
-    protected void readState(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        super.readState(in);
-        this.creationDate = (LocalDateTime)in.readObject();
-        this.dateTime = (LocalDateTime)in.readObject();
-        this.modificationDate = (LocalDateTime)in.readObject();
-        this.slackSubtype = (String)in.readObject();
-        this.slackType = (String)in.readObject();
-        this.text = (String)in.readObject();
-        this.uniqueID = (UUID)in.readObject();
-        this.channel = in.readObject();
-        this.user = in.readObject();
-    }
-
 }

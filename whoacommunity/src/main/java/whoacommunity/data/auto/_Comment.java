@@ -1,8 +1,5 @@
 package whoacommunity.data.auto;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -25,8 +22,6 @@ import whoacommunity.data.Comment;
  * If you need to make any customizations, please use subclass.
  */
 public abstract class _Comment extends PersistentObject {
-
-    private static final long serialVersionUID = 1L;
 
     public static final SelfProperty<Comment> SELF = PropertyFactory.createSelf(Comment.class);
 
@@ -176,37 +171,4 @@ public abstract class _Comment extends PersistentObject {
                 super.writePropertyDirectly(propName, val);
         }
     }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        writeSerialized(out);
-    }
-
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        readSerialized(in);
-    }
-
-    @Override
-    protected void writeState(ObjectOutputStream out) throws IOException {
-        super.writeState(out);
-        out.writeObject(this.content);
-        out.writeObject(this.creationDate);
-        out.writeObject(this.dateTime);
-        out.writeObject(this.modificationDate);
-        out.writeObject(this.name);
-        out.writeObject(this.uniqueID);
-        out.writeObject(this.article);
-    }
-
-    @Override
-    protected void readState(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        super.readState(in);
-        this.content = (String)in.readObject();
-        this.creationDate = (LocalDateTime)in.readObject();
-        this.dateTime = (LocalDateTime)in.readObject();
-        this.modificationDate = (LocalDateTime)in.readObject();
-        this.name = (String)in.readObject();
-        this.uniqueID = (UUID)in.readObject();
-        this.article = in.readObject();
-    }
-
 }

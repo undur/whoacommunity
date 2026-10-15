@@ -1,8 +1,5 @@
 package whoacommunity.data.auto;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -25,8 +22,6 @@ import whoacommunity.data.Tag;
  * If you need to make any customizations, please use subclass.
  */
 public abstract class _ArticleTag extends PersistentObject {
-
-    private static final long serialVersionUID = 1L;
 
     public static final SelfProperty<ArticleTag> SELF = PropertyFactory.createSelf(ArticleTag.class);
 
@@ -140,33 +135,4 @@ public abstract class _ArticleTag extends PersistentObject {
                 super.writePropertyDirectly(propName, val);
         }
     }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        writeSerialized(out);
-    }
-
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        readSerialized(in);
-    }
-
-    @Override
-    protected void writeState(ObjectOutputStream out) throws IOException {
-        super.writeState(out);
-        out.writeObject(this.creationDate);
-        out.writeObject(this.modificationDate);
-        out.writeObject(this.uniqueID);
-        out.writeObject(this.article);
-        out.writeObject(this.tag);
-    }
-
-    @Override
-    protected void readState(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        super.readState(in);
-        this.creationDate = (LocalDateTime)in.readObject();
-        this.modificationDate = (LocalDateTime)in.readObject();
-        this.uniqueID = (UUID)in.readObject();
-        this.article = in.readObject();
-        this.tag = in.readObject();
-    }
-
 }
