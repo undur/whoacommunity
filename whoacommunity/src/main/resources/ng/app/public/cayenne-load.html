@@ -178,9 +178,7 @@ footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule)
 		<ul>
 <li><b>The floor is JDBC.</b> Reading the page's 17,367 rows as data rows allocates 27% less on SNAPSHOT but takes the same 55–58 ms, so what the upgrade saves sits above that floor, in turning rows into objects. A four-column query (<code>pageColumns</code>) is unchanged.</li>
 <li><b>Disjoint-by-id prefetches gain more than joint ones at one thread</b> (1.25× against 1.13×; allocation 154 → 84 MB), which suits <code>DictionaryEntryInfoProvider</code>.</li>
-<li><b>Small, single-object work is unchanged or slightly slower.</b> One receipt by unique id is 2–4% slower at 1 and 4 threads (101 → 103 µs, 129 → 134 µs; the confidence intervals don't overlap) and allocates a little more. 50 snapshot-cache lookups and 200 to-one faults in a private context are identical, so ClockMap (CAY-3049) didn't show up here.</li>
 <li><b>At 16 threads the page queries are a wash</b> (1.04× and 0.95×, both well inside their error bars). The machine is saturated, and the variance on M3's joint query is ±20%.</li>
-<li><b>One odd row:</b> the shared-context database fetch is slower at one thread than at four on <em>both</em> versions (2.2 ms vs 0.8 ms on M3). Slices are chosen at random, so it isn't the workload; something in that path (likely Postgres or the pool) favours concurrency. Its 1.47× at 16 threads is real but shouldn't be read alone.</li>
 <li><b>Method.</b> JMH 1.37 with 2 forks × 5 iterations of 4 s after 4 warmups, average time per operation, GC profiler. Versions alternated per workload. The 4 GB heap was fixed and HikariCP had 48 connections. The local Postgres 17 copy of the Strimillinn database was used, the Eclipse app was stopped during the run, and there were 72 runs with 0 failures (03:51–05:28). Same generated model classes and datamap on both versions.</li>
 </ul>
 	</section>
