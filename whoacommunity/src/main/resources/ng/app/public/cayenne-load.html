@@ -1,0 +1,2271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cayenne 5 Under Load</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a lab report in one reading column; the answer first, then a chart per question, then the full table and the method. */
+:root {
+	--paper: #f5f6f3;
+	--sheet: #ffffff;
+	--ink: #1d2321;
+	--muted: #5f6964;
+	--rule: #dde2de;
+	--m3: #8a918d;
+	--snap: #0e7a68;
+	--t1: #8fcbbd;
+	--t4: #3a9d88;
+	--t16: #0b5d4f;
+	--snap-tint: #dcefe9;
+	--warn: #a8641a;
+	--warn-tint: #f6e9d8;
+	--band: #e8ebe8;
+	--font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+	--font-body: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+	--font-data: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--paper: #121615; --sheet: #191e1c; --ink: #e6ebe8; --muted: #9aa5a0; --rule: #2c3431;
+		--m3: #87908b; --snap: #4cc3a9; --t1: #2f6b5e; --t4: #3fa58e; --t16: #8fe3cf;
+		--snap-tint: #173a33; --warn: #e0a15a; --warn-tint: #3b2b17; --band: #252c29;
+		color-scheme: dark;
+	}
+}
+:root[data-theme="dark"] {
+	--paper: #121615; --sheet: #191e1c; --ink: #e6ebe8; --muted: #9aa5a0; --rule: #2c3431;
+	--m3: #87908b; --snap: #4cc3a9; --t1: #2f6b5e; --t4: #3fa58e; --t16: #8fe3cf;
+	--snap-tint: #173a33; --warn: #e0a15a; --warn-tint: #3b2b17; --band: #252c29;
+	color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55; padding-inline: 16px; padding-block: 40px 72px; }
+main { max-width: 960px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; }
+h3 { font-size: 17px; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 600; }
+.mono, .num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+section { display: grid; gap: 18px; min-width: 0; }
+header { display: grid; gap: 14px; }
+.lede { font-size: 19px; color: var(--muted); max-width: 62ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13px; color: var(--muted); }
+.meta b { color: var(--ink); font-weight: 600; }
+.key { display: inline-flex; align-items: center; gap: 7px; }
+.swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.swatch.m3 { background: var(--sheet); border: 2px solid var(--m3); }
+.swatch.snap { background: var(--snap); }
+.swatch.t1 { background: var(--t1); } .swatch.t4 { background: var(--t4); } .swatch.t16 { background: var(--t16); }
+
+.answer { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 24px; display: grid; gap: 12px; }
+.answer p { font-size: 17px; }
+.findings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.finding { background: var(--sheet); padding: 22px; display: grid; gap: 8px; align-content: start; }
+.finding .figure { font-family: var(--font-data); font-size: 34px; font-weight: 500; letter-spacing: -0.02em; line-height: 1; color: var(--snap); }
+.finding p { font-size: 14px; color: var(--muted); }
+.finding h3 { font-size: 15px; }
+@media (max-width: 760px) { .findings { grid-template-columns: 1fr; } }
+
+.panel { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; min-width: 0; display: grid; gap: 12px; }
+.chart-wrap { overflow-x: auto; }
+svg text { font-family: var(--font-body); fill: var(--ink); }
+svg .axis { font-family: var(--font-data); font-size: 11px; fill: var(--muted); }
+svg .label { font-size: 13px; }
+svg .group { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; fill: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--muted); }
+.caption { font-size: 14px; color: var(--muted); max-width: 72ch; }
+.scaling { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 760px) { .scaling { grid-template-columns: 1fr; } }
+.scaling .panel h3 { font-size: 15px; }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 760px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tbody tr.first td { border-top: 2px solid var(--rule); }
+td .err { color: var(--muted); font-size: 11.5px; }
+.pill { display: inline-block; font-family: var(--font-data); font-size: 12px; font-weight: 500; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+.pill.faster { background: var(--snap-tint); color: var(--snap); }
+.pill.slower { background: var(--warn-tint); color: var(--warn); }
+.pill.same { background: var(--band); color: var(--muted); }
+
+.workloads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .workloads { grid-template-columns: 1fr; } }
+.workload { border-top: 1px solid var(--rule); padding-top: 12px; display: grid; gap: 4px; font-size: 14px; }
+.workload p { color: var(--muted); }
+.workload .targets { font-family: var(--font-data); font-size: 11.5px; color: var(--snap); }
+.notes ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 72ch; }
+dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 22px; margin: 0; font-size: 14px; }
+dt { color: var(--muted); }
+dd { margin: 0; min-width: 0; }
+code { font-family: var(--font-data); font-size: 0.88em; background: var(--band); padding: 1px 5px; border-radius: 4px; }
+@media (max-width: 560px) { dl { grid-template-columns: 1fr; gap: 2px; } dd { margin-bottom: 10px; } }
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 18px; }
+</style>
+
+<main>
+	<header>
+		<div class="eyebrow">Cayenne 5.0-M3 against 5.0-SNAPSHOT · Strimillinn's model and data · 15 October 2026</div>
+		<h1>Cayenne 5 under load</h1>
+		<p class="lede" id="lede">Twelve query workloads on Strimillinn's model and its database. Each was run at 1, 4 and 16 threads on both Cayenne versions, with no rendering involved. The concurrency work in SNAPSHOT is real and large, but pays off where Strimillinn rarely goes: a single context shared between threads, so most of the performance we gained came from a plainer reason: SNAPSHOT builds objects from rows with half the garbage.</p>
+		<div class="meta">
+			<span class="key"><span class="swatch m3"></span><b>M3</b>&nbsp;5.0-M3 release</span>
+			<span class="key"><span class="swatch snap"></span><b>SNAPSHOT</b>&nbsp;5.0-SNAPSHOT at <code>78785e4e4</code></span>
+			<span id="meta-count"></span>
+		</div>
+	</header>
+
+	<section class="answer">
+		<h2>The dictionary page</h2>
+		<p>The heavy dictionary page query (<code>pageJoint</code>) is 1.13× faster at one thread and 1.14× at four. The gain is flat across thread counts and matches the 11% measured on the real page last night, which is the signature of cheaper per-thread work, not of less contention. Allocation per query falls from 295 MB to 137 MB. The page's parallel part (twins and trigram-similar texts on virtual threads, <code>pageFanOut</code>) is no faster at any thread count, because Postgres is the cost there.</p>
+<p>Concurrency really starts to show once the database is taken out. Served from the query cache into fresh contexts, the same query goes from 2.0× faster at one thread to 2.9× at sixteen: M3 slows from 68 to 197 ms under load, SNAPSHOT only from 34 to 67 ms. With one context shared by every thread, SNAPSHOT is 8–17× faster at 4 and 16 threads. Strimillinn neither uses the query cache nor shares contexts between threads (every <code>StrimillinnCore.newContext()</code> is fresh), so those gains are available but not yet collected.</p>
+	</section>
+
+	<section aria-label="Findings">
+		<div class="findings">
+			<div class="finding"><div class="eyebrow">Shared context</div><div class="figure">17.5×</div><h3>Faults in a shared context at 16 threads</h3><p>385 µs on M3, 22 µs on SNAPSHOT. M3 serialises threads on the whole context; SNAPSHOT's per-object locks (CAY-3048) let them pass each other. From the cache it's 11.6×, and 7.9× already at 4 threads.</p></div>
+<div class="finding"><div class="eyebrow">Building objects</div><div class="figure">2.0–2.9×</div><h3>Cached rows to objects</h3><p>The page query from the query cache: 68 → 34 ms at one thread, 197 → 67 ms at sixteen, with 79% less allocation. This is the part of every fetch that SNAPSHOT rewrote, and it scales better too.</p></div>
+<div class="finding"><div class="eyebrow">Under load</div><div class="figure">−62%</div><h3>Garbage collection on the page query</h3><p>At 16 threads the page query's GC time drops from 14.4 s to 5.4 s over the run (disjoint prefetches: 10.3 s → 2.5 s). Wall time there is flat because 16 threads plus Postgres saturate 14 cores, but a busy server would feel the lighter heap.</p></div>
+		</div>
+	</section>
+
+	<section>
+		<div class="eyebrow">Speed</div>
+		<h2>How much faster, by thread count</h2>
+		<p class="caption">Each workload at 1, 4 and 16 threads. Right of the line is faster on SNAPSHOT; the scale is logarithmic, so 2× and ½× are the same distance from 1×. Whiskers run from the slowest to the fastest ratio the two 99.9% confidence intervals allow; a whisker crossing 1× means no measurable difference.</p>
+		<div class="panel">
+			<div class="legend">
+				<span class="key"><span class="swatch t1"></span>1 thread</span>
+				<span class="key"><span class="swatch t4"></span>4 threads</span>
+				<span class="key"><span class="swatch t16"></span>16 threads</span>
+			</div>
+			<div class="chart-wrap"><svg id="speedup" role="img" aria-label="Speedup of SNAPSHOT over M3 per workload and thread count"></svg></div>
+		</div>
+	</section>
+
+	<section>
+		<div class="eyebrow">Scaling</div>
+		<h2>Throughput as threads are added</h2>
+		<p class="caption">Operations per second across all threads. A line that keeps rising scales; a flat line means the threads are waiting on each other or on the database.</p>
+		<div class="scaling" id="scaling"></div>
+	</section>
+
+	<section>
+		<div class="eyebrow">Memory</div>
+		<h2>Allocation per operation</h2>
+		<p class="caption">Bytes allocated per operation at one thread, measured by JMH's GC profiler. Less allocation means less garbage collection, which is where much of the time goes under load.</p>
+		<div class="panel">
+			<div class="legend">
+				<span class="key"><span class="swatch m3"></span>M3</span>
+				<span class="key"><span class="swatch snap"></span>SNAPSHOT</span>
+			</div>
+			<div class="chart-wrap"><svg id="alloc" role="img" aria-label="Bytes allocated per operation"></svg></div>
+		</div>
+		<p class="caption">Retained heap, measured three times per version: data rows are less than half the size (1,101 → 525 bytes per row, CAY-3050). Objects and their snapshots cost the same on both versions, about 470 bytes per object retained and 603 including the snapshot cache. One M3 object run read 588 B/object twice; SNAPSHOT read 471 every time, so treat that spread as heap measurement noise rather than a difference.</p>
+	</section>
+
+	<section class="notes">
+		<div class="eyebrow">Reading it</div>
+		<h2>What the results say</h2>
+		<ul>
+<li><b>The floor is JDBC.</b> Reading the page's 17,367 rows as data rows allocates 27% less on SNAPSHOT but takes the same 55–58 ms, so what the upgrade saves sits above that floor, in turning rows into objects. A four-column query (<code>pageColumns</code>) is unchanged.</li>
+<li><b>Disjoint-by-id prefetches gain more than joint ones at one thread</b> (1.25× against 1.13×; allocation 154 → 84 MB), which suits <code>DictionaryEntryInfoProvider</code>.</li>
+<li><b>Small, single-object work is unchanged or slightly slower.</b> One receipt by unique id is 2–4% slower at 1 and 4 threads (101 → 103 µs, 129 → 134 µs; the confidence intervals don't overlap) and allocates a little more. 50 snapshot-cache lookups and 200 to-one faults in a private context are identical, so ClockMap (CAY-3049) didn't show up here.</li>
+<li><b>At 16 threads the page queries are a wash</b> (1.04× and 0.95×, both well inside their error bars). The machine is saturated, and the variance on M3's joint query is ±20%.</li>
+<li><b>One odd row:</b> the shared-context database fetch is slower at one thread than at four on <em>both</em> versions (2.2 ms vs 0.8 ms on M3). Slices are chosen at random, so it isn't the workload; something in that path (likely Postgres or the pool) favours concurrency. Its 1.47× at 16 threads is real but shouldn't be read alone.</li>
+<li><b>Method.</b> JMH 1.37 with 2 forks × 5 iterations of 4 s after 4 warmups, average time per operation, GC profiler. Versions alternated per workload. The 4 GB heap was fixed and HikariCP had 48 connections. The local Postgres 17 copy of the Strimillinn database was used, the Eclipse app was stopped during the run, and there were 72 runs with 0 failures (03:51–05:28). Same generated model classes and datamap on both versions.</li>
+</ul>
+	</section>
+
+	<section>
+		<div class="eyebrow">All results</div>
+		<h2>Every workload, every thread count</h2>
+		<div class="table-wrap">
+			<table>
+				<thead><tr><th>Workload</th><th class="num">Threads</th><th class="num">M3, µs/op</th><th class="num">SNAPSHOT, µs/op</th><th class="num">Speedup</th><th class="num">M3 alloc</th><th class="num">SNAPSHOT alloc</th></tr></thead>
+				<tbody id="rows"></tbody>
+			</table>
+		</div>
+		<p class="caption">Average time per operation as each thread sees it, ± the 99.9% confidence interval. A speedup counts only when the confidence intervals don't overlap; otherwise it's shown in grey.</p>
+	</section>
+
+	<section>
+		<div class="eyebrow">The workloads</div>
+		<h2>What each one does</h2>
+		<div class="workloads" id="workloads"></div>
+	</section>
+
+	<section class="notes">
+		<div class="eyebrow">Method</div>
+		<h2>How it was measured</h2>
+		<dl>
+			<dt>Project</dt><dd><code>~/git/cayenne-bench</code>: JMH benchmarks on Strimillinn's datamap, with the generated model classes of each version (<code>a441cba00</code> for M3, <code>befbb0bb9</code> for SNAPSHOT). No WebObjects, no templates. Build with <code>-Pm3</code> or <code>-Psnapshot</code>, run with <code>./run.sh full</code>.</dd>
+			<dt>Database</dt><dd>The local copy of Strimillinn's database: 2.1 million entries, 280,000 receipts. PostgreSQL 17 on the same machine. Every workload is read-only.</dd>
+			<dt>Runtime</dt><dd>As Strimillinn sets it up: same project file, 100,000-row snapshot cache, Hikari pool, minus the commit listeners. 4 GB heap, G1.</dd>
+			<dt>JMH</dt><dd id="jmh"></dd>
+			<dt>Order</dt><dd>For each workload and thread count, M3 then SNAPSHOT, so slow drift over the night affects both.</dd>
+			<dt>Checks</dt><dd>Each trial first checks that the page query returns 17,367 rows as data rows and as objects in that version, and that the id pools are complete. A wrong answer stops the trial.</dd>
+			<dt>Machine</dt><dd id="machine"></dd>
+		</dl>
+	</section>
+
+	<footer id="footer"></footer>
+</main>
+
+<script>
+const SUMMARY = {
+ "results": {
+  "pageColumns": {
+   "1": {
+    "5.0-M3": {
+     "us": 59427.39377435648,
+     "error": 719.4178042656608,
+     "ci": [
+      58707.97597009082,
+      60146.811578622146
+     ],
+     "samples": [
+      60084.46702985075,
+      58811.086956521736,
+      59377.92155882353,
+      58879.065217391304,
+      58887.98066666667,
+      59221.19729411765,
+      60073.10137313433,
+      59713.01532352941,
+      59507.523897058825,
+      59718.57842647059
+     ],
+     "bytes": 15676139.531414535,
+     "gcCount": 6.0,
+     "gcTimeMs": 84.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 60164.858239987356,
+     "error": 5028.258628042071,
+     "ci": [
+      55136.59961194528,
+      65193.11686802943
+     ],
+     "samples": [
+      57727.11547142857,
+      57296.80832857143,
+      56590.62147887324,
+      57228.9724084507,
+      56357.76272222222,
+      63861.70238095238,
+      63273.842453125,
+      62976.650390625,
+      63503.383453125,
+      62831.7233125
+     ],
+     "bytes": 13173886.47893472,
+     "gcCount": 4.0,
+     "gcTimeMs": 41.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 291790.2674995879,
+     "error": 7763.691739729314,
+     "ci": [
+      284026.5757598586,
+      299553.9592393172
+     ],
+     "samples": [
+      305012.65124519233,
+      292686.3059227335,
+      290297.1154416209,
+      291375.34628571424,
+      287991.1775109891,
+      293706.0077314561,
+      288370.7624787088,
+      286664.6445267857,
+      289993.529237294,
+      291805.13461538457
+     ],
+     "bytes": 15673190.748314057,
+     "gcCount": 16.0,
+     "gcTimeMs": 196.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 290165.6125175619,
+     "error": 4506.687011314589,
+     "ci": [
+      285658.92550624727,
+      294672.2995288765
+     ],
+     "samples": [
+      288882.40468097525,
+      290790.1074433379,
+      289893.57467204676,
+      288450.05625480774,
+      285295.8795883929,
+      292324.06749210163,
+      286723.33300000004,
+      294381.629823489,
+      290666.63055185444,
+      294248.4416686127
+     ],
+     "bytes": 13171671.840052506,
+     "gcCount": 12.0,
+     "gcTimeMs": 87.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 106369.97927931529,
+     "error": 5844.539396949472,
+     "ci": [
+      100525.43988236581,
+      112214.51867626476
+     ],
+     "samples": [
+      109183.11442548799,
+      109039.18925506758,
+      100807.10270192308,
+      108506.93421002253,
+      109848.82588513514,
+      100863.25728461538,
+      108552.34618601826,
+      108156.32541038407,
+      100795.03764022436,
+      107947.65979427453
+     ],
+     "bytes": 15674269.289096301,
+     "gcCount": 10.0,
+     "gcTimeMs": 131.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 103442.52179561685,
+     "error": 6338.313402115465,
+     "ci": [
+      97104.20839350138,
+      109780.83519773232
+     ],
+     "samples": [
+      104521.67051417004,
+      105441.7861772942,
+      105495.60732059032,
+      97799.02896112805,
+      107264.38465131578,
+      97198.48971239838,
+      106053.58411130868,
+      97418.73397168989,
+      106370.43482325747,
+      106861.49771301566
+     ],
+     "bytes": 13172358.486233864,
+     "gcCount": 8.0,
+     "gcTimeMs": 71.0
+    }
+   }
+  },
+  "pageDataRows": {
+   "1": {
+    "5.0-M3": {
+     "us": 58562.15197757886,
+     "error": 448.1946743400196,
+     "ci": [
+      58113.95730323884,
+      59010.34665191888
+     ],
+     "samples": [
+      59030.44852941176,
+      58629.22704347826,
+      58806.19807246377,
+      58688.289855072464,
+      58896.44988405797,
+      58420.37801449275,
+      58469.94082608695,
+      58323.69866666666,
+      58176.3448115942,
+      58180.54407246377
+     ],
+     "bytes": 36840355.518499576,
+     "gcCount": 10.0,
+     "gcTimeMs": 99.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 54858.37643120546,
+     "error": 4739.533246384638,
+     "ci": [
+      50118.84318482083,
+      59597.9096775901
+     ],
+     "samples": [
+      57808.482742857144,
+      57959.49524285714,
+      58025.10475714286,
+      57698.46428571428,
+      57653.232742857144,
+      52140.25216883117,
+      51751.743589743586,
+      51903.07852564102,
+      51894.08653846154,
+      51749.82371794872
+     ],
+     "bytes": 26837520.72010656,
+     "gcCount": 8.0,
+     "gcTimeMs": 52.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 292383.2971575206,
+     "error": 5689.931832842137,
+     "ci": [
+      286693.3653246785,
+      298073.2289903627
+     ],
+     "samples": [
+      292967.5770676511,
+      290602.66229773354,
+      288731.25733379123,
+      295391.23263255495,
+      291754.7389553571,
+      300980.97990762367,
+      294147.248987294,
+      289592.4529199863,
+      291126.86217170325,
+      288537.959301511
+     ],
+     "bytes": 36837191.300418414,
+     "gcCount": 37.0,
+     "gcTimeMs": 253.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 291342.8416212386,
+     "error": 4734.016502143575,
+     "ci": [
+      286608.82511909504,
+      296076.8581233822
+     ],
+     "samples": [
+      288066.4535720467,
+      293646.04013564566,
+      291558.76228640106,
+      293300.05797390104,
+      288386.8264412775,
+      288183.4012931548,
+      291955.6528365385,
+      292571.6836809753,
+      288243.15898282966,
+      297516.37900961546
+     ],
+     "bytes": 26834622.862541117,
+     "gcCount": 26.0,
+     "gcTimeMs": 138.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 107759.23339332225,
+     "error": 6153.283049052592,
+     "ci": [
+      101605.95034426966,
+      113912.51644237485
+     ],
+     "samples": [
+      110022.90600075075,
+      110287.58105311562,
+      110008.16195645645,
+      110061.21113626125,
+      109374.08123517266,
+      110100.41052214715,
+      100337.1568883013,
+      108336.74991785205,
+      109161.96973536036,
+      99902.10548780487
+     ],
+     "bytes": 36838393.14764053,
+     "gcCount": 23.0,
+     "gcTimeMs": 160.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 107623.81540644402,
+     "error": 4854.213358707071,
+     "ci": [
+      102769.60204773695,
+      112478.02876515109
+     ],
+     "samples": [
+      108549.06873498498,
+      98620.61109618902,
+      108817.47292605105,
+      109644.28245533034,
+      108907.3319468844,
+      107622.43037944523,
+      108264.489257468,
+      108209.20350213372,
+      109105.73745289037,
+      108497.52631306306
+     ],
+     "bytes": 26835818.400302306,
+     "gcCount": 16.0,
+     "gcTimeMs": 99.0
+    }
+   }
+  },
+  "pageDisjointById": {
+   "1": {
+    "5.0-M3": {
+     "us": 133435.94391795696,
+     "error": 4550.401191941065,
+     "ci": [
+      128885.54272601589,
+      137986.34510989801
+     ],
+     "samples": [
+      136789.21666666667,
+      137529.48056666667,
+      135780.0653,
+      135479.60973333335,
+      135576.9903,
+      130561.30645161291,
+      131035.93816129032,
+      130553.35216129033,
+      130609.37903225806,
+      130444.1008064516
+     ],
+     "bytes": 154158278.732043,
+     "gcCount": 19.0,
+     "gcTimeMs": 157.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 106867.48124473686,
+     "error": 631.6659738054966,
+     "ci": [
+      106235.81527093136,
+      107499.14721854236
+     ],
+     "samples": [
+      107272.87171052632,
+      107146.38594736843,
+      107345.02081578947,
+      107345.0285,
+      107087.87828947368,
+      106645.10747368421,
+      106615.73684210527,
+      106550.41118421052,
+      106191.81797368421,
+      106474.55371052632
+     ],
+     "bytes": 84157535.91578948,
+     "gcCount": 14.0,
+     "gcTimeMs": 82.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 533815.3431354911,
+     "error": 27066.89175020907,
+     "ci": [
+      506748.45138528204,
+      560882.2348857002
+     ],
+     "samples": [
+      543704.0572399554,
+      541891.9541104911,
+      518398.27683482144,
+      504242.9884040179,
+      543703.1300044643,
+      538560.4640323662,
+      532340.0168404019,
+      508524.2495747768,
+      547042.2905267857,
+      559746.0037868302
+     ],
+     "bytes": 117009921.32233877,
+     "gcCount": 369.0,
+     "gcTimeMs": 10265.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 559716.6548192708,
+     "error": 57100.23176853652,
+     "ci": [
+      502616.42305073433,
+      616816.8865878073
+     ],
+     "samples": [
+      524466.3440100446,
+      527809.0100881696,
+      530831.7736729911,
+      506390.2709620536,
+      557516.5164185268,
+      614142.168264881,
+      558338.1129620535,
+      576202.9021026785,
+      612851.21709375,
+      588618.2326175596
+     ],
+     "bytes": 81867094.49158357,
+     "gcCount": 114.0,
+     "gcTimeMs": 2506.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 194553.74743106603,
+     "error": 2274.8558001395736,
+     "ci": [
+      192278.89163092646,
+      196828.6032312056
+     ],
+     "samples": [
+      191368.61031006492,
+      193510.3038690476,
+      193345.60143452382,
+      195670.5028767857,
+      194594.5751279762,
+      194957.80231488094,
+      194196.3156125,
+      195878.27381369047,
+      196291.07621130956,
+      195724.41273988097
+     ],
+     "bytes": 121172323.95159784,
+     "gcCount": 44.0,
+     "gcTimeMs": 413.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 172084.39255837866,
+     "error": 1467.512112799007,
+     "ci": [
+      170616.88044557965,
+      173551.90467117768
+     ],
+     "samples": [
+      171368.0011888587,
+      171648.10211322465,
+      170810.1697581522,
+      171715.44967527172,
+      171138.24829710144,
+      173351.64387047102,
+      173292.79710507247,
+      173498.51405525365,
+      172159.54579936594,
+      171861.4537210145
+     ],
+     "bytes": 82652554.27070707,
+     "gcCount": 33.0,
+     "gcTimeMs": 188.0
+    }
+   }
+  },
+  "pageFanOut": {
+   "1": {
+    "5.0-M3": {
+     "us": 224199.09970701757,
+     "error": 8504.85651831876,
+     "ci": [
+      215694.2431886988,
+      232703.95622533633
+     ],
+     "samples": [
+      216162.69736842104,
+      230467.18516666666,
+      218775.26531578947,
+      226124.59255555554,
+      225561.80555555556,
+      229456.70138888888,
+      218132.11405263157,
+      232551.63422222223,
+      223979.06944444444,
+      220779.932
+     ],
+     "bytes": 411241.1976608187,
+     "gcCount": 0.0,
+     "gcTimeMs": null
+    },
+    "5.0-SNAPSHOT": {
+     "us": 212312.68737512376,
+     "error": 41029.06664092796,
+     "ci": [
+      171283.6207341958,
+      253341.7540160517
+     ],
+     "samples": [
+      226814.49533333333,
+      227328.33794444444,
+      228385.57638888888,
+      223016.49766666666,
+      229631.81944444444,
+      231260.71294444444,
+      214620.1052631579,
+      217684.82236842104,
+      169346.60416666666,
+      155037.90223076922
+     ],
+     "bytes": 320983.1149797571,
+     "gcCount": 0.0,
+     "gcTimeMs": null
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 896834.1003006992,
+     "error": 16045.335597255873,
+     "ci": [
+      880788.7647034434,
+      912879.4358979551
+     ],
+     "samples": [
+      906398.4600052084,
+      899241.455145387,
+      899645.2236748512,
+      881084.1929464285,
+      902756.7562165178,
+      885309.7276397321,
+      912347.949239137,
+      898516.0894747025,
+      901334.3937156249,
+      881706.7549494049
+     ],
+     "bytes": 397391.1574184903,
+     "gcCount": 0.0,
+     "gcTimeMs": null
+    },
+    "5.0-SNAPSHOT": {
+     "us": 921992.4383795982,
+     "error": 56725.711669947035,
+     "ci": [
+      865266.7267096512,
+      978718.1500495452
+     ],
+     "samples": [
+      886310.026,
+      963053.9604572918,
+      943102.5370290179,
+      902668.8352002978,
+      932151.2494970239,
+      893490.9105997023,
+      874524.4686078868,
+      893804.6344977679,
+      941340.9834851191,
+      989476.778421875
+     ],
+     "bytes": 305108.2148592853,
+     "gcCount": 0.0,
+     "gcTimeMs": null
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 287583.06020766485,
+     "error": 4806.147588739106,
+     "ci": [
+      282776.91261892574,
+      292389.20779640396
+     ],
+     "samples": [
+      284588.21339880954,
+      290753.1601991759,
+      291909.7116854396,
+      290257.6829203297,
+      286224.3195173993,
+      283533.67061428574,
+      289191.6798076923,
+      289039.34495320515,
+      282776.02447142854,
+      287556.7945088828
+     ],
+     "bytes": 399026.35309280746,
+     "gcCount": 0.0,
+     "gcTimeMs": null
+    },
+    "5.0-SNAPSHOT": {
+     "us": 289296.74772539374,
+     "error": 3097.4339577502856,
+     "ci": [
+      286199.31376764347,
+      292394.181683144
+     ],
+     "samples": [
+      289931.19832967035,
+      292416.03173901094,
+      292011.4945247253,
+      288653.22460027476,
+      286083.3123071429,
+      286864.47639102564,
+      290074.9407824176,
+      289180.9069368132,
+      290025.96562912094,
+      287725.9260137362
+     ],
+     "bytes": 309224.89239286043,
+     "gcCount": 0.0,
+     "gcTimeMs": null
+    }
+   }
+  },
+  "pageFromCache": {
+   "1": {
+    "5.0-M3": {
+     "us": 68031.85576321352,
+     "error": 1609.8636403919882,
+     "ci": [
+      66421.99212282154,
+      69641.7194036055
+     ],
+     "samples": [
+      69353.05387931035,
+      68992.73516949153,
+      68989.42372881356,
+      69014.69208474577,
+      68794.24718644068,
+      67270.47848333334,
+      67127.74236666667,
+      66894.50765,
+      66927.41181666666,
+      66954.26526666667
+     ],
+     "bytes": 136869289.0920086,
+     "gcCount": 32.0,
+     "gcTimeMs": 119.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 34417.54384153844,
+     "error": 853.6258163700428,
+     "ci": [
+      33563.9180251684,
+      35271.16965790848
+     ],
+     "samples": [
+      34057.682915254234,
+      34987.51340869565,
+      33876.30392436975,
+      34717.520836206895,
+      34065.65254237288,
+      34714.336931034486,
+      34998.03695652174,
+      35213.61184210526,
+      33864.08928571428,
+      33680.68977310925
+     ],
+     "bytes": 28458776.57748463,
+     "gcCount": 12.0,
+     "gcTimeMs": 96.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 196725.71881631782,
+     "error": 18185.676668377746,
+     "ci": [
+      178540.04214794008,
+      214911.39548469556
+     ],
+     "samples": [
+      213589.26890131578,
+      182902.2458818523,
+      182865.42575960496,
+      183335.82349161257,
+      183646.11747773032,
+      203596.22878914472,
+      204009.1299423637,
+      204132.39536151316,
+      206241.38761538742,
+      202939.16494265347
+     ],
+     "bytes": 87360716.05448198,
+     "gcCount": 160.0,
+     "gcTimeMs": 5965.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 66887.27499517253,
+     "error": 1507.09708993609,
+     "ci": [
+      65380.177905236436,
+      68394.37208510861
+     ],
+     "samples": [
+      67095.67030624734,
+      68648.17357178948,
+      67503.05795538386,
+      67111.75979038139,
+      67950.12570497897,
+      65251.21483558358,
+      66653.29575857427,
+      66110.46387506984,
+      66552.08456998775,
+      65996.90358372887
+     ],
+     "bytes": 25647083.97415786,
+     "gcCount": 104.0,
+     "gcTimeMs": 2099.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 72778.21745083063,
+     "error": 1330.4806898000493,
+     "ci": [
+      71447.73676103058,
+      74108.69814063069
+     ],
+     "samples": [
+      72098.58184220779,
+      71772.59426785714,
+      72073.65976842532,
+      71750.02310762988,
+      72097.8431987013,
+      73848.00497727274,
+      73681.34180454546,
+      73391.54013510101,
+      73555.0849892256,
+      73513.50041734007
+     ],
+     "bytes": 94876844.71914819,
+     "gcCount": 85.0,
+     "gcTimeMs": 700.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 43239.95281069107,
+     "error": 377.48895296264715,
+     "ci": [
+      42862.46385772843,
+      43617.44176365372
+     ],
+     "samples": [
+      43325.524449830526,
+      43463.56877881019,
+      43543.80749041608,
+      43527.76996896914,
+      43327.8033906323,
+      43034.79994389156,
+      42991.095709849,
+      42907.375141786775,
+      43346.04258593384,
+      42931.74064679135
+     ],
+     "bytes": 28332701.771285344,
+     "gcCount": 41.0,
+     "gcTimeMs": 200.0
+    }
+   }
+  },
+  "pageJoint": {
+   "1": {
+    "5.0-M3": {
+     "us": 243094.71568235295,
+     "error": 2455.8303388032778,
+     "ci": [
+      240638.8853435497,
+      245550.54602115622
+     ],
+     "samples": [
+      245165.85047058822,
+      245282.67647058822,
+      244332.62988235295,
+      244321.43870588235,
+      242395.58088235295,
+      242308.28923529413,
+      243178.8161764706,
+      240928.71811764705,
+      242167.16423529413,
+      240865.99264705883
+     ],
+     "bytes": 295395093.7882353,
+     "gcCount": 20.0,
+     "gcTimeMs": 246.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 215167.21973684212,
+     "error": 1759.8765737183573,
+     "ci": [
+      213407.34316312376,
+      216927.09631056048
+     ],
+     "samples": [
+      214827.37715789475,
+      214741.77631578947,
+      216281.93421052632,
+      214891.69078947368,
+      216358.47805263157,
+      217408.10310526314,
+      214061.25657894736,
+      214614.86621052632,
+      213570.9912631579,
+      214915.72368421053
+     ],
+     "bytes": 137101868.50526315,
+     "gcCount": 10.0,
+     "gcTimeMs": 69.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 1407239.8340026042,
+     "error": 288481.82560181647,
+     "ci": [
+      1118758.0084007878,
+      1695721.6596044207
+     ],
+     "samples": [
+      1395405.3732083335,
+      1398491.2148125002,
+      933675.8090208332,
+      1631406.772,
+      1384467.0516354165,
+      1619292.0051458334,
+      1362759.9561458335,
+      1439483.1163541665,
+      1445518.1510833334,
+      1461898.8906197916
+     ],
+     "bytes": 254356423.3038467,
+     "gcCount": 454.0,
+     "gcTimeMs": 14399.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 1350138.8603265625,
+     "error": 179612.1000241118,
+     "ci": [
+      1170526.7603024507,
+      1529750.9603506743
+     ],
+     "samples": [
+      1482671.6310625004,
+      1128663.850234375,
+      1313424.7526458332,
+      1288355.4151614583,
+      1193556.1395520833,
+      1365923.7353020834,
+      1412295.2496458334,
+      1424421.0420937503,
+      1409278.3856614581,
+      1482798.4019062503
+     ],
+     "bytes": 134971427.92150894,
+     "gcCount": 207.0,
+     "gcTimeMs": 5418.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 380321.97301632573,
+     "error": 44603.40798415984,
+     "ci": [
+      335718.5650321659,
+      424925.38100048556
+     ],
+     "samples": [
+      395442.1416590909,
+      393880.33837045456,
+      399986.2580916667,
+      367795.9991136363,
+      366090.88113181817,
+      304480.1466875,
+      391329.2043818182,
+      401383.781275,
+      383929.170575,
+      398901.8088772727
+     ],
+     "bytes": 263149713.79178986,
+     "gcCount": 77.0,
+     "gcTimeMs": 1915.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 332770.751063447,
+     "error": 6884.503133666439,
+     "ci": [
+      325886.24792978057,
+      339655.2541971134
+     ],
+     "samples": [
+      335732.95894318185,
+      329909.89349038457,
+      338016.7075511364,
+      337755.3729185606,
+      325120.00379967946,
+      326729.3238573718,
+      330599.68118429487,
+      332683.4527516026,
+      334642.1469375,
+      336517.96920075756
+     ],
+     "bytes": 135980243.14210337,
+     "gcCount": 31.0,
+     "gcTimeMs": 382.0
+    }
+   }
+  },
+  "receiptByUniqueID": {
+   "1": {
+    "5.0-M3": {
+     "us": 101.40190696371008,
+     "error": 0.969536888760691,
+     "ci": [
+      100.43237007494939,
+      102.37144385247076
+     ],
+     "samples": [
+      101.24470825005692,
+      102.45904805427547,
+      102.08584506898833,
+      102.10687625401029,
+      101.15116631706638,
+      100.56835004388715,
+      101.17744446687188,
+      100.71101016633534,
+      100.891918910079,
+      101.6227021055302
+     ],
+     "bytes": 114239.0794285012,
+     "gcCount": 18.0,
+     "gcTimeMs": 176.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 103.13249121372182,
+     "error": 0.49271496639083295,
+     "ci": [
+      102.63977624733099,
+      103.62520618011266
+     ],
+     "samples": [
+      103.1352800267476,
+      103.53758939867289,
+      103.69693761809852,
+      103.11592924431174,
+      102.75084021318574,
+      103.2802361222122,
+      102.93593685345381,
+      103.27924682582606,
+      102.89499701684454,
+      102.69791881786519
+     ],
+     "bytes": 123151.28772387192,
+     "gcCount": 18.0,
+     "gcTimeMs": 143.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 391.0003683753107,
+     "error": 43.45433803494137,
+     "ci": [
+      347.5460303403693,
+      434.4547064102521
+     ],
+     "samples": [
+      318.80442156499254,
+      418.65268381718465,
+      413.47326715607295,
+      382.38269471474797,
+      379.8140478220108,
+      406.4430970448233,
+      384.93225361087656,
+      395.81568707145607,
+      410.84529161359734,
+      398.8402393373442
+     ],
+     "bytes": 113980.7205738028,
+     "gcCount": 74.0,
+     "gcTimeMs": 357.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 440.3129261046691,
+     "error": 64.47855985267786,
+     "ci": [
+      375.83436625199124,
+      504.79148595734694
+     ],
+     "samples": [
+      422.33420928750786,
+      404.2464582258426,
+      410.50049631125796,
+      421.1377384500196,
+      410.26044507211265,
+      417.05137086592106,
+      414.2144893868989,
+      514.2175965253489,
+      497.01260495016203,
+      492.15385197161896
+     ],
+     "bytes": 124197.80126698075,
+     "gcCount": 73.0,
+     "gcTimeMs": 351.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 128.8421334746209,
+     "error": 1.0937617073335644,
+     "ci": [
+      127.74837176728734,
+      129.93589518195446
+     ],
+     "samples": [
+      128.25482607726184,
+      128.2375851584906,
+      128.05233783768708,
+      128.07257360199355,
+      128.18890421430547,
+      129.49413743277043,
+      129.60288085734095,
+      129.43263908583756,
+      129.43507824675817,
+      129.6503722337635
+     ],
+     "bytes": 113718.40149478169,
+     "gcCount": 56.0,
+     "gcTimeMs": 265.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 133.45206162842206,
+     "error": 0.9594369902803705,
+     "ci": [
+      132.49262463814168,
+      134.41149861870244
+     ],
+     "samples": [
+      132.87647941173813,
+      133.18281838858982,
+      133.20150043123013,
+      132.865427934107,
+      133.1856257091348,
+      133.34673178012866,
+      133.40409446378973,
+      133.70000946183026,
+      135.0680514712507,
+      133.68987723242128
+     ],
+     "bytes": 123701.29144815197,
+     "gcCount": 59.0,
+     "gcTimeMs": 283.0
+    }
+   }
+  },
+  "sharedContextFaults": {
+   "1": {
+    "5.0-M3": {
+     "us": 18.521728748535185,
+     "error": 0.15078000065023733,
+     "ci": [
+      18.37094874788495,
+      18.672508749185422
+     ],
+     "samples": [
+      18.37693292458896,
+      18.43163294938501,
+      18.48542982067948,
+      18.482369144684988,
+      18.431828816613194,
+      18.684093847845535,
+      18.658034283425174,
+      18.533764703163637,
+      18.55295713908976,
+      18.58024385587611
+     ],
+     "bytes": 33970.51043954773,
+     "gcCount": 29.0,
+     "gcTimeMs": 87.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 7.281112896251936,
+     "error": 0.6042227038230652,
+     "ci": [
+      6.676890192428871,
+      7.885335600075001
+     ],
+     "samples": [
+      7.6797426761754455,
+      7.6629932715588165,
+      7.654201310550446,
+      7.658382525885455,
+      7.645342085518516,
+      6.8997114683468945,
+      6.914808734197997,
+      6.901968735101196,
+      6.9039438188125715,
+      6.890034336372011
+     ],
+     "bytes": 16238.643414297625,
+     "gcCount": 35.0,
+     "gcTimeMs": 49.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 385.3492488876808,
+     "error": 10.056186227158788,
+     "ci": [
+      375.293062660522,
+      395.4054351148396
+     ],
+     "samples": [
+      393.76393555575487,
+      387.3332168879069,
+      386.0285768235284,
+      395.5785155210988,
+      388.26149651168043,
+      377.89484295612067,
+      373.8491541458919,
+      382.1781839184134,
+      382.0891993555888,
+      386.5153672008237
+     ],
+     "bytes": 33966.40355975815,
+     "gcCount": 24.0,
+     "gcTimeMs": 109.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 22.023904670167912,
+     "error": 0.9130953593876601,
+     "ci": [
+      21.11080931078025,
+      22.937000029555573
+     ],
+     "samples": [
+      21.186416527372845,
+      21.39451523207337,
+      21.588468167129605,
+      21.53824888205989,
+      21.616255153005405,
+      22.49249449237426,
+      22.595165634223285,
+      22.516706044367137,
+      22.594592532492836,
+      22.71618403658046
+     ],
+     "bytes": 17879.4176568868,
+     "gcCount": 203.0,
+     "gcTimeMs": 208.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 95.02027730390778,
+     "error": 1.3305193564263287,
+     "ci": [
+      93.68975794748145,
+      96.3507966603341
+     ],
+     "samples": [
+      95.01922175807111,
+      96.15231021181096,
+      93.79267319585813,
+      95.81350736680949,
+      95.71594128893656,
+      94.72012619024893,
+      95.25790042015748,
+      93.34009075050338,
+      95.05797435873583,
+      95.33302749794598
+     ],
+     "bytes": 33917.62425174763,
+     "gcCount": 24.0,
+     "gcTimeMs": 122.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 8.72264524114486,
+     "error": 1.187244675200634,
+     "ci": [
+      7.535400565944227,
+      9.909889916345495
+     ],
+     "samples": [
+      7.9268891663225665,
+      8.038911343985,
+      7.988672159907399,
+      8.019125484296726,
+      7.9275079138849485,
+      9.373412951658445,
+      9.595031612589569,
+      9.428663884609488,
+      9.4428822182097,
+      9.485355675984755
+     ],
+     "bytes": 16279.879035157946,
+     "gcCount": 118.0,
+     "gcTimeMs": 132.0
+    }
+   }
+  },
+  "sharedContextFetch": {
+   "1": {
+    "5.0-M3": {
+     "us": 2221.273520347083,
+     "error": 144.88662406952912,
+     "ci": [
+      2076.3868962775537,
+      2366.160144416612
+     ],
+     "samples": [
+      2099.6114685204616,
+      2250.857393378227,
+      2212.4848781025926,
+      2351.111054513482,
+      2333.017884682586,
+      2283.196025611838,
+      2225.140893947807,
+      2054.1721070148487,
+      2151.525035944206,
+      2251.6184617547806
+     ],
+     "bytes": 611071.3729920257,
+     "gcCount": 4.0,
+     "gcTimeMs": 52.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 2007.8839022792854,
+     "error": 233.87316578300428,
+     "ci": [
+      1774.0107364962812,
+      2241.75706806229
+     ],
+     "samples": [
+      1671.6556585976628,
+      1952.03341459854,
+      2224.374283416528,
+      2119.5798097251586,
+      1925.2001761036468,
+      2116.1517951425553,
+      2083.1835927272728,
+      1982.1543254086182,
+      1915.9353071770336,
+      2088.570659895833
+     ],
+     "bytes": 384058.6042808391,
+     "gcCount": 4.0,
+     "gcTimeMs": 52.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 2924.7244182658237,
+     "error": 32.02922678989715,
+     "ci": [
+      2892.6951914759265,
+      2956.753645055721
+     ],
+     "samples": [
+      2929.1423340678325,
+      2927.231233994033,
+      2912.7745847431784,
+      2943.297976307059,
+      2907.692352058942,
+      2972.135441174107,
+      2924.0873364111635,
+      2925.613331302147,
+      2900.311140886608,
+      2904.958451713165
+     ],
+     "bytes": 609979.8458350092,
+     "gcCount": 53.0,
+     "gcTimeMs": 60.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 1986.0132271312316,
+     "error": 49.60763313393181,
+     "ci": [
+      1936.4055939972998,
+      2035.6208602651634
+     ],
+     "samples": [
+      2036.3766338847722,
+      1935.204957701459,
+      1973.878540545494,
+      1984.495750546732,
+      1967.525614075415,
+      1954.8205991023538,
+      1985.3097456574,
+      1998.3871358192089,
+      1983.8140263552457,
+      2040.3192676242347
+     ],
+     "bytes": 385482.83240452065,
+     "gcCount": 48.0,
+     "gcTimeMs": 59.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 770.2615449183988,
+     "error": 21.003665120847216,
+     "ci": [
+      749.2578797975516,
+      791.2652100392461
+     ],
+     "samples": [
+      771.1082842621348,
+      780.5215593574419,
+      783.8630247043757,
+      784.7860951571853,
+      779.086285586629,
+      744.3118313740451,
+      750.6800397063475,
+      761.407878787521,
+      772.4269351691881,
+      774.4235150791199
+     ],
+     "bytes": 610882.5838838925,
+     "gcCount": 49.0,
+     "gcTimeMs": 56.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 725.1509093896594,
+     "error": 7.926124158666071,
+     "ci": [
+      717.2247852309933,
+      733.0770335483255
+     ],
+     "samples": [
+      717.8362998310824,
+      730.441733938261,
+      728.8644539039822,
+      720.0334889180344,
+      726.3897164242882,
+      730.9324379409051,
+      730.3458379558069,
+      718.3855614478061,
+      721.2998811076359,
+      726.9796824287926
+     ],
+     "bytes": 385444.55815332325,
+     "gcCount": 32.0,
+     "gcTimeMs": 43.0
+    }
+   }
+  },
+  "sharedContextFromCache": {
+   "1": {
+    "5.0-M3": {
+     "us": 50.988523958858295,
+     "error": 1.1959971625135748,
+     "ci": [
+      49.79252679634472,
+      52.18452112137187
+     ],
+     "samples": [
+      50.103938901730494,
+      50.35287410690742,
+      50.516900542381435,
+      50.16186270825504,
+      50.11545306622343,
+      51.62860494908009,
+      51.837358981985595,
+      51.852407572152686,
+      51.6081750405395,
+      51.70766371932723
+     ],
+     "bytes": 134460.7143537638,
+     "gcCount": 41.0,
+     "gcTimeMs": 49.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 24.83317753889059,
+     "error": 0.4351076642317221,
+     "ci": [
+      24.39806987465887,
+      25.268285203122314
+     ],
+     "samples": [
+      25.277737765396303,
+      24.96381444268061,
+      25.070488231388808,
+      25.00407610240934,
+      25.098446439636234,
+      24.629711406881473,
+      24.425374347419904,
+      24.534478261933604,
+      24.765235563221374,
+      24.562412827938253
+     ],
+     "bytes": 54093.20095906475,
+     "gcCount": 34.0,
+     "gcTimeMs": 56.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 1008.6587619315845,
+     "error": 13.183285061170077,
+     "ci": [
+      995.4754768704145,
+      1021.8420469927546
+     ],
+     "samples": [
+      1018.7958650545419,
+      1016.3058582143271,
+      1015.0807614433819,
+      1017.2788750409034,
+      1013.6352241405752,
+      997.0737045009048,
+      1003.9401622173332,
+      995.4624698498199,
+      1007.4815931849608,
+      1001.533105669095
+     ],
+     "bytes": 133995.19296644744,
+     "gcCount": 33.0,
+     "gcTimeMs": 61.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 87.15980327720372,
+     "error": 1.514581290725691,
+     "ci": [
+      85.64522198647803,
+      88.67438456792941
+     ],
+     "samples": [
+      85.99642110428482,
+      86.05465088315768,
+      86.61472035724725,
+      86.46626454785228,
+      86.08913534962448,
+      87.68233103553152,
+      88.44742512351402,
+      88.03879940860755,
+      87.95247334205357,
+      88.25581162016395
+     ],
+     "bytes": 54213.91153140996,
+     "gcCount": 156.0,
+     "gcTimeMs": 168.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 249.35384665014809,
+     "error": 1.5269142252174177,
+     "ci": [
+      247.82693242493067,
+      250.8807608753655
+     ],
+     "samples": [
+      248.4392808064604,
+      251.27791493035502,
+      248.54989394809022,
+      247.93168422911197,
+      248.4330588931942,
+      250.10716523829805,
+      249.62589628662545,
+      249.6416481442559,
+      249.940526411181,
+      249.59139761390867
+     ],
+     "bytes": 134063.65435389677,
+     "gcCount": 34.0,
+     "gcTimeMs": 66.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 31.623103591469906,
+     "error": 0.5467083767542665,
+     "ci": [
+      31.07639521471564,
+      32.169811968224174
+     ],
+     "samples": [
+      31.563603665352975,
+      31.437800429695386,
+      31.402853750761594,
+      31.48099129265394,
+      32.62253344056022,
+      31.522347436542493,
+      31.39896526327997,
+      31.552217355422933,
+      31.57001538515825,
+      31.679707895271328
+     ],
+     "bytes": 53822.83511062446,
+     "gcCount": 107.0,
+     "gcTimeMs": 117.0
+    }
+   }
+  },
+  "snapshotLookups": {
+   "1": {
+    "5.0-M3": {
+     "us": 1595.7173312951743,
+     "error": 12.275704467373238,
+     "ci": [
+      1583.441626827801,
+      1607.9930357625476
+     ],
+     "samples": [
+      1590.4722554628527,
+      1587.7548329374506,
+      1602.0415,
+      1593.3447723480333,
+      1601.1379409181636,
+      1607.6247991161108,
+      1592.0839289400556,
+      1602.5785557331203,
+      1581.0805843540102,
+      1599.0541431419458
+     ],
+     "bytes": 901409.4635854394,
+     "gcCount": 10.0,
+     "gcTimeMs": 73.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 1605.9730178393593,
+     "error": 8.738192984374372,
+     "ci": [
+      1597.234824854985,
+      1614.7112108237336
+     ],
+     "samples": [
+      1598.1675151757188,
+      1605.3894683239776,
+      1595.1796109785203,
+      1612.5032193158954,
+      1606.210273384183,
+      1605.5121597277823,
+      1610.5956254019293,
+      1613.54958373591,
+      1605.6135076060848,
+      1607.0092147435898
+     ],
+     "bytes": 917103.8069768477,
+     "gcCount": 10.0,
+     "gcTimeMs": 67.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 7093.049237789991,
+     "error": 58.728853098906626,
+     "ci": [
+      7034.320384691085,
+      7151.778090888897
+     ],
+     "samples": [
+      7114.9091063390615,
+      7042.395202338317,
+      7122.643266372565,
+      7059.021452625718,
+      7078.926959459151,
+      7067.962890174727,
+      7067.77027274772,
+      7074.9406772049,
+      7150.793612059455,
+      7151.128938578296
+     ],
+     "bytes": 910802.7058673833,
+     "gcCount": 32.0,
+     "gcTimeMs": 89.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 7138.902537805549,
+     "error": 107.36463199097288,
+     "ci": [
+      7031.537905814576,
+      7246.2671697965225
+     ],
+     "samples": [
+      7121.935623330239,
+      7171.991696796643,
+      7105.052767891308,
+      7204.289375364663,
+      6989.425697835689,
+      7116.790353937062,
+      7251.529357098338,
+      7109.911276521103,
+      7132.452127030701,
+      7185.647102249753
+     ],
+     "bytes": 916021.6382802414,
+     "gcCount": 32.0,
+     "gcTimeMs": 91.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 2099.58681225264,
+     "error": 16.46076805821132,
+     "ci": [
+      2083.1260441944287,
+      2116.047580310851
+     ],
+     "samples": [
+      2109.044509728676,
+      2102.200685735737,
+      2104.281278395758,
+      2093.976427342225,
+      2124.402051202777,
+      2090.1845542592355,
+      2090.80954183448,
+      2090.490402393868,
+      2092.4722106524114,
+      2098.006460981234
+     ],
+     "bytes": 906247.9381629343,
+     "gcCount": 28.0,
+     "gcTimeMs": 98.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 2120.174231991385,
+     "error": 11.421569303887336,
+     "ci": [
+      2108.752662687498,
+      2131.5958012952724
+     ],
+     "samples": [
+      2131.2132003369816,
+      2132.5153820812357,
+      2113.6396009886776,
+      2123.0013507601693,
+      2120.198315821143,
+      2111.1439411499096,
+      2120.6081835272353,
+      2114.688368114786,
+      2111.8348857575497,
+      2122.8990913761613
+     ],
+     "bytes": 923300.2151073891,
+     "gcCount": 28.0,
+     "gcTimeMs": 92.0
+    }
+   }
+  },
+  "toOneFaults": {
+   "1": {
+    "5.0-M3": {
+     "us": 504.7844308291942,
+     "error": 10.314088426072878,
+     "ci": [
+      494.4703424031213,
+      515.0985192552671
+     ],
+     "samples": [
+      512.2376171355498,
+      503.52991072325466,
+      510.72532129180496,
+      494.2696059896475,
+      495.9313249659948,
+      515.8269858229153,
+      503.09253330824237,
+      501.3544036754594,
+      505.21978934074264,
+      505.6568160383306
+     ],
+     "bytes": 468167.15391214256,
+     "gcCount": 16.0,
+     "gcTimeMs": 139.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 516.4536741430614,
+     "error": 8.943363621767762,
+     "ci": [
+      507.51031052129366,
+      525.3970377648292
+     ],
+     "samples": [
+      526.503046868846,
+      514.0092705096931,
+      521.1291147349273,
+      513.0155890253262,
+      523.8163015042511,
+      506.7092597599495,
+      518.1472813953488,
+      513.5490825099448,
+      513.6783320952869,
+      513.9794630270409
+     ],
+     "bytes": 396846.3833421011,
+     "gcCount": 12.0,
+     "gcTimeMs": 79.0
+    }
+   },
+   "16": {
+    "5.0-M3": {
+     "us": 2231.5959854785146,
+     "error": 189.00633820383305,
+     "ci": [
+      2042.5896472746815,
+      2420.6023236823476
+     ],
+     "samples": [
+      2019.2183555626264,
+      2039.1047242362645,
+      2157.3237179777757,
+      2299.108776562013,
+      2265.2682449450995,
+      2428.3825730527888,
+      2265.712096248592,
+      2289.7700966562493,
+      2270.002103036281,
+      2282.069166507454
+     ],
+     "bytes": 424656.32545074605,
+     "gcCount": 48.0,
+     "gcTimeMs": 75.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 2207.4701063217135,
+     "error": 24.627444891691432,
+     "ci": [
+      2182.842661430022,
+      2232.097551213405
+     ],
+     "samples": [
+      2226.687687194684,
+      2201.736051888144,
+      2217.8473271311505,
+      2224.280933643866,
+      2206.552913599706,
+      2199.632681615779,
+      2189.7563363388385,
+      2227.8490957968284,
+      2180.021684267664,
+      2200.3363517404723
+     ],
+     "bytes": 417709.80548006593,
+     "gcCount": 47.0,
+     "gcTimeMs": 68.0
+    }
+   },
+   "4": {
+    "5.0-M3": {
+     "us": 667.226766990854,
+     "error": 7.0270772756560635,
+     "ci": [
+      660.1996897151979,
+      674.2538442665101
+     ],
+     "samples": [
+      660.1700571586728,
+      670.5440542070629,
+      660.4660858520156,
+      664.9119600969432,
+      664.0318380558383,
+      674.26266741835,
+      668.4245665479218,
+      668.9606988722512,
+      670.5303929080936,
+      669.9653487913897
+     ],
+     "bytes": 445289.4692621293,
+     "gcCount": 42.0,
+     "gcTimeMs": 66.0
+    },
+    "5.0-SNAPSHOT": {
+     "us": 650.6405528511357,
+     "error": 7.444533568197168,
+     "ci": [
+      643.1960192829386,
+      658.0850864193328
+     ],
+     "samples": [
+      657.2744300391876,
+      656.2954050260887,
+      647.9585542512737,
+      654.7986472050238,
+      655.9016877584306,
+      645.2121541531872,
+      647.8856870059717,
+      644.0481691085606,
+      649.0271047987317,
+      648.0036891649003
+     ],
+     "bytes": 400418.7192243091,
+     "gcCount": 38.0,
+     "gcTimeMs": 56.0
+    }
+   }
+  }
+ },
+ "footprint": [
+  {
+   "cayenne": "5.0-M3",
+   "rows": 17367,
+   "rowsBytes": 19136992,
+   "bytesPerRow": 1101,
+   "objects": 34414,
+   "objectsBytes": 16230008,
+   "bytesPerObject": 471,
+   "freshObjects": 25182,
+   "freshBytes": 15237304,
+   "freshBytesPerObject": 605
+  },
+  {
+   "cayenne": "5.0-SNAPSHOT",
+   "rows": 17367,
+   "rowsBytes": 9134488,
+   "bytesPerRow": 525,
+   "objects": 34414,
+   "objectsBytes": 16222800,
+   "bytesPerObject": 471,
+   "freshObjects": 25182,
+   "freshBytes": 15197808,
+   "freshBytesPerObject": 603
+  },
+  {
+   "cayenne": "5.0-M3",
+   "rows": 17367,
+   "rowsBytes": 19136992,
+   "bytesPerRow": 1101,
+   "objects": 34414,
+   "objectsBytes": 20244552,
+   "bytesPerObject": 588,
+   "freshObjects": 25182,
+   "freshBytes": 15252096,
+   "freshBytesPerObject": 605
+  },
+  {
+   "cayenne": "5.0-SNAPSHOT",
+   "rows": 17367,
+   "rowsBytes": 9134488,
+   "bytesPerRow": 525,
+   "objects": 34414,
+   "objectsBytes": 16222744,
+   "bytesPerObject": 471,
+   "freshObjects": 25182,
+   "freshBytes": 15199064,
+   "freshBytesPerObject": 603
+  },
+  {
+   "cayenne": "5.0-M3",
+   "rows": 17367,
+   "rowsBytes": 19136992,
+   "bytesPerRow": 1101,
+   "objects": 34414,
+   "objectsBytes": 20260088,
+   "bytesPerObject": 588,
+   "freshObjects": 25182,
+   "freshBytes": 15233592,
+   "freshBytesPerObject": 604
+  },
+  {
+   "cayenne": "5.0-SNAPSHOT",
+   "rows": 17367,
+   "rowsBytes": 9134488,
+   "bytesPerRow": 525,
+   "objects": 34414,
+   "objectsBytes": 16222848,
+   "bytesPerObject": 471,
+   "freshObjects": 25182,
+   "freshBytes": 15197808,
+   "freshBytesPerObject": 603
+  }
+ ],
+ "environment": "started 2026-10-15T03:51:18Z mode full\ncayenne checkout: 78785e4e4 2026-10-14 15:19:32 -0400 CAY-3050 Array-based DataRows\n5.0-M3 jar: /Users/hugi/.m2/repository/org/apache/cayenne/cayenne/5.0-M3/cayenne-5.0-M3.jar (2026-08-21 07:09:02)\n5.0-SNAPSHOT jar: /Users/hugi/.m2/repository/org/apache/cayenne/cayenne/5.0-SNAPSHOT/cayenne-5.0-SNAPSHOT.jar (2026-10-15 01:39:15)\njava: openjdk version \"25.0.2\" 2026-01-20\npostgres: PostgreSQL 17.11 (Homebrew) on aarch64-a\nmachine: Apple M4 Pro, 14 cores, 48 GB\nfinished 2026-10-15T05:27:56Z\n"
+};
+const WORKLOADS = [
+ {"key": "pageJoint", "group": "page", "title": "Dictionary page query, joint prefetches",
+  "what": "17,367 entries of the most-bought dictionary entry, with receipt, shop, chain and both validations joined in. The query behind Strimillinn's slowest page, as DictionaryEntryInfo writes it.",
+  "targets": "CAY-3050 array rows, joint prefetch assembly without TreeMap ids, CAY-3047 snapshot versions"},
+ {"key": "pageDisjointById", "group": "page", "title": "Same query, disjoint-by-id prefetches",
+  "what": "The same entries, with each related table fetched in its own follow-up query by id, as DictionaryEntryInfoProvider does.",
+  "targets": "CAY-3050 array rows, prefetch resolution"},
+ {"key": "pageDataRows", "group": "page", "title": "Same query, raw data rows",
+  "what": "The same 17,367 rows as DataRows, no objects: the cost of reading JDBC and building rows.",
+  "targets": "CAY-3050 array rows"},
+ {"key": "pageColumns", "group": "page", "title": "Same query, four columns",
+  "what": "Price, quantity, receipt date and chain name for the same entries, as a column query.",
+  "targets": "Row readers"},
+ {"key": "pageFromCache", "group": "orm", "title": "Page query from the shared cache",
+  "what": "The joint page query served from Cayenne's shared query cache into a new context: no database, only turning cached rows into objects and merging snapshots.",
+  "targets": "CAY-3050 merge plans, CAY-3047, CAY-3049 ClockMap"},
+ {"key": "pageFanOut", "group": "page", "title": "The page's parallel lookups",
+  "what": "The two queries the dictionary page runs side by side on virtual threads: same-text twins and trigram-similar texts, each in its own context.",
+  "targets": "Concurrent contexts on one runtime"},
+ {"key": "receiptByUniqueID", "group": "page", "title": "One receipt by unique id",
+  "what": "A random receipt with its shop and chain in a new context: the first query of an ordinary page.",
+  "targets": "Per-query overhead"},
+ {"key": "snapshotLookups", "group": "orm", "title": "Snapshot cache lookups",
+  "what": "50 random receipts by primary key in a new context, each read once, all served from the warm shared snapshot cache.",
+  "targets": "CAY-3049 ClockMap, CAY-3021 lookups"},
+ {"key": "toOneFaults", "group": "orm", "title": "To-one faults, own context",
+  "what": "100 cached entries in a new context, then each entry's receipt and the receipt's shop: 200 faults resolved from the snapshot cache.",
+  "targets": "Fault resolution, snapshot cache"},
+ {"key": "sharedContextFetch", "group": "shared", "title": "Shared context, fetch from database",
+  "what": "Every thread fetches overlapping slices of the same 2,000 receipts with their shops into one shared context.",
+  "targets": "CAY-3048 per-object locks, CAY-3047"},
+ {"key": "sharedContextFromCache", "group": "shared", "title": "Shared context, from the cache",
+  "what": "The same, from the shared query cache: only the merging into objects other threads are using.",
+  "targets": "CAY-3048 per-object locks"},
+ {"key": "sharedContextFaults", "group": "shared", "title": "Shared context, faults",
+  "what": "Every thread reads cached entries into one shared context and follows each to its receipt and shop.",
+  "targets": "CAY-3045, CAY-3046, CAY-3048"}
+];
+
+const NS = "http://www.w3.org/2000/svg";
+const V = ["5.0-M3", "5.0-SNAPSHOT"];
+const THREADS = ["1", "4", "16"];
+const TCOLOR = { "1": "var(--t1)", "4": "var(--t4)", "16": "var(--t16)" };
+const GROUPS = { page: "With the database", orm: "Without the database", shared: "One context, many threads" };
+const R = SUMMARY.results;
+
+function el(name, attrs, parent, text) {
+	const e = document.createElementNS(NS, name);
+	for (const k in attrs) e.setAttribute(k, attrs[k]);
+	if (text != null) e.textContent = text;
+	if (parent) parent.appendChild(e);
+	return e;
+}
+const fmtUs = v => v >= 10000 ? (v / 1000).toFixed(0) + " ms" : v >= 1000 ? (v / 1000).toFixed(1) + " ms" : v >= 100 ? v.toFixed(0) + " µs" : v.toFixed(1) + " µs";
+const fmtBytes = b => b == null ? "–" : b >= 1e6 ? (b / 1e6).toFixed(1) + " MB" : b >= 1e3 ? (b / 1e3).toFixed(0) + " kB" : b.toFixed(0) + " B";
+const fmtX = x => x >= 10 ? x.toFixed(0) + "×" : x.toFixed(2) + "×";
+function cell(w, t) { return R[w] && R[w][t] && R[w][t][V[0]] && R[w][t][V[1]] ? R[w][t] : null; }
+function speedup(c) {
+	const m = c[V[0]], s = c[V[1]];
+	return { x: m.us / s.us, lo: m.ci[0] / s.ci[1], hi: m.ci[1] / s.ci[0], sig: m.ci[0] > s.ci[1] ? "faster" : s.ci[0] > m.ci[1] ? "slower" : "same" };
+}
+
+// Speedup dot plot, log scale
+(function speedupChart() {
+	const svg = document.getElementById("speedup");
+	const W = 900, labelW = 290, right = 24, rowH = 30, groupH = 26, top = 30;
+	const rows = [];
+	for (const g of Object.keys(GROUPS)) {
+		rows.push({ group: g });
+		WORKLOADS.filter(w => w.group === g).forEach(w => rows.push({ w }));
+	}
+	const H = top + rows.reduce((h, r) => h + (r.group ? groupH : rowH), 0) + 8;
+	svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+	svg.setAttribute("width", W);
+	const lo = Math.log(0.5), hi = Math.log(32);
+	const x = v => labelW + (Math.log(Math.min(32, Math.max(0.5, v))) - lo) / (hi - lo) * (W - labelW - right);
+	[0.5, 1, 2, 4, 8, 16, 32].forEach(t => {
+		el("line", { x1: x(t), x2: x(t), y1: top - 8, y2: H - 6, stroke: "var(--rule)", "stroke-width": t === 1 ? 1.8 : 1, fill: "none" }, svg);
+		el("text", { x: x(t), y: top - 14, "text-anchor": "middle", class: "axis" }, svg, t === 0.5 ? "½×" : t + "×");
+	});
+	let y = top;
+	for (const r of rows) {
+		if (r.group) {
+			el("text", { x: 0, y: y + 17, class: "group" }, svg, GROUPS[r.group].toUpperCase());
+			y += groupH;
+			continue;
+		}
+		const cy = y + rowH / 2;
+		el("text", { x: 0, y: cy + 4, class: "label" }, svg, r.w.title);
+		THREADS.forEach((t, i) => {
+			const c = cell(r.w.key, t);
+			if (!c) return;
+			const s = speedup(c);
+			const yy = cy + (i - 1) * 7;
+			el("line", { x1: x(s.lo), x2: x(s.hi), y1: yy, y2: yy, stroke: TCOLOR[t], "stroke-width": 2, fill: "none" }, svg);
+			el("circle", { cx: x(s.x), cy: yy, r: 4.6, fill: TCOLOR[t] }, svg);
+		});
+		y += rowH;
+	}
+})();
+
+// Throughput scaling, small multiples for the workloads where it matters most
+(function scaling() {
+	const host = document.getElementById("scaling");
+	const pick = ["pageJoint", "pageFromCache", "sharedContextFromCache", "sharedContextFaults"];
+	for (const key of pick) {
+		const w = WORKLOADS.find(w => w.key === key);
+		const panel = document.createElement("div");
+		panel.className = "panel";
+		panel.innerHTML = `<h3>${w.title}</h3>`;
+		const svg = el("svg", { role: "img", "aria-label": w.title + " throughput" });
+		panel.appendChild(svg);
+		host.appendChild(panel);
+		const Wd = 420, Hd = 200, left = 52, right = 14, top = 12, bottom = 30;
+		svg.setAttribute("viewBox", `0 0 ${Wd} ${Hd}`);
+		svg.setAttribute("width", "100%");
+		const pts = {};
+		let max = 0;
+		for (const v of V) {
+			pts[v] = THREADS.map(t => { const c = R[key] && R[key][t] && R[key][t][v]; const ops = c ? Number(t) * 1e6 / c.us : null; if (ops > max) max = ops; return ops; });
+		}
+		const nice = n => { const p = Math.pow(10, Math.floor(Math.log10(n))); return Math.ceil(n / p) * p; };
+		const ymax = nice(max * 1.08);
+		const xs = i => left + i / 2 * (Wd - left - right);
+		const ys = v => top + (1 - v / ymax) * (Hd - top - bottom);
+		for (let k = 0; k <= 4; k++) {
+			const v = ymax * k / 4;
+			el("line", { x1: left, x2: Wd - right, y1: ys(v), y2: ys(v), stroke: "var(--rule)", fill: "none" }, svg);
+			el("text", { x: left - 6, y: ys(v) + 4, "text-anchor": "end", class: "axis" }, svg, v >= 1000 ? (v / 1000).toFixed(v >= 10000 ? 0 : 1) + "k" : v >= 10 ? v.toFixed(0) : v.toFixed(1));
+		}
+		THREADS.forEach((t, i) => el("text", { x: xs(i), y: Hd - 10, "text-anchor": "middle", class: "axis" }, svg, t + (t === "1" ? " thread" : " threads")));
+		for (const v of V) {
+			const color = v === V[1] ? "var(--snap)" : "var(--m3)";
+			const p = pts[v].map((o, i) => o == null ? null : `${xs(i)},${ys(o)}`).filter(Boolean).join(" ");
+			el("polyline", { points: p, fill: "none", stroke: color, "stroke-width": 2.2 }, svg);
+			pts[v].forEach((o, i) => { if (o != null) el("circle", v === V[1] ? { cx: xs(i), cy: ys(o), r: 4.5, fill: color } : { cx: xs(i), cy: ys(o), r: 4, fill: "var(--sheet)", stroke: color, "stroke-width": 2 }, svg); });
+		}
+		el("text", { x: left, y: top - 2 + 0, class: "axis" }, svg, "");
+		const cap = document.createElement("p");
+		cap.className = "caption";
+		const c16 = cell(key, "16");
+		cap.textContent = c16 ? `At 16 threads: ${Math.round(16e6 / c16[V[0]].us).toLocaleString("en")} ops/s on M3, ${Math.round(16e6 / c16[V[1]].us).toLocaleString("en")} on SNAPSHOT.` : "";
+		panel.appendChild(cap);
+	}
+})();
+
+// Allocation per op at one thread, as paired bars on a log scale
+(function alloc() {
+	const svg = document.getElementById("alloc");
+	const W = 900, labelW = 290, right = 90, rowH = 34, top = 24;
+	const ws = WORKLOADS.filter(w => cell(w.key, "1"));
+	const H = top + ws.length * rowH + 6;
+	svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+	svg.setAttribute("width", W);
+	const lo = Math.log10(1e3), hi = Math.log10(1e9);
+	const x = b => labelW + (Math.log10(Math.max(1e3, b)) - lo) / (hi - lo) * (W - labelW - right);
+	[1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9].forEach(t => {
+		el("line", { x1: x(t), x2: x(t), y1: top - 6, y2: H - 4, stroke: "var(--rule)", fill: "none" }, svg);
+		el("text", { x: x(t), y: top - 10, "text-anchor": "middle", class: "axis" }, svg, fmtBytes(t));
+	});
+	ws.forEach((w, i) => {
+		const c = cell(w.key, "1");
+		const y = top + i * rowH;
+		el("text", { x: 0, y: y + rowH / 2 + 4, class: "label" }, svg, w.title);
+		const m = c[V[0]].bytes, s = c[V[1]].bytes;
+		el("rect", { x: labelW, y: y + 6, width: Math.max(1, x(m) - labelW), height: 9, rx: 2, fill: "var(--m3)", "fill-opacity": 0.55 }, svg);
+		el("rect", { x: labelW, y: y + 17, width: Math.max(1, x(s) - labelW), height: 9, rx: 2, fill: "var(--snap)" }, svg);
+		const d = (s / m - 1) * 100;
+		el("text", { x: Math.max(x(m), x(s)) + 8, y: y + rowH / 2 + 4, class: "axis" }, svg, (d <= 0 ? "−" : "+") + Math.abs(d).toFixed(0) + "%");
+	});
+})();
+
+// The table
+(function table() {
+	const body = document.getElementById("rows");
+	let count = 0;
+	for (const w of WORKLOADS) {
+		THREADS.forEach((t, i) => {
+			const c = cell(w.key, t);
+			if (!c) return;
+			count++;
+			const s = speedup(c), m = c[V[0]], n = c[V[1]];
+			const tr = document.createElement("tr");
+			if (i === 0) tr.className = "first";
+			tr.innerHTML = `<td>${i === 0 ? w.title : ""}</td><td class="num">${t}</td>
+				<td class="num">${fmtUs(m.us)} <span class="err">±${fmtUs(m.error)}</span></td>
+				<td class="num">${fmtUs(n.us)} <span class="err">±${fmtUs(n.error)}</span></td>
+				<td class="num"><span class="pill ${s.sig}">${fmtX(s.x)}</span></td>
+				<td class="num">${fmtBytes(m.bytes)}</td><td class="num">${fmtBytes(n.bytes)}</td>`;
+			body.appendChild(tr);
+		});
+	}
+	document.getElementById("meta-count").textContent = `${WORKLOADS.length} workloads · 1, 4 and 16 threads · ${count * 2} JMH runs`;
+})();
+
+// Workload descriptions
+(function workloads() {
+	const host = document.getElementById("workloads");
+	for (const w of WORKLOADS) {
+		const d = document.createElement("div");
+		d.className = "workload";
+		d.innerHTML = `<h3>${w.title}</h3><p>${w.what}</p><div class="targets">${w.targets}</div>`;
+		host.appendChild(d);
+	}
+})();
+
+(function method() {
+	const env = SUMMARY.environment || "";
+	const line = k => (env.split("\n").find(l => l.startsWith(k)) || "").slice(k.length).trim();
+	document.getElementById("machine").textContent = line("machine:") + ". " + line("java:") + ".";
+	document.getElementById("jmh").textContent = "Average time per operation, 2 forks per run, 4 warm-up and 5 measured iterations of 4 seconds each, GC profiler on. Thread count from the command line, one JVM per run.";
+	document.getElementById("footer").textContent = "Run " + line("started").replace("mode full", "").trim() + " to " + line("finished") + " (UTC).";
+})();
+</script>
+
+
+</html>
