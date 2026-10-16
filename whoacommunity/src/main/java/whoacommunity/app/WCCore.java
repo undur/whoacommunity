@@ -138,4 +138,11 @@ public class WCCore {
 	public static String githubToken() {
 		return System.getProperty( "wc.githubToken" );
 	}
+
+	/**
+	 * @return The Plausible Stats API key used by the traffic card on the front page (a "Stats" type key made in Plausible's settings)
+	 */
+	public static String plausibleApiKey() {
+		return System.getProperty( "wc.plausibleApiKey" );
+	}
 }

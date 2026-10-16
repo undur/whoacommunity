@@ -55,6 +55,7 @@ import whoacommunity.data.Article;
 import whoacommunity.elements.ElementReferenceFeed;
 import whoacommunity.github.GithubFeed;
 import whoacommunity.roadmap.RoadmapFeed;
+import whoacommunity.stats.PlausibleFeed;
 import whoacommunity.util.CachedFeed;
 import whoacommunity.util.Repos;
 import whoacommunity.util.Repos.Repo;
@@ -79,6 +80,7 @@ public class Application extends NGApplication {
 		GithubFeed.shared.getClass();
 		ElementReferenceFeed.shared.getClass();
 		RoadmapFeed.shared.getClass();
+		PlausibleFeed.shared.getClass();
 
 		try {
 			Class.forName( "whoacommunity.components.WCSidebar" );

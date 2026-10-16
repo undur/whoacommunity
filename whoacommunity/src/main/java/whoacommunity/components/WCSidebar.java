@@ -9,6 +9,7 @@ import com.apptasticsoftware.rssreader.RssReader;
 
 import ng.appserver.NGContext;
 import whoacommunity.app.WCComponent;
+import whoacommunity.stats.PlausibleFeed;
 import whoacommunity.util.CachedFeed;
 
 /**
@@ -64,5 +65,31 @@ public class WCSidebar extends WCComponent {
 		public String shortDateFormatted() {
 			return item().getPubDateZonedDateTime().get().format( DateTimeFormatter.ofPattern( "MMM d" ) );
 		}
+	}
+	// ---- Traffic card ----
+
+	public boolean isTrafficLoaded() {
+		return PlausibleFeed.shared.isLoaded();
+	}
+
+	public PlausibleFeed.Stats traffic() {
+		return PlausibleFeed.shared.stats();
+	}
+
+	public String trafficSVG() {
+		return PlausibleFeed.svg( traffic().days() );
+	}
+
+	public String trafficDashboardURL() {
+		return PlausibleFeed.dashboardURL();
+	}
+
+	public boolean trafficHasNow() {
+		return traffic().now() != null && traffic().now() > 0;
+	}
+
+	public String trafficNowString() {
+		final int now = traffic().now();
+		return now == 1 ? "1 here now" : now + " here now";
 	}
 }

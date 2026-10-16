@@ -45,3 +45,15 @@
 		</wo:link>
 	</wo:repetition>
 </div>
+
+<wo:if condition="$isTrafficLoaded">
+	<div class="rail-block rail-traffic">
+		<div class="rail-head"><wo:if condition="$trafficHasNow"><span class="live"></span></wo:if>Visitors<span class="rail-head-hint">last 30 days</span><wo:link href="$trafficDashboardURL" target="_blank" rel="noopener">dashboard ↗</wo:link></div>
+		<div class="rail-chart"><wo:str value="$trafficSVG" escapeHTML="$false" /></div>
+		<div class="rail-traffic-totals">
+			<span><strong><wo:str value="$traffic.visitors" /></strong> visitors</span>
+			<span><strong><wo:str value="$traffic.pageviews" /></strong> page views</span>
+			<wo:if condition="$trafficHasNow"><span class="rail-traffic-now"><wo:str value="$trafficNowString" /></span></wo:if>
+		</div>
+	</div>
+</wo:if>
