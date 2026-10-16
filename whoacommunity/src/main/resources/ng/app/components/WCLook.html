@@ -35,10 +35,8 @@
 		<wo:element elementName="meta" property="og:title" content="$page.documentTitle" />
 		<wo:element elementName="meta" property="og:description" content="$page.pageDescription" />
 		<wo:element elementName="meta" property="og:url" content="$page.canonicalURL" />
-		<!-- Plausible on stats.rebbi.is: cookieless page views and outbound clicks; the dev instance stays out of the numbers -->
-		<wo:if condition="$isLocal" negate="$true">
-			<script defer data-domain="whoacommunity.com" src="https://stats.rebbi.is/js/script.outbound-links.js"></script>
-		</wo:if>
+		<!-- Plausible (stats.rebbi.is), proxied through our own domain by ng-plausible; renders nothing in development -->
+		<wo:NGPlausibleScript />
 		<!-- FIXME: Hack for header width bug in tabler, see https://github.com/tabler/tabler/issues/2271 -->
 		<style>
 			@media (min-width: 992px) {

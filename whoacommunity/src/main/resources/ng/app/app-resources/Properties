@@ -1,0 +1,3 @@
+# Application properties, read at startup (see NGProperties). Secrets do not go here; they come in as -D arguments.
+ng.plausible.url=https://stats.rebbi.is
+ng.plausible.domain=whoacommunity.com
