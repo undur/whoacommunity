@@ -17,6 +17,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import ng.appserver.NGApplication;
 import ng.plausible.NGPlausible;
 import whoacommunity.app.WCCore;
 import whoacommunity.util.CachedFeed;
@@ -67,6 +68,12 @@ public class PlausibleFeed {
 	}
 
 	private static Stats fetch() {
+		// The boot-time sweep runs inside the application's constructor, before ng has its application reference
+		// (and before the app's Properties resource is read); the plugin can't answer until then
+		if( NGApplication.application() == null ) {
+			throw new CachedFeed.NotReadyException();
+		}
+
 		final String key = WCCore.plausibleApiKey();
 
 		if( key == null || key.isBlank() || !NGPlausible.isConfigured() ) {

@@ -35,6 +35,13 @@ public class CachedFeed<T> {
 
 	private static ScheduledExecutorService _scheduler;
 
+	/**
+	 * A supplier throws this when its source isn't available yet, typically during boot before the application
+	 * has finished initializing. The attempt isn't counted: the feed stays "never refreshed" and the next sweep
+	 * (a minute later) tries again, instead of waiting out the whole TTL.
+	 */
+	public static class NotReadyException extends RuntimeException {}
+
 	private final Duration _cacheDuration;
 	private final Supplier<T> _supplier;
 
@@ -110,6 +117,9 @@ public class CachedFeed<T> {
 		T fresh;
 		try {
 			fresh = _supplier.get();
+		}
+		catch( NotReadyException e ) {
+			return;
 		}
 		catch( Exception e ) {
 			System.err.println( "CachedFeed refresh failed: " + e.getMessage() );
