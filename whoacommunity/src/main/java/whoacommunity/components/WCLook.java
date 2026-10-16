@@ -65,10 +65,6 @@ public class WCLook extends WCComponent {
 		return "layout-fluid";
 	}
 
-	public String envString() {
-		return "Góður kóði slf. 2026";
-	}
-
 	public NGActionResults search() {
 		final WCSearchPage nextPage = pageWithName( WCSearchPage.class );
 		nextPage.searchString = searchString;

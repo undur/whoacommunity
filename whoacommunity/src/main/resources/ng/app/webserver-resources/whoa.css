@@ -740,7 +740,17 @@ a:hover { color: var(--whoa-accent); }
 
 /* ---------- Footer ---------- */
 
-.footer { border-top: 1px solid var(--whoa-line); padding: 1.3rem 1.6rem 2.5rem; color: var(--whoa-dim); font-family: "JetBrains Mono", monospace; font-size: .68rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.footer { background: transparent; border-top: 1px solid var(--whoa-line); padding: 1.3rem 1.6rem 2.5rem; color: var(--whoa-dim); font-family: "JetBrains Mono", monospace; font-size: .68rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem 1.5rem; flex-wrap: wrap; }
+.footer p { margin: 0; }
+.footer a { color: inherit; }
+
+/* The Góður kóði credit, as on engifer.com: the company's knot, navy on light, its reversed light loop on dark */
+.footer .maker { display: inline-flex; margin-left: auto; align-items: center; gap: .5rem; text-decoration: none; white-space: nowrap; }
+.maker strong { color: var(--whoa-bright); font-weight: 600; }
+.maker-mark { display: block; }
+.maker-loop { fill: #e3e9f2; }
+[data-theme="light"] .maker-loop { fill: #1e3a5f; }
+.maker:hover strong { color: var(--whoa-accent); }
 
 /* ============================================================
    Site additions on top of the handoff stylesheet
@@ -773,7 +783,7 @@ a:hover { color: var(--whoa-accent); }
 .whoa-panel > .comments-card { margin-top: 2.2rem; }
 @media (max-width: 767.98px) { .whoa-panel { padding: 1.2rem 1.1rem 1.4rem; } }
 
-/* "Powered by ng-objects" — an 88×31 web badge, the classic proportions of the
+/* "Powered by engifer" — an 88×31 web badge, the classic proportions of the
    old "Powered by WebObjects" button every WO site once wore. */
 .whoa-powered {
   display: flex;
@@ -792,11 +802,14 @@ a:hover { color: var(--whoa-accent); }
   line-height: 1;
 }
 .whoa-powered:hover { border-color: var(--whoa-accent-line); background: var(--whoa-accent-soft); text-decoration: none; }
-.whoa-powered-mark { font-size: 15px; flex: 0 0 auto; }
+.whoa-powered-mark { flex: 0 0 auto; width: 20px; height: 20px; }
 .whoa-powered-text { display: flex; flex-direction: column; gap: 2px; font-family: "JetBrains Mono", monospace; min-width: 0; }
 .whoa-powered-text .k { font-size: 7.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--whoa-dim); }
 .whoa-powered-text .v { font-size: 11px; font-weight: 700; letter-spacing: -0.02em; color: var(--whoa-bright); white-space: nowrap; }
 .whoa-powered:hover .v { color: var(--whoa-accent); }
+/* The ng is coloured as in the engifer logo: turmeric on dark, torch red on light */
+.whoa-powered-text .ng { color: #ffb320; }
+[data-theme="light"] .whoa-powered-text .ng { color: #c41e4a; }
 
 /* "draft" pill on unpublished articles (only ever rendered in development) */
 .writing-row .post-tag, .rail-row .post-tag, .article-meta .post-tag { flex: 0 0 auto; align-self: center; }
