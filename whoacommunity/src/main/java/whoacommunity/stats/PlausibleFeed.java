@@ -68,17 +68,18 @@ public class PlausibleFeed {
 	}
 
 	private static Stats fetch() {
-		// The boot-time sweep runs inside the application's constructor, before ng has its application reference
-		// (and before the app's Properties resource is read); the plugin can't answer until then
+		// The sweep starts in Application.load(), once ng has its application reference and every plugin has read its
+		// properties; this guard is a safety net in case a fetch ever runs earlier than that
 		if( NGApplication.application() == null ) {
 			throw new CachedFeed.NotReadyException();
 		}
 
 		final String key = WCCore.plausibleApiKey();
+		final String problem = key == null || key.isBlank() ? "wc.plausibleApiKey not set" : !NGPlausible.isConfigured() ? "ng-plausible not configured (ng.plausible.url and ng.plausible.domain)" : null;
 
-		if( key == null || key.isBlank() || !NGPlausible.isConfigured() ) {
+		if( problem != null ) {
 			if( !_warnedAboutKey ) {
-				System.err.println( "PlausibleFeed: wc.plausibleApiKey not set (or ng-plausible not configured), the traffic card stays hidden" );
+				System.err.println( "PlausibleFeed: " + problem + ", the traffic card stays hidden" );
 				_warnedAboutKey = true;
 			}
 

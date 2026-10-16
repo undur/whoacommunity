@@ -76,7 +76,7 @@ public class Application extends NGApplication {
 	public Application() {
 		// Feeds register with CachedFeed when their holding class loads, which
 		// normally happens lazily on first page render. Load them now so the
-		// boot-time sweep below warms every cache before the first visitor.
+		// boot-time sweep (started in load()) warms every cache before the first visitor.
 		GithubFeed.shared.getClass();
 		ElementReferenceFeed.shared.getClass();
 		RoadmapFeed.shared.getClass();
@@ -88,7 +88,17 @@ public class Application extends NGApplication {
 		catch( ClassNotFoundException e ) {
 			throw new RuntimeException( e );
 		}
+	}
 
+	/**
+	 * Runs once ng has initialized every plugin: by now the application reference is set and each plugin's
+	 * Properties resource has been read, so the feeds can ask the plugins for their settings (PlausibleFeed asks
+	 * ng-plausible for the stats server). Starting the sweep in the constructor was too early for that: its first
+	 * run could land between the application reference being set and ng-plausible reading its properties, which
+	 * made the Plausible feed cache "not configured" for a whole TTL after a deploy.
+	 */
+	@Override
+	public void load( final NGApplication application ) {
 		// Keep all caches fresh off the request path: sweep for expired TTLs
 		// once a minute (each feed still refreshes at its own cadence).
 		CachedFeed.startBackgroundRefresh( Duration.ofMinutes( 1 ) );
