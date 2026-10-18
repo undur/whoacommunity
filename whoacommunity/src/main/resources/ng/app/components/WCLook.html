@@ -19,13 +19,14 @@
 			})();
 		</script>
 		<!-- Preload the faces every page needs, so they start downloading before CSS parsing.
-		     Note: font preloads require the crossorigin attribute even same-origin. -->
+		     Note: font preloads require the crossorigin attribute even same-origin, and their
+		     URLs must match whoa-fonts.css's (unstamped), or the fonts download twice. -->
 		<link rel="preload" href="/nr/app/fonts/inter-400-normal-latin.woff2" as="font" type="font/woff2" crossorigin />
 		<link rel="preload" href="/nr/app/fonts/jetbrains-mono-400-normal-latin.woff2" as="font" type="font/woff2" crossorigin />
 		<wo:stylesheet filename="tabler/css/tabler.min.css" />
 		<wo:stylesheet filename="prism.css" />
-		<wo:element elementName="link" rel="stylesheet" href="$whoaFontsCssURL" />
-		<wo:element elementName="link" rel="stylesheet" href="$whoaCssURL" />
+		<wo:stylesheet filename="whoa-fonts.css" />
+		<wo:stylesheet filename="whoa.css" />
 		<wo:script filename="ng-js.js" namespace="ng" />
 		<title><wo:str value="$page.documentTitle" /></title>
 		<wo:element elementName="meta" name="description" content="$page.pageDescription" />
@@ -63,7 +64,7 @@
 				</div>
 				<wo:WCSiteTree />
 				<a href="https://www.engifer.com/" class="whoa-powered" title="Powered by engifer, an homage to the 88×31 badges of the WebObjects era">
-					<img class="whoa-powered-mark" src="/engifer.svg" alt="" width="20" height="20" />
+					<wo:img class="whoa-powered-mark" filename="engifer.svg" alt="" width="20" height="20" />
 					<span class="whoa-powered-text"><span class="k">Powered by</span><span class="v">e<span class="ng">ng</span>ifer</span></span>
 				</a>
 			</aside>
@@ -129,7 +130,7 @@
 
 			whoaSyncThemeToggle();
 		</script>
-		<wo:script filename="tabler/js/tabler.min.js" defer></wo:script>
+		<wo:script filename="tabler/js/tabler.min.js" defer />
 		<wo:script filename="prism.js" />
 	</wo:container>
 </html>
