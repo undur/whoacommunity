@@ -66,6 +66,8 @@ public class WCGuidesPage extends WCComponent {
 					"From an empty directory to a self-contained .woa: the pom, the project layout, build.properties, the bundle and its launch script, frameworks, deploying to JavaMonitor, and migrating from wolifecycle.", List.of() ),
 			new Guide( "vermilingua-deploy", "🚚", "Deploying with vermilingua:deploy", "/guide/deploying-with-vermilingua", "new hotness", true,
 					"One Maven command ships a build: the bundle is posted to JavaMonitor, and wotaskd swaps it into place and restarts the instances on every host. Configuration, use from a build server, what happens on each host, rollback.", List.of() ),
+			new Guide( "exe-dev", "🚀", "Deploying on exe.dev with vermilingua:ssh-deploy", "/guide/deploying-on-exe-dev", "new hotness", true,
+					"From project to a running application behind HTTPS with one Maven command: a VM created on exe.dev, the bundle uploaded, Java installed and the application run as a service. Configuration, redeploying, rollback, your own domain, and deploying to any Linux machine over SSH.", List.of() ),
 			new Guide( "build-properties", "📋", "build.properties", "/guide/build-properties", "reference", true,
 					"What belongs in a project's build.properties today: the handful of current keys, what each means and which tool reads it, and every legacy key from WOLips, wolifecycle and Wonder's builds, with what replaced it.", List.of() ) );
 

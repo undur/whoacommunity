@@ -1,0 +1,146 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Deploying on exe.dev<span>from project to HTTPS in one command</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<div class="caveat">
+						<p>The <code>ssh-deploy</code> goal is new in vermilingua 1.1.12 and marked experimental: it works for WebObjects and ng-objects applications, but details may change in coming releases. <a href="https://exe.dev/">exe.dev</a> is a third-party service with its own pricing and terms; nothing here depends on it beyond its VMs and its HTTPS proxy.</p>
+					</div>
+					<p>exe.dev rents Linux VMs that you manage over SSH, and puts each one behind HTTPS at <code>https://&lt;vm&gt;.exe.xyz/</code> with the certificate handled for you. That is everything a WebObjects application needs, and <code>vermilingua:ssh-deploy</code> does the rest from your project folder:</p>
+<pre><code class="language-none">mvn vermilingua:ssh-deploy -Ddeploy.exe.vm=myapp</code></pre>
+					<p>The goal packages the application, creates the VM if it doesn't exist, uploads the <code>.woa</code>, installs a Java runtime, starts the application as a systemd service and points the VM's HTTPS address at it. The first run takes about twenty seconds, VM included. Every run after that uploads only what changed.</p>
+
+					<h2 id="prerequisites">1. What has to be true first</h2>
+					<ul>
+						<li>The project builds with <a href="/guide/building-with-vermilingua">vermilingua</a> 1.1.12 or later and has <code>woapplication</code> packaging. In a multi-module build the goal skips every module that isn't an application; see <a href="#multi-module">multi-module builds</a>.</li>
+						<li>You have an exe.dev account with your SSH public key added to it.</li>
+						<li>You have run <code>ssh exe.dev</code> once in a terminal on the machine you deploy from. That records exe.dev's host key and shows that the account accepts your key. The goal connects without prompting, so it can't do this part for you.</li>
+						<li><code>ssh</code> and <code>rsync</code> are installed, which they are on any Mac or Linux machine. The goal runs them rather than a Java SSH library, so your keys, your agent and <code>~/.ssh/config</code> all apply.</li>
+					</ul>
+
+					<h2 id="first">2. The first deployment</h2>
+					<p>Name the VM. Names are your choice, as long as they're letters, digits, <code>.</code>, <code>_</code> and <code>-</code>, and they become the address:</p>
+<pre><code class="language-none">mvn vermilingua:ssh-deploy -Ddeploy.exe.vm=myapp</code></pre>
+					<p>After the build itself, the output is the deployment, step by step:</p>
+<pre><code class="language-none">[INFO] Creating exe.dev VM myapp
+Creating myapp using image boldsoftware/exeuntu...
+[INFO] Waiting for myapp.exe.xyz to accept SSH connections
+[INFO] Deploying MyApp to myapp.exe.xyz as release 20261019-151305
+[INFO] Creating release folder
+[INFO] Uploading MyApp.woa
+Number of files transferred: 166
+...
+[INFO] Activating release 20261019-151305
+Installing Java 25 (x64) to /home/exedev/vermilingua/java/25
+Waiting for MyApp to answer on port 8080
+MyApp is up
+[INFO] Pointing https://myapp.exe.xyz/ at port 8080
+https://myapp.exe.xyz/ now points to port 8080 (private).
+[INFO] Deployed MyApp to https://myapp.exe.xyz/</code></pre>
+					<p>Open the address and log in with your exe.dev account. The VM is <strong>private</strong> until you say otherwise: only people with access to it get past exe.dev's login page. To publish it, add <code>-Ddeploy.exe.public=true</code>, or run <code>ssh exe.dev share set-public myapp</code> yourself. <code>share set-private</code> turns it back.</p>
+					<p>To make the deployment one bare command, put the VM name in <code>build.properties</code>:</p>
+<pre><code class="language-none">deploy.exe.vm = myapp</code></pre>
+<pre><code class="language-none">mvn vermilingua:ssh-deploy</code></pre>
+
+					<h2 id="configure">3. Configuration</h2>
+					<p>Every setting is read the same way as the <code>launch.*</code> settings: from <code>build.properties</code>, overridden by an environment file, overridden by <code>-D</code> properties on the command line. All of them are optional apart from where to deploy.</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Setting</th><th>Meaning</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">deploy.exe.vm</td><td>The exe.dev VM to deploy to. Created on the first deployment if it doesn't exist.</td></tr>
+							<tr><td class="c-repo">deploy.exe.public</td><td><code>true</code> makes the VM's HTTPS address public. Leave it out and the address stays as it is, which is private for a new VM.</td></tr>
+							<tr><td class="c-repo">deploy.host</td><td>Deploy to any other Linux machine instead, given as an SSH destination: <code>host</code> or <code>user@host</code>. See <a href="#elsewhere">beyond exe.dev</a>.</td></tr>
+							<tr><td class="c-repo">deploy.appName</td><td>Names the systemd service (<code>vermilingua-&lt;appName&gt;</code>) and the application's folder on the machine. Defaults to the bundle name. Two applications on one VM need two names.</td></tr>
+							<tr><td class="c-repo">deploy.port</td><td>The port the application listens on, passed to it as <code>-WOPort</code>. Defaults to 8080.</td></tr>
+							<tr><td class="c-repo">deploy.args</td><td>More arguments for the application, after <code>-WOPort</code>. Anything the application would take on its command line, properties included.</td></tr>
+							<tr><td class="c-repo">deploy.java</td><td>The Java version to run on, as a feature version such as <code>25</code>. Defaults to the version Maven itself runs on, which is the version that built the application.</td></tr>
+						</tbody>
+					</table></div>
+					<p>Per-environment values go in <code>build.properties.&lt;env&gt;</code>, selected with <code>-Dbuild.env=&lt;env&gt;</code>. A project with a staging VM and a production VM keeps a different <code>deploy.exe.vm</code> in each file:</p>
+<pre><code class="language-none">mvn vermilingua:ssh-deploy -Dbuild.env=staging</code></pre>
+
+					<h2 id="server">4. What happens on the VM</h2>
+					<p>Everything the goal puts on the machine lives in the SSH user's home folder, under <code>vermilingua</code>:</p>
+<pre><code class="language-none">vermilingua/
+  java/25/                              the Java runtime
+  apps/MyApp/
+    releases/20261019-151305/MyApp.woa  one folder per deployment
+    releases/20261019-160212/MyApp.woa
+    current -> releases/20261019-160212 the release that runs</code></pre>
+					<p>Each deployment works in a fixed order:</p>
+					<ol>
+						<li><strong>Upload into a new release folder.</strong> rsync copies the <code>.woa</code> and compares every file with the running release. Files that haven't changed aren't sent, and files that have changed are sent as differences. Rebuilding a 4 MB application after a code change sends tens of kilobytes. The running application isn't touched by any of this.</li>
+						<li><strong>Install Java, if missing.</strong> An Eclipse Temurin runtime of the version in <code>deploy.java</code>, downloaded once and kept under <code>vermilingua/java</code>. It doesn't depend on what the distribution's packages offer, and it doesn't touch any Java already installed on the machine.</li>
+						<li><strong>Switch.</strong> <code>current</code> is pointed at the new release.</li>
+						<li><strong>Restart.</strong> The service unit is written to <code>/etc/systemd/system/vermilingua-MyApp.service</code> and the service is restarted. It runs the bundle's own launch script, with the installed Java and the port, as the SSH user, and systemd restarts it if it crashes and starts it when the VM boots.</li>
+						<li><strong>Prune.</strong> Releases beyond the newest five are deleted.</li>
+						<li><strong>Wait.</strong> The goal waits up to a minute and a half for the application to answer on its port. If the service fails instead, the goal prints the end of its log and fails the build, so a deployment that doesn't start can't look like a success.</li>
+					</ol>
+					<p>On exe.dev the goal then points the VM's HTTPS address at the application's port, which is the <code>share port</code> line in the output.</p>
+
+					<h2 id="https">5. HTTPS and your own domain</h2>
+					<p>exe.dev terminates TLS and forwards plain HTTP to the application, with <code>X-Forwarded-Proto</code>, <code>X-Forwarded-Host</code> and <code>X-Forwarded-For</code> headers saying what the browser asked for. The application keeps listening on plain HTTP and there is no certificate to look after.</p>
+					<p>URLs the application generates are relative, so they work as they are. Code that builds absolute URLs needs to know the request arrived over HTTPS, and should read <code>X-Forwarded-Proto</code> to find out. wonder-slim's <code>ERXRequest</code> already does: a request with <code>X-Forwarded-Proto: https</code> counts as secure.</p>
+					<p>For your own domain, add a CNAME record pointing at <code>myapp.exe.xyz</code>, then link the domain to the VM:</p>
+<pre><code class="language-none">ssh exe.dev domain add myapp app.example.com</code></pre>
+					<p>exe.dev issues the certificate for it automatically. A CNAME can't sit on an apex domain such as <code>example.com</code> itself, so an apex needs a DNS provider that offers ALIAS records; check exe.dev's <a href="https://exe.dev/docs">documentation</a> for the details.</p>
+					<p>exe.dev makes one port per VM public. That is all a single application needs. To run several applications or instances on one VM behind one address, put <a href="/project/modulo">modulo</a> on that port to route between them.</p>
+
+					<h2 id="redeploying">6. Redeploying and rolling back</h2>
+					<p>Redeploying is the same command. A new release folder is uploaded next to the running one, and only the restart interrupts the application, for the seconds it takes to start. Sessions are in memory, so they don't survive the restart: users are logged out and their page state is gone. Deploy at a quiet moment if that matters.</p>
+					<p><strong>Rolling back</strong> is pointing <code>current</code> at an earlier release and restarting the service, because the last five are still on the machine:</p>
+<pre><code class="language-none">ssh myapp.exe.xyz
+cd vermilingua/apps/MyApp
+ls releases
+ln -sfn releases/20261019-151305 current
+sudo systemctl restart vermilingua-MyApp</code></pre>
+
+					<h2 id="running">7. Looking at the running application</h2>
+					<p>The VM is an ordinary Linux machine, so the ordinary tools apply. The application's output goes to the systemd journal:</p>
+<pre><code class="language-none">ssh myapp.exe.xyz
+systemctl status vermilingua-MyApp
+journalctl -u vermilingua-MyApp -f</code></pre>
+					<p>To stop the application without deleting anything, use <code>sudo systemctl stop vermilingua-MyApp</code>, and <code>disable</code> to keep it from starting at boot. <code>ssh exe.dev rm myapp</code> deletes the VM and everything on it.</p>
+
+					<h2 id="multi-module">8. Multi-module builds</h2>
+					<p>Run on its own, the goal packages the application before deploying it. In a build with several modules, that package step can't see the jars of the modules the application depends on, and the build fails resolving them. Name the <code>package</code> phase as well, and select the application:</p>
+<pre><code class="language-none">mvn package vermilingua:ssh-deploy -pl MyApp -am</code></pre>
+					<p>The same applies to <code>vermilingua:run</code>.</p>
+
+					<h2 id="elsewhere">9. Beyond exe.dev</h2>
+					<p>Only creating the VM and pointing its HTTPS address are specific to exe.dev. Everything else works on any Linux machine with systemd that you can reach over SSH:</p>
+<pre><code class="language-none">mvn vermilingua:ssh-deploy -Ddeploy.host=deploy@server.example.com</code></pre>
+					<p>The SSH user must be able to run <code>sudo</code> without a password, because writing and restarting the service needs it. exe.dev's VMs are set up that way; on your own servers, give a dedicated deploy user exactly that. The machine also needs <code>curl</code> and <code>rsync</code>. HTTPS is then up to you, for example with <a href="/deployment-config">modulo</a> on ports 80 and 443 in front of the application.</p>
+
+					<h2 id="troubleshooting">10. When it doesn't work</h2>
+					<ul>
+						<li><strong>"Couldn't reach exe.dev over SSH"</strong>: run <code>ssh exe.dev</code> in a terminal. A host key prompt means you haven't connected from this machine before; accept it. A login or signup prompt means exe.dev doesn't know your key yet; add it to your account.</li>
+						<li><strong>The address redirects to a login page</strong>: the VM is private, which is the default. Log in, or make it public with <code>-Ddeploy.exe.public=true</code>.</li>
+						<li><strong>"didn't start answering on port 8080"</strong>, followed by a log: the application failed to start, and the log is the reason. The previous release is still on the machine; see <a href="#redeploying">rolling back</a>.</li>
+						<li><strong>The address shows an error instead of the application</strong>, while the deployment said the application is up: the address isn't pointed at the application's port. That happens when the deployment stopped before its last step. Run it again, or point the address yourself with <code>ssh exe.dev share port myapp 8080</code>.</li>
+						<li><strong>"Could not resolve dependencies"</strong> in a multi-module build: see <a href="#multi-module">multi-module builds</a>.</li>
+						<li><strong>sudo asks for a password, or says a terminal is required</strong>, on your own server: the SSH user needs passwordless <code>sudo</code>; see <a href="#elsewhere">beyond exe.dev</a>.</li>
+						<li><strong>"Uploading … failed. Is 'rsync' installed and on the PATH?"</strong>: install rsync on the machine you deploy from.</li>
+					</ul>
+					<p>Everything above matches vermilingua 1.1.12. The <a href="/project/vermilingua/releases">release notes</a> say what changed since.</p>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#prerequisites">What has to be true first</a>
+				<a href="#first">The first deployment</a>
+				<a href="#configure">Configuration</a>
+				<a href="#server">What happens on the VM</a>
+				<a href="#https">HTTPS and your own domain</a>
+				<a href="#redeploying">Redeploying and rolling back</a>
+				<a href="#running">Looking at the running application</a>
+				<a href="#multi-module">Multi-module builds</a>
+				<a href="#elsewhere">Beyond exe.dev</a>
+				<a href="#troubleshooting">When it doesn't work</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>

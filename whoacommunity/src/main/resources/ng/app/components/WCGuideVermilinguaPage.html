@@ -114,6 +114,7 @@ launch.jvmOptions=-Xmx512m</code></pre>
 					<p>Since 1.1.7 the plugin can also push the build straight to JavaMonitor:</p>
 <pre><code class="language-none">mvn package vermilingua:deploy -Ddeploy.password=…</code></pre>
 					<p>With <code>deploy.appName</code>, <code>deploy.monitorHost</code> and <code>deploy.password</code> set in <code>build.properties</code> or as <code>-D</code> overrides, the goal archives the bundle, posts it to JavaMonitor's deploy endpoint, and JavaMonitor hands it to wotaskd on every host the application runs on. It is marked experimental: it works and is in real use, but the details may still move.</p>
+					<p>Since 1.1.12 it can also deploy to a Linux machine over SSH, without JavaMonitor, and run the application there as a systemd service. Given an <a href="https://exe.dev/">exe.dev</a> VM name, it creates the VM and puts the application behind HTTPS: <a href="/guide/deploying-on-exe-dev">Deploying on exe.dev with vermilingua:ssh-deploy</a>.</p>
 
 					<h2 id="migrating">8. Migrating from wolifecycle</h2>
 					<p>For most projects the migration is the plugin element. Replace <code>wolifecycle-maven-plugin</code> with the vermilingua element from section 2, then check these:</p>
