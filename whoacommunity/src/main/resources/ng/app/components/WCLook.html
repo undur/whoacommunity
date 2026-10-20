@@ -129,6 +129,45 @@
 			}
 
 			whoaSyncThemeToggle();
+
+			// A copy button on each code block in articles and guides. The block is wrapped so the button stays put while the code scrolls sideways
+			function whoaAddCopyButtons() {
+				document.querySelectorAll( '.article-body pre' ).forEach( function ( pre ) {
+					if( pre.hidden || pre.parentElement.classList.contains( 'whoa-code' ) ) {
+						return;
+					}
+
+					var wrapper = document.createElement( 'div' );
+					wrapper.className = 'whoa-code';
+
+					// The wrapper takes over the block's margins, so they still collapse with the margins around it
+					var style = getComputedStyle( pre );
+					wrapper.style.margin = style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft;
+					pre.style.margin = '0';
+
+					pre.parentNode.insertBefore( wrapper, pre );
+					wrapper.appendChild( pre );
+
+					var button = document.createElement( 'button' );
+					button.type = 'button';
+					button.className = 'whoa-copy';
+					button.textContent = 'copy';
+					button.setAttribute( 'aria-label', 'Copy code to clipboard' );
+
+
+					button.addEventListener( 'click', function () {
+						navigator.clipboard.writeText( pre.innerText.replace( /\n$/, '' ) ).then(
+							function () { button.textContent = 'copied'; },
+							function () { button.textContent = 'copy failed'; }
+						);
+						setTimeout( function () { button.textContent = 'copy'; }, 1500 );
+					} );
+
+					wrapper.appendChild( button );
+				} );
+			}
+
+			whoaAddCopyButtons();
 		</script>
 		<wo:script filename="tabler/js/tabler.min.js" defer />
 		<wo:script filename="prism.js" />

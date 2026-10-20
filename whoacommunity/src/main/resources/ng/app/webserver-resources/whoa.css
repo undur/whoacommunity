@@ -1032,3 +1032,14 @@ a:hover { color: var(--whoa-accent); }
 .rail-traffic-totals { display: flex; gap: 1rem; flex-wrap: wrap; padding: .35rem .9rem .75rem; font-size: .74rem; color: var(--whoa-muted); }
 .rail-traffic-totals strong { font-family: "JetBrains Mono", monospace; font-weight: 500; color: var(--whoa-bright); }
 .rail-traffic-now { margin-left: auto; color: var(--whoa-accent); }
+
+/* Copy buttons on code blocks in articles and guides, added by whoaAddCopyButtons() in WCLook.
+   The wrapper holds the button in place while the code scrolls sideways. The code background is dark
+   in both themes, so the button's colours are fixed. It stays out of sight until the block is hovered
+   or focused, and on touch screens (no hover) it's always shown, faintly. */
+.whoa-code { position: relative; }
+.article-body > .whoa-code { max-width: none; }
+.whoa-copy { position: absolute; top: .45rem; right: .45rem; font-family: "JetBrains Mono", monospace; font-size: .66rem; line-height: 1; letter-spacing: .04em; color: #8b95a5; background: rgba(9, 11, 14, .85); border: 1px solid rgba(255, 255, 255, .12); border-radius: 4px; padding: .3rem .45rem; cursor: pointer; opacity: 0; transition: opacity .15s, color .15s; }
+.whoa-code:hover .whoa-copy, .whoa-copy:focus-visible { opacity: 1; }
+.whoa-copy:hover { color: #f2f5f9; }
+@media (hover: none) { .whoa-copy { opacity: .7; } }
