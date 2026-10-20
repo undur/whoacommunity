@@ -63,7 +63,8 @@ https://myapp.exe.xyz/ now points to port 8080 (private).
 					<h2 id="server">4. What happens on the VM</h2>
 					<p>Everything the goal puts on the machine lives in the SSH user's home folder, under <code>vermilingua</code>:</p>
 <pre><code class="language-none">vermilingua/
-  java/25/                              the Java runtime
+  java/jdk-25.0.4.1+1/                  a Java runtime
+  java/25 -> jdk-25.0.4.1+1             the newest one of version 25
   apps/MyApp/
     releases/20261019-151305/MyApp.woa  one folder per deployment
     releases/20261019-160212/MyApp.woa
@@ -71,15 +72,163 @@ https://myapp.exe.xyz/ now points to port 8080 (private).
 					<p>Each deployment works in a fixed order:</p>
 					<ol>
 						<li><strong>Upload into a new release folder.</strong> rsync copies the <code>.woa</code> and compares every file with the running release. Files that haven't changed aren't sent, and files that have changed are sent as differences. Rebuilding a 4 MB application after a code change sends tens of kilobytes. The running application isn't touched by any of this.</li>
-						<li><strong>Install Java, if missing.</strong> An Eclipse Temurin runtime of the version in <code>deploy.java</code>, downloaded once and kept under <code>vermilingua/java</code>. It doesn't depend on what the distribution's packages offer, and it doesn't touch any Java already installed on the machine.</li>
+						<li><strong>Install Java updates.</strong> The script asks Adoptium for the latest Eclipse Temurin release of the version in <code>deploy.java</code>, and if that isn't installed yet, downloads it, checks it against Adoptium's SHA-256 checksum and installs it into its own folder. <code>java/25</code> then links to the newest release, so the machine gets Java updates with deployments. If Adoptium can't be reached, the deployment goes ahead with the Java that's there. It doesn't depend on the distribution's packages, and it doesn't touch any Java already installed on the machine.</li>
 						<li><strong>Switch.</strong> <code>current</code> is pointed at the new release.</li>
 						<li><strong>Restart.</strong> The service unit is written to <code>/etc/systemd/system/vermilingua-MyApp.service</code> and the service is restarted. It runs the bundle's own launch script, with the installed Java and the port, as the SSH user, and systemd restarts it if it crashes and starts it when the VM boots.</li>
-						<li><strong>Prune.</strong> Releases beyond the newest five are deleted.</li>
+						<li><strong>Prune.</strong> Releases beyond the newest five are deleted, and so are older Java releases, unless something on the machine still runs on them.</li>
 						<li><strong>Wait.</strong> The goal waits up to a minute and a half for the application to answer on its port. If the service fails instead, the goal prints the end of its log and fails the build, so a deployment that doesn't start can't look like a success.</li>
 					</ol>
 					<p>On exe.dev the goal then points the VM's HTTPS address at the application's port, which is the <code>share port</code> line in the output.</p>
 
-					<h2 id="https">5. HTTPS and your own domain</h2>
+					<h2 id="script">5. The whole deployment, as commands</h2>
+					<p>Nothing the goal does is hidden: it runs ordinary commands, and you could type every one of them yourself. On exe.dev it starts by looking for the VM, and creates it if it's missing:</p>
+<pre><code class="language-none">ssh exe.dev ls --json
+ssh exe.dev new --name=myapp --no-email</code></pre>
+					<p>Then it creates the release folder, uploads the bundle into it, and runs the activation script on the VM, sent to <code>bash</code> over SSH:</p>
+<pre><code class="language-none">ssh myapp.exe.xyz "mkdir -p vermilingua/apps/MyApp/releases/20261019-160212"
+rsync -az --delete --stats --link-dest=../../current -e ssh \
+  target/MyApp.woa myapp.exe.xyz:vermilingua/apps/MyApp/releases/20261019-160212/
+ssh myapp.exe.xyz "bash -s" &lt; activate.sh</code></pre>
+					<p><code>--link-dest</code> is what makes redeploys small: rsync compares each file with the same file in the running release and only sends what differs. Last, it points the VM's HTTPS address at the application:</p>
+<pre><code class="language-none">ssh exe.dev share port myapp 8080</code></pre>
+					<p>This is the activation script for an application called MyApp, exactly as the goal sends it. The goal fills in the application's name, the release and the port; the rest is the same for every application. The template it comes from is <a href="https://github.com/undur/vermilingua-maven-plugin/blob/master/src/main/resources/templates/ssh-deploy-activate.template.txt">in vermilingua's repository</a>.</p>
+<pre><code class="language-bash">#!/bin/bash
+
+#
+# Activates a release uploaded by vermilingua:ssh-deploy. Runs on the target machine, as the SSH user.
+#
+# Layout, relative to the SSH user's home folder:
+#
+#   vermilingua/java/25/                        The Java runtime the application runs on
+#   vermilingua/apps/MyApp/releases/&lt;release&gt;/         Uploaded releases (the newest few are kept)
+#   vermilingua/apps/MyApp/current                     Symlink to the running release
+#
+
+set -euo pipefail
+
+VERMILINGUA_DIR="$HOME/vermilingua"
+APP_DIR="$VERMILINGUA_DIR/apps/MyApp"
+JAVA_DIR="$VERMILINGUA_DIR/java/25"
+JAVA="$JAVA_DIR/bin/java"
+SERVICE="vermilingua-MyApp"
+PORT="8080"
+
+#
+# Install the latest Java runtime of the requested version (Eclipse Temurin), if it isn't installed already.
+# Checked on every deploy, so the server gets Java updates with deployments. Each release is installed into
+# it's own folder, and java/25 links to the newest one.
+#
+case "$(uname -m)" in
+	x86_64)  ARCH=x64 ;;
+	aarch64) ARCH=aarch64 ;;
+	*)       echo "Unsupported architecture $(uname -m)" &gt;&amp;2; exit 1 ;;
+esac
+
+ASSET="$(curl -fsSL --max-time 20 "https://api.adoptium.net/v3/assets/latest/25/hotspot?architecture=$ARCH&amp;image_type=jre&amp;os=linux&amp;vendor=eclipse" || true)"
+JAVA_RELEASE="$(echo "$ASSET" | grep -o '"release_name": *"[^"]*"' | head -1 | cut -d '"' -f 4)"
+JAVA_LINK="$(echo "$ASSET" | grep -o '"link": *"[^"]*"' | head -1 | cut -d '"' -f 4)"
+JAVA_CHECKSUM="$(echo "$ASSET" | grep -o '"checksum": *"[^"]*"' | head -1 | cut -d '"' -f 4)"
+
+if [ -z "$JAVA_RELEASE" ] || [ -z "$JAVA_LINK" ] || [ -z "$JAVA_CHECKSUM" ]; then
+	# Not being able to check for an update shouldn't stop a deployment, as long as there's a Java to run on
+	if [ ! -x "$JAVA" ]; then
+		echo "Couldn't find Java 25 ($ARCH) to install from api.adoptium.net" &gt;&amp;2
+		exit 1
+	fi
+
+	echo "Couldn't check api.adoptium.net for Java updates, continuing with $("$JAVA" -version 2&gt;&amp;1 | head -1)"
+elif [ ! -x "$VERMILINGUA_DIR/java/$JAVA_RELEASE/bin/java" ]; then
+	echo "Installing Java $JAVA_RELEASE ($ARCH)"
+	TARGET="$VERMILINGUA_DIR/java/$JAVA_RELEASE"
+	ARCHIVE="$TARGET.tar.gz"
+	curl -fsSL "$JAVA_LINK" -o "$ARCHIVE"
+	echo "$JAVA_CHECKSUM  $ARCHIVE" | sha256sum --check --quiet
+	rm -rf "$TARGET.partial"
+	mkdir -p "$TARGET.partial"
+	tar -xzf "$ARCHIVE" -C "$TARGET.partial" --strip-components=1
+	rm "$ARCHIVE"
+	mv "$TARGET.partial" "$TARGET"
+fi
+
+if [ -n "$JAVA_RELEASE" ] &amp;&amp; [ -x "$VERMILINGUA_DIR/java/$JAVA_RELEASE/bin/java" ]; then
+	# java/25 was a folder before it became a link
+	if [ -d "$JAVA_DIR" ] &amp;&amp; [ ! -L "$JAVA_DIR" ]; then
+		rm -rf "$JAVA_DIR"
+	fi
+
+	ln -sfn "$JAVA_RELEASE" "$JAVA_DIR"
+fi
+
+#
+# Point 'current' at the new release, then (re)write the service and restart it
+#
+ln -sfn "releases/20261019-160212" "$APP_DIR/current"
+
+sudo tee "/etc/systemd/system/$SERVICE.service" &gt; /dev/null &lt;&lt;UNIT
+[Unit]
+Description=MyApp (deployed by vermilingua)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=$(id -un)
+ExecStart=$APP_DIR/current/MyApp.woa/MyApp -launch.jvm=$JAVA -WOPort $PORT
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+sudo systemctl daemon-reload
+sudo systemctl enable --quiet "$SERVICE"
+sudo systemctl restart "$SERVICE"
+
+#
+# Keep the five newest releases (the names sort chronologically)
+#
+ls -1 "$APP_DIR/releases" | sort | head -n -5 | while read -r old; do
+	rm -rf "$APP_DIR/releases/$old"
+done
+
+#
+# Remove releases of this Java version other than the newest, unless a running process uses them.
+# Other applications on the machine may still run on an older release until they're restarted, and a JVM loads parts of it's runtime lazily.
+#
+if [ -n "$JAVA_RELEASE" ]; then
+	IN_USE="$(readlink /proc/[0-9]*/exe 2&gt;/dev/null || true)"
+
+	for old in "$VERMILINGUA_DIR"/java/jdk-25.* "$VERMILINGUA_DIR"/java/jdk-25+*; do
+		[ -d "$old" ] || continue
+		[ "$(basename "$old")" = "$JAVA_RELEASE" ] &amp;&amp; continue
+		echo "$IN_USE" | grep -q "^$old/" &amp;&amp; continue
+		rm -rf "$old"
+	done
+fi
+
+#
+# Wait for the application to answer on it's port
+#
+echo "Waiting for MyApp to answer on port $PORT"
+
+for i in $(seq 1 90); do
+	if curl -s -o /dev/null --max-time 2 "http://127.0.0.1:$PORT/"; then
+		echo "MyApp is up"
+		exit 0
+	fi
+
+	if ! systemctl is-active --quiet "$SERVICE" &amp;&amp; [ "$(systemctl show -p Result --value "$SERVICE")" != "success" ]; then
+		break
+	fi
+
+	sleep 1
+done
+
+echo "MyApp didn't start answering on port $PORT. The service's latest log:" &gt;&amp;2
+sudo journalctl -u "$SERVICE" -n 40 --no-pager &gt;&amp;2
+exit 1</code></pre>
+
+					<h2 id="https">6. HTTPS and your own domain</h2>
 					<p>exe.dev terminates TLS and forwards plain HTTP to the application, with <code>X-Forwarded-Proto</code>, <code>X-Forwarded-Host</code> and <code>X-Forwarded-For</code> headers saying what the browser asked for. The application keeps listening on plain HTTP and there is no certificate to look after.</p>
 					<p>URLs the application generates are relative, so they work as they are. Code that builds absolute URLs needs to know the request arrived over HTTPS, and should read <code>X-Forwarded-Proto</code> to find out. wonder-slim's <code>ERXRequest</code> already does: a request with <code>X-Forwarded-Proto: https</code> counts as secure.</p>
 					<p>For your own domain, add a CNAME record pointing at <code>myapp.exe.xyz</code>, then link the domain to the VM:</p>
@@ -87,7 +236,7 @@ https://myapp.exe.xyz/ now points to port 8080 (private).
 					<p>exe.dev issues the certificate for it automatically. A CNAME can't sit on an apex domain such as <code>example.com</code> itself, so an apex needs a DNS provider that offers ALIAS records; check exe.dev's <a href="https://exe.dev/docs">documentation</a> for the details.</p>
 					<p>exe.dev makes one port per VM public. That is all a single application needs. To run several applications or instances on one VM behind one address, put <a href="/project/modulo">modulo</a> on that port to route between them.</p>
 
-					<h2 id="redeploying">6. Redeploying and rolling back</h2>
+					<h2 id="redeploying">7. Redeploying and rolling back</h2>
 					<p>Redeploying is the same command. A new release folder is uploaded next to the running one, and only the restart interrupts the application, for the seconds it takes to start. Sessions are in memory, so they don't survive the restart: users are logged out and their page state is gone. Deploy at a quiet moment if that matters.</p>
 					<p><strong>Rolling back</strong> is pointing <code>current</code> at an earlier release and restarting the service, because the last five are still on the machine:</p>
 <pre><code class="language-none">ssh myapp.exe.xyz
@@ -96,24 +245,24 @@ ls releases
 ln -sfn releases/20261019-151305 current
 sudo systemctl restart vermilingua-MyApp</code></pre>
 
-					<h2 id="running">7. Looking at the running application</h2>
+					<h2 id="running">8. Looking at the running application</h2>
 					<p>The VM is an ordinary Linux machine, so the ordinary tools apply. The application's output goes to the systemd journal:</p>
 <pre><code class="language-none">ssh myapp.exe.xyz
 systemctl status vermilingua-MyApp
 journalctl -u vermilingua-MyApp -f</code></pre>
 					<p>To stop the application without deleting anything, use <code>sudo systemctl stop vermilingua-MyApp</code>, and <code>disable</code> to keep it from starting at boot. <code>ssh exe.dev rm myapp</code> deletes the VM and everything on it.</p>
 
-					<h2 id="multi-module">8. Multi-module builds</h2>
+					<h2 id="multi-module">9. Multi-module builds</h2>
 					<p>Run on its own, the goal packages the application before deploying it. In a build with several modules, that package step can't see the jars of the modules the application depends on, and the build fails resolving them. Name the <code>package</code> phase as well, and select the application:</p>
 <pre><code class="language-none">mvn package vermilingua:ssh-deploy -pl MyApp -am</code></pre>
 					<p>The same applies to <code>vermilingua:run</code>.</p>
 
-					<h2 id="elsewhere">9. Beyond exe.dev</h2>
+					<h2 id="elsewhere">10. Beyond exe.dev</h2>
 					<p>Only creating the VM and pointing its HTTPS address are specific to exe.dev. Everything else works on any Linux machine with systemd that you can reach over SSH:</p>
 <pre><code class="language-none">mvn vermilingua:ssh-deploy -Ddeploy.host=deploy@server.example.com</code></pre>
 					<p>The SSH user must be able to run <code>sudo</code> without a password, because writing and restarting the service needs it. exe.dev's VMs are set up that way; on your own servers, give a dedicated deploy user exactly that. The machine also needs <code>curl</code> and <code>rsync</code>. HTTPS is then up to you, for example with <a href="/deployment-config">modulo</a> on ports 80 and 443 in front of the application.</p>
 
-					<h2 id="troubleshooting">10. When it doesn't work</h2>
+					<h2 id="troubleshooting">11. When it doesn't work</h2>
 					<ul>
 						<li><strong>"Couldn't reach exe.dev over SSH"</strong>: run <code>ssh exe.dev</code> in a terminal. A host key prompt means you haven't connected from this machine before; accept it. A login or signup prompt means exe.dev doesn't know your key yet; add it to your account.</li>
 						<li><strong>The address redirects to a login page</strong>: the VM is private, which is the default. Log in, or make it public with <code>-Ddeploy.exe.public=true</code>.</li>
@@ -134,6 +283,7 @@ journalctl -u vermilingua-MyApp -f</code></pre>
 				<a href="#first">The first deployment</a>
 				<a href="#configure">Configuration</a>
 				<a href="#server">What happens on the VM</a>
+				<a href="#script">The whole deployment, as commands</a>
 				<a href="#https">HTTPS and your own domain</a>
 				<a href="#redeploying">Redeploying and rolling back</a>
 				<a href="#running">Looking at the running application</a>
