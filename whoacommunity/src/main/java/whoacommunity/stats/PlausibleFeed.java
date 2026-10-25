@@ -52,7 +52,30 @@ public class PlausibleFeed {
 	 * @param days One entry per day, oldest first, every day present (zero for days without visits)
 	 * @param now People on the site right now, or null if that call failed
 	 */
-	public record Stats( List<Day> days, int visitors, int visits, int pageviews, Integer now ) {}
+	public record Stats( List<Day> days, int visitors, int visits, int pageviews, Integer now ) {
+
+		/**
+		 * @return Visitors per day, averaged from the first day that saw any traffic (the chart's earliest days are
+		 *         empty until tracking has been running for 30 days, and those shouldn't drag the average down).
+		 *         Summed visitors is misleading since Plausible counts the same person again each day; the daily
+		 *         figure is the one that means something.
+		 */
+		public int visitorsPerDay() {
+			int counted = 0;
+			int sum = 0;
+
+			for( final Day day : days ) {
+				if( counted == 0 && day.visits() == 0 ) {
+					continue;
+				}
+
+				counted++;
+				sum += day.visitors();
+			}
+
+			return counted == 0 ? 0 : Math.round( sum / (float)counted );
+		}
+	}
 
 	public Stats stats() {
 		return _feed.value();
