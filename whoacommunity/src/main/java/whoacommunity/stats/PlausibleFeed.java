@@ -23,8 +23,10 @@ import whoacommunity.app.WCCore;
 import whoacommunity.util.CachedFeed;
 
 /**
- * The site's traffic as Plausible sees it, for the card on the front page: visitors and page views per day for
- * the last 30 days, their totals, and the number of people on the site right now. Fetched from the Stats API of
+ * The site's traffic as Plausible sees it, for the card on the front page: visits (sessions), visitors and page
+ * views per day for the last 30 days, their totals, and the number of people on the site right now. Visits is the
+ * headline figure: Plausible's visitor identity resets daily, so visitors summed over days counts the same person
+ * again each day, while a visit is a session (ended by 30 minutes of inactivity) and adds up across days. Fetched from the Stats API of
  * the Plausible server ng-plausible is configured for, with the key in wc.plausibleApiKey. Without a key the feed
  * stays empty and the card isn't shown.
  */
@@ -44,13 +46,13 @@ public class PlausibleFeed {
 		_feed = new CachedFeed<>( cacheDuration, PlausibleFeed::fetch, null );
 	}
 
-	public record Day( LocalDate date, int visitors, int pageviews ) {}
+	public record Day( LocalDate date, int visitors, int visits, int pageviews ) {}
 
 	/**
 	 * @param days One entry per day, oldest first, every day present (zero for days without visits)
 	 * @param now People on the site right now, or null if that call failed
 	 */
-	public record Stats( List<Day> days, int visitors, int pageviews, Integer now ) {}
+	public record Stats( List<Day> days, int visitors, int visits, int pageviews, Integer now ) {}
 
 	public Stats stats() {
 		return _feed.value();
@@ -96,21 +98,22 @@ public class PlausibleFeed {
 				final JsonObject row = e.getAsJsonObject();
 				final LocalDate date = LocalDate.parse( row.getAsJsonArray( "dimensions" ).get( 0 ).getAsString().substring( 0, 10 ) );
 				final JsonArray metrics = row.getAsJsonArray( "metrics" );
-				byDate.put( date, new Day( date, metrics.get( 0 ).getAsInt(), metrics.get( 1 ).getAsInt() ) );
+				byDate.put( date, new Day( date, metrics.get( 0 ).getAsInt(), metrics.get( 1 ).getAsInt(), metrics.get( 2 ).getAsInt() ) );
 			}
 
 			// Every day gets an entry, so the chart never skips a quiet day
 			final List<Day> days = new ArrayList<>( DAYS );
-			int visitors = 0, pageviews = 0;
+			int visitors = 0, visits = 0, pageviews = 0;
 
 			for( LocalDate d = first; !d.isAfter( today ); d = d.plusDays( 1 ) ) {
-				final Day day = byDate.getOrDefault( d, new Day( d, 0, 0 ) );
+				final Day day = byDate.getOrDefault( d, new Day( d, 0, 0, 0 ) );
 				days.add( day );
 				visitors += day.visitors();
+				visits += day.visits();
 				pageviews += day.pageviews();
 			}
 
-			return new Stats( List.copyOf( days ), visitors, pageviews, realtimeVisitors( key ) );
+			return new Stats( List.copyOf( days ), visitors, visits, pageviews, realtimeVisitors( key ) );
 		}
 		catch( final Exception e ) {
 			System.err.println( "PlausibleFeed: refresh failed, keeping the previous value: " + e );
@@ -123,6 +126,7 @@ public class PlausibleFeed {
 		body.addProperty( "site_id", NGPlausible.domain() );
 		final JsonArray metrics = new JsonArray();
 		metrics.add( "visitors" );
+		metrics.add( "visits" );
 		metrics.add( "pageviews" );
 		body.add( "metrics", metrics );
 		final JsonArray range = new JsonArray();
@@ -169,22 +173,30 @@ public class PlausibleFeed {
 	}
 
 	/**
-	 * The chart: one bar per day, scaled to the busiest day, stretched to the card's width by the stylesheet. Built
-	 * here rather than in a template since bar heights are per-row attributes. Quiet days keep a one-unit tick so
-	 * the baseline reads as 30 days, not as a gap.
+	 * The chart: one bar per day, scaled to the busiest day, stretched to the card's width by the stylesheet. Each
+	 * bar is the day's visits, with its visitors drawn solid at the bottom (a visitor has at least one visit, so
+	 * that part never exceeds the bar). Built here rather than in a template since bar heights are per-row
+	 * attributes. Quiet days keep a one-unit tick so the baseline reads as 30 days, not as a gap.
 	 */
 	public static String svg( final List<Day> days ) {
 		final int height = 40;
-		final int max = Math.max( 1, days.stream().mapToInt( Day::visitors ).max().orElse( 0 ) );
+		final int max = Math.max( 1, days.stream().mapToInt( Day::visits ).max().orElse( 0 ) );
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "<svg class=\"rail-chart-svg\" viewBox=\"0 0 " ).append( days.size() * 10 ).append( " " ).append( height ).append( "\" preserveAspectRatio=\"none\" aria-hidden=\"true\">" );
 
 		int x = 0;
 
 		for( final Day day : days ) {
-			final int barHeight = Math.max( 1, Math.round( ( height - 2 ) * day.visitors() / (float)max ) );
-			sb.append( "<rect x=\"" ).append( x + 1 ).append( "\" y=\"" ).append( height - barHeight ).append( "\" width=\"8\" height=\"" ).append( barHeight ).append( "\" rx=\"1\"><title>" )
-					.append( day.date() ).append( ": " ).append( day.visitors() ).append( day.visitors() == 1 ? " visitor" : " visitors" ).append( "</title></rect>" );
+			final int visitsHeight = Math.max( 1, Math.round( ( height - 2 ) * day.visits() / (float)max ) );
+			final int visitorsHeight = Math.min( visitsHeight, Math.round( ( height - 2 ) * day.visitors() / (float)max ) );
+			sb.append( "<g><title>" ).append( day.date() ).append( ": " ).append( day.visits() ).append( day.visits() == 1 ? " visit, " : " visits, " ).append( day.visitors() ).append( day.visitors() == 1 ? " visitor" : " visitors" ).append( "</title>" );
+			sb.append( "<rect class=\"visits\" x=\"" ).append( x + 1 ).append( "\" y=\"" ).append( height - visitsHeight ).append( "\" width=\"8\" height=\"" ).append( visitsHeight ).append( "\" rx=\"1\" />" );
+
+			if( visitorsHeight > 0 ) {
+				sb.append( "<rect class=\"visitors\" x=\"" ).append( x + 1 ).append( "\" y=\"" ).append( height - visitorsHeight ).append( "\" width=\"8\" height=\"" ).append( visitorsHeight ).append( "\" rx=\"1\" />" );
+			}
+
+			sb.append( "</g>" );
 			x += 10;
 		}
 

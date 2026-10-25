@@ -1027,8 +1027,11 @@ a:hover { color: var(--whoa-accent); }
 .rail-head-hint { margin-left: .2rem; text-transform: none; letter-spacing: .03em; font-size: .62rem; color: var(--whoa-dim); }
 .rail-chart { padding: .8rem .9rem .3rem; }
 .rail-chart-svg { display: block; width: 100%; height: 44px; }
-.rail-chart-svg rect { fill: var(--whoa-accent); opacity: .85; }
-.rail-chart-svg rect:hover { opacity: 1; }
+.rail-chart-svg rect { fill: var(--whoa-accent); }
+.rail-chart-svg rect.visits { opacity: .3; }    /* the day's visits: the whole bar */
+.rail-chart-svg rect.visitors { opacity: .85; } /* its visitors, solid at the bottom */
+.rail-chart-svg g:hover rect.visits { opacity: .45; }
+.rail-chart-svg g:hover rect.visitors { opacity: 1; }
 .rail-traffic-totals { display: flex; gap: 1rem; flex-wrap: wrap; padding: .35rem .9rem .75rem; font-size: .74rem; color: var(--whoa-muted); }
 .rail-traffic-totals strong { font-family: "JetBrains Mono", monospace; font-weight: 500; color: var(--whoa-bright); }
 .rail-traffic-now { margin-left: auto; color: var(--whoa-accent); }
