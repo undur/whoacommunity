@@ -25,23 +25,24 @@ public Application() {
 					<h2 id="parameters">2. Parameters</h2>
 					<p>Most URLs carry something: a book's number, a club's name. A part of the pattern in braces is a <em>parameter</em>:</p>
 <pre><code class="language-clike">routes.map( "/books/{book}", BookPage.class );</code></pre>
-					<p><code>/books/7</code> now shows a <code>BookPage</code>, with <code>7</code> set on it as its <code>book</code>. The page says what it wants by having a public field or setter of that name:</p>
+					<p><code>/books/7</code> now shows a <code>BookPage</code>, with <code>7</code> set on it as its <code>book</code>. The page takes the parameter by having a public field or setter of that name:</p>
 <pre><code class="language-clike">public class BookPage extends ERXComponent {
 
-    public Book book;     // set from the URL: /books/7 gives the book numbered 7
+    public Integer book;     // set from the URL: /books/7 gives 7
 
     …
 }</code></pre>
-					<p>The page asks for a <code>Book</code>, not a number. The router turns <code>"7"</code> into a book with a <em>converter</em>, which you register once, in the declaration. It works in both directions: from the URL's text to the object, and from the object to text when a link is built.</p>
-<pre><code class="language-clike">routes.converters().register( Book.class, Converter.of(
-        text -&gt; Book.withNumber( Integer.parseInt( text ) ),   // "7" → the book
-        book -&gt; String.valueOf( book.number() ) ) );           // the book → "7"</code></pre>
-					<p>Text, numbers, dates, UUIDs and enums are converted without registering anything. What happens to a bad value is the nice part. For <code>/books/abc</code>, or <code>/books/999</code> when there's no such book, the converter answers null or fails, and the route simply doesn't answer. The URL gets a 404, and you never write a null check for it.</p>
+					<p>The value is converted to the field's type: text, numbers, dates, UUIDs and enums need nothing from you. What happens to a bad value is the nice part. For <code>/books/abc</code>, the number doesn't convert, and the route simply doesn't answer. The URL gets a 404, and you never write a check for it.</p>
 					<p>A last parameter can be optional. One route then answers both <code>/search</code> and <code>/search/dickens</code>:</p>
 <pre><code class="language-clike">routes.map( "/search/{text?}", SearchPage.class );</code></pre>
 					<p>Without it, the page's <code>text</code> is left as it was, and a link whose value is null leaves it out. With it, it's a value like any other: one that doesn't convert is a 404, not the shorter page.</p>
 					<p>A pattern can also take everything beneath a path, for serving files or forwarding to something else:</p>
 <pre><code class="language-clike">routes.map( "/files/{path*}", Application::file );     // /files/minutes/2026.txt gives path "minutes/2026.txt"</code></pre>
+					<p><strong>Your own types.</strong> A page can also ask for the book itself, <code>public Book book;</code>, if you tell the router how a book is written in a URL. A <em>converter</em> does that, registered once in the declaration, in both directions: from the URL's text to the object, and from the object to text when a link is built.</p>
+<pre><code class="language-clike">routes.converters().register( Book.class, Converter.of(
+        text -&gt; Book.withNumber( Integer.parseInt( text ) ),   // "7" → the book
+        book -&gt; String.valueOf( book.number() ) ) );           // the book → "7"</code></pre>
+					<p><code>/books/999</code>, when there's no such book, is then a 404 too: the converter answers null, and the route doesn't answer. The rest of this guide uses <code>Book</code> this way.</p>
 
 					<h2 id="links">3. Linking to a route</h2>
 					<p>To link to a route, give it a name. Names are constants on an interface your pages implement:</p>
