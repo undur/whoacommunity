@@ -62,7 +62,7 @@
       &lt;plugin&gt;
         &lt;groupId&gt;is.rebbi&lt;/groupId&gt;
         &lt;artifactId&gt;vermilingua-maven-plugin&lt;/artifactId&gt;
-        &lt;version&gt;1.1.7&lt;/version&gt;
+        &lt;version&gt;1.2.0&lt;/version&gt;
         &lt;extensions&gt;true&lt;/extensions&gt;
       &lt;/plugin&gt;
     &lt;/plugins&gt;
@@ -104,13 +104,16 @@ launch.jvmOptions=-Xmx512m</code></pre>
     WebServerResources/
     Frameworks/          each framework's WebServerResources
     Resources/Java/      myapp.jar and every dependency jar</code></pre>
-					<p>Every jar the application needs is inside the bundle, which is why the server needs nothing installed beyond a JDK. The launch script is plain shell; on Windows it runs under WSL or Git Bash. Building again without <code>clean</code> overwrites resources in the existing bundle, so a stale file can't survive a rebuild.</p>
+					<p>Every jar the application needs is inside the bundle, which is why the server needs nothing installed beyond a JDK. The launch script is plain shell; on Windows it runs under WSL or Git Bash. The bundle is deleted and built from scratch on every build, so a component or resource you've removed or renamed doesn't linger in it, even without <code>clean</code>. That also means vermilingua owns the bundle: a plugin that works on it, a minifier for example, has to be bound to the <code>package</code> phase, which runs it after the bundle is built. Anything written into the bundle in an earlier phase is deleted.</p>
 
 					<h2 id="frameworks">6. Frameworks</h2>
 					<p>A framework project uses <code>woframework</code> packaging and the same layout. The build produces a Maven jar that carries the framework's components, resources and WebServerResources inside it, plus an <code>Info.plist</code> marking it as a WebObjects framework. Applications depend on it as an ordinary Maven dependency, and vermilingua unpacks the WebServerResources into the application bundle's <code>Contents/Frameworks</code> at build time. There is no separate <code>.framework</code> directory to install anywhere, and no old-style framework bundles at all: vermilingua builds jar frameworks only.</p>
 
 					<h2 id="deploying">7. Deploying the bundle</h2>
 					<p>Copy the <code>.woa</code> to the server and point wotaskd at it; the <a href="/guides">deployment guides</a> cover the server side. Two plugin parameters help with the copying: <code>createArchives</code> produces a <code>tar.gz</code> of the bundle, and <code>performSplit</code> produces a separate WebServerResources bundle for setups where Apache serves the static files. Neither is on by default, because with modulo the application serves its own resources and neither is needed.</p>
+					<p>Both are made by a separate goal, <code>vermilingua:archive</code>, which runs after the <code>package</code> phase, so a plain <code>mvn package</code> only builds the <code>.woa</code>. To get the archives, run:</p>
+<pre><code class="language-none">mvn package vermilingua:archive</code></pre>
+					<p>or any later phase, such as <code>mvn verify</code> or <code>mvn install</code>. The archives are named and laid out as wolifecycle's (<code>MyApp-1.0.woapplication.tar.gz</code> and <code>MyApp-1.0.wowebserverresources.tar.gz</code>, each unpacking to <code>MyApp.woa</code>), so deployment scripts written for wolifecycle's archives keep working. Anything that post-processes the bundle in the <code>package</code> phase is included in both.</p>
 					<p>Since 1.1.7 the plugin can also push the build straight to JavaMonitor:</p>
 <pre><code class="language-none">mvn package vermilingua:deploy -Ddeploy.password=…</code></pre>
 					<p>With <code>deploy.appName</code>, <code>deploy.monitorHost</code> and <code>deploy.password</code> set in <code>build.properties</code> or as <code>-D</code> overrides, the goal archives the bundle, posts it to JavaMonitor's deploy endpoint, and JavaMonitor hands it to wotaskd on every host the application runs on. It is marked experimental: it works and is in real use, but the details may still move.</p>
@@ -124,6 +127,8 @@ launch.jvmOptions=-Xmx512m</code></pre>
 						<li><strong>Not supported</strong>: <code>.war</code> builds for servlet deployment, and old-style <code>.framework</code> bundles. If you need either, stay on wolifecycle for that project.</li>
 						<li><strong>NEXT_ROOT</strong> is no longer read, and the launch script no longer passes <code>-DWORootDirectory</code> or <code>-DWOLocalRootDirectory</code>. A deployment that relied on a system-wide WebObjects install under <code>/Library/WebObjects</code> stops needing it.</li>
 						<li><strong>finalName</strong> only changes the bundle's folder name; the inside is identical regardless.</li>
+						<li><strong>Plugins that write into the bundle</strong>, such as a minifier bound to <code>process-resources</code>, must be bound to <code>package</code> instead. The bundle is built from scratch, so anything written into it earlier is lost (section 5).</li>
+						<li><strong>Classpath order</strong>: <code>classpath.txt</code> lists the application's jar first, then the dependencies in Maven's order. wolifecycle's bundles sort them, with the Apple <code>com.webobjects</code> jars last. If you rely on Wonder's replacements of Apple classes, set <code>allowWebObjectsPatching</code> to <code>true</code>, which lists the Apple jars last too. The README has the details.</li>
 					</ul>
 
 					<h2 id="troubleshooting">9. When it doesn't work</h2>
@@ -134,7 +139,7 @@ launch.jvmOptions=-Xmx512m</code></pre>
 						<li><strong>The launch script fails with <code>EACCES</code> or systemd reports <code>status=203/EXEC</code></strong>: an old plugin version set the execute bit for the owner only, and the bundle was copied by root while the app runs as another user. 1.1.7 sets it for everyone; until then, <code>chmod a+x MyApp.woa/MyApp</code>.</li>
 						<li><strong>Static resources 404 on the server</strong>: the application serves its own WebServerResources unless you built with <code>performSplit</code> and configured Apache to serve them. Use one or the other, not half of each.</li>
 					</ul>
-					<p>Everything above is current as of vermilingua 1.1.7. The <a href="/project/vermilingua/releases">release notes</a> say what changed since, and the <a href="https://github.com/undur/vermilingua-maven-plugin">repository</a> takes issues.</p>
+					<p>Everything above is current as of vermilingua 1.2.0. The <a href="/project/vermilingua/releases">release notes</a> say what changed since, and the <a href="https://github.com/undur/vermilingua-maven-plugin">repository</a> takes issues.</p>
 				</div>
 			</div>
 		</div>
