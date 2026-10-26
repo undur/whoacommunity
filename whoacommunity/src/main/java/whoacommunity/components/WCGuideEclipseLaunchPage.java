@@ -27,7 +27,7 @@ public class WCGuideEclipseLaunchPage extends WCComponent {
 
 	@Override
 	public String pageDescription() {
-		return "Why a Maven-built WebObjects application should be launched from Eclipse as a Java Application rather than with WOLips' WOApplication launcher, the two settings that make it work, and what the WOApplication launcher gets wrong: test scope on the classpath, exclusions ignored, two versions of a library, and a debugger that reads the wrong one.";
+		return "Launch a Maven-built WebObjects application from Eclipse as a Java Application, not with WOLips' WOApplication launcher: the one VM argument it takes, and why the WOApplication launcher gets the classpath wrong: test scope included, exclusions ignored, libraries twice, a debugger reading the wrong one.";
 	}
 
 	@Override
