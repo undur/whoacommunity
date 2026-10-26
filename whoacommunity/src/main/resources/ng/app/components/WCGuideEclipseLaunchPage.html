@@ -14,17 +14,8 @@
 						<li><strong>Program arguments:</strong> whatever you had on the launcher's <em>WO Arguments</em> tab, for example <code>-WOPort 1200 -WOAutoOpenInBrowser false</code>. Without a port, WebObjects picks a free one each time.</li>
 						<li><strong>Working directory:</strong> leave it at <em>Default</em>, which is the project folder. The 2022 instructions set <code>${working_dir_loc_WOLips:MyApp}</code>; for a Maven project that resolves to the same folder, but needs WOLips. <code>${workspace_loc:MyApp}</code> is the explicit form without it.</li>
 					</ul>
-					<p>Save, run or debug. The stored configuration looks like this; the two provider lines are what matters, as explained <a href="#why">below</a>:</p>
-<pre><code class="language-xml">&lt;launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication"&gt;
-    &lt;stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="myapp.Application"/&gt;
-    &lt;stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="MyApp"/&gt;
-    &lt;stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-WOPort 1200 -WOAutoOpenInBrowser false"/&gt;
-    &lt;stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DNSProjectBundleEnabled=true"/&gt;
-    &lt;booleanAttribute key="org.eclipse.jdt.launching.ATTR_EXCLUDE_TEST_CODE" value="true"/&gt;
-    &lt;stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/&gt;
-    &lt;stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/&gt;
-&lt;/launchConfiguration&gt;</code></pre>
-					<div class="whoa-callout"><p><strong>JDK arguments go elsewhere.</strong> The HotswapAgent arguments belong on the JDK definition, not on each launch configuration. See the <a href="/guide/wonder-slim-development">development setup guide</a>.</p></div>
+					<p>Save, run or debug.</p>
+					<div class="whoa-callout"><p><strong>JDK arguments.</strong> HotswapAgent arguments usually belong on the JDK definition, not on each launch configuration. See the <a href="/guide/wonder-slim-development">development setup guide</a>.</p></div>
 
 					<h2 id="lost">2. What the WOApplication launcher did for you</h2>
 					<ul>
