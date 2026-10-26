@@ -49,6 +49,8 @@ public class WCGuidesPage extends WCComponent {
 	private static final List<Guide> DEVELOPMENT_GUIDES = List.of(
 			new Guide( "wonder-slim-development", "🛠️", "Setting up for wonder-slim development", "/guide/wonder-slim-development", "macOS", false,
 					"A JDK that redefines classes while the application runs, Eclipse with Parslips, and Maven pointed at the WOCommunity repository. The JetBrains Runtime through SDKMAN!, HotswapAgent in one copy, and the VM arguments that make it all work.", List.of() ),
+			new Guide( "launching-from-eclipse", "▶️", "Launching from Eclipse", "/guide/launching-from-eclipse", "Eclipse", true,
+					"Why a Maven-built WebObjects application is launched as a plain Java Application rather than with WOLips' WOApplication launcher, the one VM argument it takes, and what the WOApplication launcher gets wrong: test scope on the classpath, exclusions ignored, libraries twice, a debugger reading the wrong one.", List.of() ),
 			new Guide( "url-routing", "🧭", "URL routing in wonder-slim", "/guide/url-routing", "wonder-slim", true,
 					"From the first route to groups and filters: declaring routes, parameters converted to your objects, links built from the routes so they can't go stale, handlers, forms, and the same URLs on localhost and in production.", List.of() ),
 			new Guide( "startup", "🚀", "How an application starts", "/guide/startup", "wonder-slim", true,

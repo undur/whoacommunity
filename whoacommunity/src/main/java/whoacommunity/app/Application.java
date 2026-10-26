@@ -33,6 +33,7 @@ import whoacommunity.components.WCElementReferencePage;
 import whoacommunity.components.WCFeedPage;
 import whoacommunity.components.WCGuideBuildPropertiesPage;
 import whoacommunity.components.WCGuideDeployPage;
+import whoacommunity.components.WCGuideEclipseLaunchPage;
 import whoacommunity.components.WCGuideExeDevPage;
 import whoacommunity.components.WCGuideLoggingPage;
 import whoacommunity.components.WCGuideModuloConfigPage;
@@ -183,6 +184,7 @@ public class Application extends NGApplication {
 				.map( "/element-reference/*", this::viewElementReference )
 				.map( "/guides", WCGuidesPage.class )
 				.map( "/guide/wonder-slim-development", WCGuideWonderSlimDevPage.class )
+				.map( "/guide/launching-from-eclipse", WCGuideEclipseLaunchPage.class )
 				.map( "/guide/building-with-vermilingua", WCGuideVermilinguaPage.class )
 				.map( "/guide/url-routing", WCGuideRoutesPage.class )
 				.map( "/guide/server-push", WCGuideServerPushPage.class )
@@ -231,7 +233,7 @@ public class Application extends NGApplication {
 			xml.append( "</url>\n" );
 		};
 
-		for( String path : List.of( "/", "/writing", "/projects", "/guides", "/dev-feed", "/roadmap", "/videos", "/deployment-config", "/deployment-apache-modulo", "/deployment-apache-mod-webobjects", "/guide/wonder-slim-development", "/guide/building-with-vermilingua", "/guide/url-routing", "/guide/server-push", "/guide/startup", "/guide/logging", "/guide/deploying-with-vermilingua", "/guide/deploying-on-exe-dev", "/guide/build-properties", "/guide/configuring-modulo" ) ) {
+		for( String path : List.of( "/", "/writing", "/projects", "/guides", "/dev-feed", "/roadmap", "/videos", "/deployment-config", "/deployment-apache-modulo", "/deployment-apache-mod-webobjects", "/guide/wonder-slim-development", "/guide/launching-from-eclipse", "/guide/building-with-vermilingua", "/guide/url-routing", "/guide/server-push", "/guide/startup", "/guide/logging", "/guide/deploying-with-vermilingua", "/guide/deploying-on-exe-dev", "/guide/build-properties", "/guide/configuring-modulo" ) ) {
 			add.accept( path, null );
 		}
 
