@@ -12,7 +12,7 @@
 					<ul>
 						<li><strong>VM arguments:</strong> <code>-DNSProjectBundleEnabled=true</code>. Tells the frameworks the application runs from its project folder, so components and resources are read from there and a saved template is live without a build. wonder-slim sets it itself when it finds <code>build.properties</code>; Wonder and plain WebObjects need it set.</li>
 						<li><strong>Program arguments:</strong> whatever you had on the launcher's <em>WO Arguments</em> tab, for example <code>-WOPort 1200 -WOAutoOpenInBrowser false</code>. Without a port, WebObjects picks a free one each time.</li>
-						<li><strong>Working directory:</strong> leave it at <em>Default</em>, which is the project folder. The 2022 instructions set <code>${working_dir_loc_WOLips:MyApp}</code>; for a Maven project that resolves to the same folder, but needs WOLips. <code>${workspace_loc:MyApp}</code> is the explicit form without it.</li>
+						<li><strong>Working directory:</strong> leave it at <em>Default</em>, which is the project folder. The 2022 instructions set <code>${working_dir_loc_WOLips:MyApp}</code>, but that only resolves to the project folder when WOLips' <em>Generate bundles</em> preference is off. With it on, the default, it resolves to the generated bundle under <code>build/</code> (<code>dist/</code> for Ant projects), and wonder-slim then won't find <code>build.properties</code>. <code>${workspace_loc:MyApp}</code> is the explicit form if you want one.</li>
 					</ul>
 					<p>Save, run or debug.</p>
 					<div class="whoa-callout"><p><strong>JDK arguments.</strong> HotswapAgent arguments usually belong on the JDK definition, not on each launch configuration. See the <a href="/guide/wonder-slim-development">development setup guide</a>.</p></div>
