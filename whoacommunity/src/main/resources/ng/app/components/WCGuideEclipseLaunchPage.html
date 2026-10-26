@@ -30,7 +30,6 @@
 					<ul>
 						<li><strong>Arguments.</strong> It appended a few dozen <code>-WO…</code> arguments from the WOLips preferences, mostly WebObjects' defaults restated, plus <code>-DNSProjectBundleEnabled=true</code>, <code>-DWOUserDirectory</code>, <code>-WOApplicationClassName</code> and <code>-DNSProjectSearchPath</code>. With project bundles on, the first is the only one that matters.</li>
 						<li><strong>Tabs.</strong> <em>WO Arguments</em> becomes the plain program arguments box. <em>Debug groups</em> wrote <code>-DNSDebugGroups=(…)</code>; write it yourself. <em>Browser</em> opened the application's URL; <code>-WOAutoOpenInBrowser true</code> has WebObjects do that.</li>
-						<li><strong>Console helpers.</strong> WOLips opens the component file on an unknown-key or declaration exception in the console. That hooks every Java console, so it keeps working.</li>
 					</ul>
 					<p>Nothing else is lost. Rapid turnaround and templates read from the project are the frameworks' doing, not the launcher's.</p>
 
