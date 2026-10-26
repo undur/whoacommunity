@@ -10,7 +10,7 @@
 					<h2 id="recipe">1. The recipe</h2>
 					<p>Right-click the class with the <code>main</code> method, usually <code>Application</code>, and choose <em>Run As → Java Application</em>. Then open the configuration it created, under <em>Run → Run Configurations…</em>, and check three things on the <em>Arguments</em> tab:</p>
 					<ul>
-						<li><strong>VM arguments:</strong> <code>-DNSProjectBundleEnabled=true</code>. Tells the frameworks the application runs from its project folder, so components and resources are read from there and a saved template is live without a build. wonder-slim sets it itself when it finds <code>build.properties</code>; Wonder and plain WebObjects need it set. Set it regardless.</li>
+						<li><strong>VM arguments:</strong> <code>-DNSProjectBundleEnabled=true</code>. Tells the frameworks the application runs from its project folder, so components and resources are read from there and a saved template is live without a build. wonder-slim sets it itself when it finds <code>build.properties</code>; Wonder and plain WebObjects need it set.</li>
 						<li><strong>Program arguments:</strong> whatever you had on the launcher's <em>WO Arguments</em> tab, for example <code>-WOPort 1200 -WOAutoOpenInBrowser false</code>. Without a port, WebObjects picks a free one each time.</li>
 						<li><strong>Working directory:</strong> leave it at <em>Default</em>, which is the project folder. The 2022 instructions set <code>${working_dir_loc_WOLips:MyApp}</code>; for a Maven project that resolves to the same folder, but needs WOLips. <code>${workspace_loc:MyApp}</code> is the explicit form without it.</li>
 					</ul>
