@@ -38,11 +38,6 @@ public class GithubFeed {
 	private static final int COMMITS_PER_REPO = 50;
 
 	/**
-	 * Singleton instance, refreshed at most once per its cache duration.
-	 */
-	public static final GithubFeed shared = new GithubFeed( Duration.ofMinutes( 5 ) );
-
-	/**
 	 * Reusable Gson with an Instant adapter — GitHub returns ISO-8601
 	 * timestamps everywhere we read a time field.
 	 */
@@ -50,9 +45,15 @@ public class GithubFeed {
 
 	/**
 	 * Empty payload returned before the first successful refresh and on
-	 * total fetch failure with no prior data to fall back to.
+	 * total fetch failure with no prior data to fall back to. Declared
+	 * before {@link #shared}, whose constructor takes it as the initial value.
 	 */
 	private static final GithubData EMPTY = new GithubData( List.of(), List.of(), List.of(), Map.of(), Map.of(), Map.of(), Map.of() );
+
+	/**
+	 * Singleton instance, refreshed at most once per its cache duration.
+	 */
+	public static final GithubFeed shared = new GithubFeed( Duration.ofMinutes( 5 ) );
 
 	private final CachedFeed<GithubData> _feed;
 
