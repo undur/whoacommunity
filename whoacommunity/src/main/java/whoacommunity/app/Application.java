@@ -31,6 +31,7 @@ import whoacommunity.components.WCDeploymentApacheModuloPage;
 import whoacommunity.components.WCDeploymentPage;
 import whoacommunity.components.WCElementReferencePage;
 import whoacommunity.components.WCFeedPage;
+import whoacommunity.components.WCGuideAntToMavenPage;
 import whoacommunity.components.WCGuideBuildPropertiesPage;
 import whoacommunity.components.WCGuideDeployPage;
 import whoacommunity.components.WCGuideEclipseLaunchPage;
@@ -193,6 +194,7 @@ public class Application extends NGApplication {
 				.map( "/guide/deploying-with-vermilingua", WCGuideDeployPage.class )
 				.map( "/guide/deploying-on-exe-dev", WCGuideExeDevPage.class )
 				.map( "/guide/build-properties", WCGuideBuildPropertiesPage.class )
+				.map( "/guide/ant-to-maven", WCGuideAntToMavenPage.class )
 				.map( "/guide/configuring-modulo", WCGuideModuloConfigPage.class )
 				.map( "/deployment", WCGuidesPage.class )
 				.map( "/deployment-config", WCDeploymentPage.class )
@@ -233,7 +235,7 @@ public class Application extends NGApplication {
 			xml.append( "</url>\n" );
 		};
 
-		for( String path : List.of( "/", "/writing", "/projects", "/guides", "/dev-feed", "/roadmap", "/videos", "/deployment-config", "/deployment-apache-modulo", "/deployment-apache-mod-webobjects", "/guide/wonder-slim-development", "/guide/launching-from-eclipse", "/guide/building-with-vermilingua", "/guide/url-routing", "/guide/server-push", "/guide/startup", "/guide/logging", "/guide/deploying-with-vermilingua", "/guide/deploying-on-exe-dev", "/guide/build-properties", "/guide/configuring-modulo" ) ) {
+		for( String path : List.of( "/", "/writing", "/projects", "/guides", "/dev-feed", "/roadmap", "/videos", "/deployment-config", "/deployment-apache-modulo", "/deployment-apache-mod-webobjects", "/guide/wonder-slim-development", "/guide/launching-from-eclipse", "/guide/building-with-vermilingua", "/guide/url-routing", "/guide/server-push", "/guide/startup", "/guide/logging", "/guide/deploying-with-vermilingua", "/guide/deploying-on-exe-dev", "/guide/build-properties", "/guide/ant-to-maven", "/guide/configuring-modulo" ) ) {
 			add.accept( path, null );
 		}
 

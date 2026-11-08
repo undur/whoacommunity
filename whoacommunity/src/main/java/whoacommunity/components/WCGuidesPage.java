@@ -19,7 +19,7 @@ public class WCGuidesPage extends WCComponent {
 	 * @param blurb What sits at the edge in this variant, and why you'd choose it
 	 */
 	/**
-	 * @param nodes The request path drawn in the card: edge → (proxy) → apps
+	 * @param nodes The request path drawn in the card: edge â (proxy) â apps
 	 */
 	public record Guide( String id, String emoji, String title, String url, String tag, boolean beta, String blurb, List<Node> nodes ) {}
 
@@ -33,51 +33,53 @@ public class WCGuidesPage extends WCComponent {
 	private static final Node APPS = new Node( "apps", "instances", "apps" );
 
 	private static final List<Guide> GUIDES = List.of(
-			new Guide( "modulo", "🤖", "Pure modulo", "/deployment-config", "new hotness", true,
+			new Guide( "modulo", "ð¤", "Pure modulo", "/deployment-config", "new hotness", true,
 					"modulo alone on ports 80 and 443: TLS from Let's Encrypt via native ACME, virtual hosts, static files and routing to instances, from one TOML file. No Apache, no certbot, no compiled module. The field-tested path, and the one we run ourselves.",
-					List.of( new Node( "modulo", "80/443 · TLS · routing", "edge" ), APPS ) ),
-			new Guide( "apache-modulo", "🪶", "Apache + modulo", "/deployment-apache-modulo", "hybrid", false,
-					"Apache keeps the edge — certbot certificates, vhosts, static files — and modulo stands behind it as the WO-aware reverse proxy, replacing mod_WebObjects without compiling anything. For an Apache estate you can't, or won't, retire.",
-					List.of( new Node( "Apache", "80/443 · TLS", "edge" ), new Node( "modulo", "routing", "proxy" ), APPS ) ),
-			new Guide( "apache-mod-webobjects", "🏛️", "Apache + mod_WebObjects", "/deployment-apache-mod-webobjects", "classic", false,
+					List.of( new Node( "modulo", "80/443 Â· TLS Â· routing", "edge" ), APPS ) ),
+			new Guide( "apache-modulo", "ðª¶", "Apache + modulo", "/deployment-apache-modulo", "hybrid", false,
+					"Apache keeps the edge â certbot certificates, vhosts, static files â and modulo stands behind it as the WO-aware reverse proxy, replacing mod_WebObjects without compiling anything. For an Apache estate you can't, or won't, retire.",
+					List.of( new Node( "Apache", "80/443 Â· TLS", "edge" ), new Node( "modulo", "routing", "proxy" ), APPS ) ),
+			new Guide( "apache-mod-webobjects", "ðï¸", "Apache + mod_WebObjects", "/deployment-apache-mod-webobjects", "classic", false,
 					"Deployment as it has been done since the last century: Apache with a compiled mod_WebObjects module, certbot, and a C toolchain on the production server to build it. Published for comparison, so you can see what the other two leave out.",
-					List.of( new Node( "Apache", "80/443 · TLS", "edge" ), new Node( "mod_WebObjects", "routing, in-process", "proxy" ), APPS ) ) );
+					List.of( new Node( "Apache", "80/443 Â· TLS", "edge" ), new Node( "mod_WebObjects", "routing, in-process", "proxy" ), APPS ) ) );
 
 	/**
 	 * Guides about the development environment rather than the server. No topology row on these cards.
 	 */
 	private static final List<Guide> DEVELOPMENT_GUIDES = List.of(
-			new Guide( "wonder-slim-development", "🛠️", "Setting up for wonder-slim development", "/guide/wonder-slim-development", "macOS", false,
+			new Guide( "wonder-slim-development", "ð ï¸", "Setting up for wonder-slim development", "/guide/wonder-slim-development", "macOS", false,
 					"A JDK that redefines classes while the application runs, Eclipse with Parslips, and Maven pointed at the WOCommunity repository. The JetBrains Runtime through SDKMAN!, HotswapAgent in one copy, and the VM arguments that make it all work.", List.of() ),
-			new Guide( "launching-from-eclipse", "▶️", "Launching from Eclipse", "/guide/launching-from-eclipse", "Eclipse", true,
+			new Guide( "launching-from-eclipse", "â¶ï¸", "Launching from Eclipse", "/guide/launching-from-eclipse", "Eclipse", true,
 					"Launch a Maven-built WebObjects application as a Java Application, not with WOLips' WOApplication launcher: the one VM argument it takes, and why the WOApplication launcher gets the classpath wrong.", List.of() ),
-			new Guide( "url-routing", "🧭", "URL routing in wonder-slim", "/guide/url-routing", "wonder-slim", true,
+			new Guide( "url-routing", "ð§­", "URL routing in wonder-slim", "/guide/url-routing", "wonder-slim", true,
 					"From the first route to groups and filters: declaring routes, parameters converted to your objects, links built from the routes so they can't go stale, handlers, forms, and the same URLs on localhost and in production.", List.of() ),
-			new Guide( "startup", "🚀", "How an application starts", "/guide/startup", "wonder-slim", true,
+			new Guide( "startup", "ð", "How an application starts", "/guide/startup", "wonder-slim", true,
 					"The configuration composed from every source before the application is constructed, where each value came from, reading and watching properties, and plugins: frameworks that take part in startup at three named points, and moving over from ERXFrameworkPrincipal.", List.of() ),
-			new Guide( "logging", "📜", "Configuring logging", "/guide/logging", "wonder-slim", true,
+			new Guide( "logging", "ð", "Configuring logging", "/guide/logging", "wonder-slim", true,
 					"reload4j or logback behind slf4j, levels and a layout set with properties every backend understands, the backend's own configuration on top, levels changed on a running instance, and existing log4j configuration that keeps working.", List.of() ),
-			new Guide( "server-push", "📡", "Server push: events and WebSockets", "/guide/server-push", "wo-adaptor-jetty", true,
+			new Guide( "server-push", "ð¡", "Server push: events and WebSockets", "/guide/server-push", "wo-adaptor-jetty", true,
 					"Pushing from the server to the browser with wo-adaptor-jetty: server-sent events that stream over an ordinary HTTP response, broadcasting to every connected client, WebSockets when the browser needs to talk back, and the client-side traps worth knowing before you start.", List.of() ) );
 
 	/**
 	 * Guides about building: getting from source to a bundle
 	 */
 	private static final List<Guide> BUILDING_GUIDES = List.of(
-			new Guide( "vermilingua", "🦡", "Building WebObjects applications with vermilingua", "/guide/building-with-vermilingua", "Maven", false,
+			new Guide( "vermilingua", "ð¦¡", "Building WebObjects applications with vermilingua", "/guide/building-with-vermilingua", "Maven", false,
 					"From an empty directory to a self-contained .woa: the pom, the project layout, build.properties, the bundle and its launch script, frameworks, deploying to JavaMonitor, and migrating from wolifecycle.", List.of() ),
-			new Guide( "vermilingua-deploy", "🚚", "Deploying with vermilingua:deploy", "/guide/deploying-with-vermilingua", "new hotness", true,
+			new Guide( "vermilingua-deploy", "ð", "Deploying with vermilingua:deploy", "/guide/deploying-with-vermilingua", "new hotness", true,
 					"One Maven command ships a build: the bundle is posted to JavaMonitor, and wotaskd swaps it into place and restarts the instances on every host. Configuration, use from a build server, what happens on each host, rollback.", List.of() ),
-			new Guide( "exe-dev", "🚀", "Deploying on exe.dev with vermilingua:ssh-deploy", "/guide/deploying-on-exe-dev", "new hotness", true,
+			new Guide( "exe-dev", "ð", "Deploying on exe.dev with vermilingua:ssh-deploy", "/guide/deploying-on-exe-dev", "new hotness", true,
 					"From project to a running application behind HTTPS with one Maven command: a VM created on exe.dev, the bundle uploaded, Java installed and the application run as a service. Configuration, redeploying, rollback, your own domain, and deploying to any Linux machine over SSH.", List.of() ),
-			new Guide( "build-properties", "📋", "build.properties", "/guide/build-properties", "reference", true,
-					"What belongs in a project's build.properties today: the handful of current keys, what each means and which tool reads it, and every legacy key from WOLips, wolifecycle and Wonder's builds, with what replaced it.", List.of() ) );
+			new Guide( "build-properties", "ð", "build.properties", "/guide/build-properties", "reference", true,
+					"What belongs in a project's build.properties today: the handful of current keys, what each means and which tool reads it, and every legacy key from WOLips, wolifecycle and Wonder's builds, with what replaced it.", List.of() ),
+			new Guide( "ant-to-maven", "🐇", "Moving an Ant project to Maven", "/guide/ant-to-maven", "migration", true,
+					"A WOLips \"Fluffy Bunny\" project built with vermilingua instead of Ant: a pom, a shorter build.properties and ERProjectLayout, the folders kept or moved to the standard layout. Checked against Wonder 7.4 and 7.5-SNAPSHOT.", List.of() ) );
 
 	/**
 	 * Guides about running the stack once it's installed
 	 */
 	private static final List<Guide> RUNNING_GUIDES = List.of(
-			new Guide( "modulo-config", "⚙️", "Configuring modulo", "/guide/configuring-modulo", "reference", true,
+			new Guide( "modulo-config", "âï¸", "Configuring modulo", "/guide/configuring-modulo", "reference", true,
 					"Every setting in modulo.toml: ports and HTTP/3, the admin password, where wotaskd is, Let's Encrypt, sites in their own files, hostnames and canonical redirects, certificates, rewrite rules, and what modulo keeps on disk.", List.of() ) );
 
 	public List<Guide> runningGuides() {

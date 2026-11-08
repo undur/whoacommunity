@@ -1,0 +1,125 @@
+<wo:WCLook>
+	<div class="whoa-grid">
+		<div>
+			<div class="whoa-section">Moving an Ant project to Maven<span>a WOLips "Fluffy Bunny" project, built with vermilingua</span></div>
+			<div class="whoa-panel guide-panel">
+				<div class="article-body">
+					<p>A project made with WOLips' wizards has the "Fluffy Bunny" layout, <code>Sources</code>, <code>Components</code>, <code>Resources</code> and <code>WebServerResources</code> at the top, and is built by Ant from <code>build.xml</code>, the <code>woproject</code> pattern sets and the <code>WOFramework/…</code> containers in <code>.classpath</code>. This guide moves it to a Maven build with <a href="/guide/building-with-vermilingua">vermilingua</a>. The folders can stay where they are. Moving them to the standard Maven layout is a separate, optional step (<a href="#standard">section 6</a>).</p>
+					<p>It started as a <a href="https://gist.github.com/hugithordarson/3c269a3196d0c4f2da486f1109c16d42">2021 walk-through</a> by Hugi Thordarson and Paul Hoadley, written for wolifecycle and Wonder 7.3. Everything here was checked on a fresh project from WOLips' <em>Wonder Application</em> template, with Wonder 7.4 and 7.5-SNAPSHOT, vermilingua 1.2.0 and JDK 25. Each setup was built and run both as a <code>.woa</code> and from the project folder.</p>
+
+					<h2 id="ant">1. Remove the Ant build</h2>
+					<p>In Eclipse, delete the project from the workspace but leave the files on disk. Then, from the project folder:</p>
+<pre><code class="language-bash">git rm -r woproject build.xml .classpath .project
+rm -rf bin build dist</code></pre>
+					<p>The jars in <code>Libraries</code> become dependencies in the pom, next step. Delete the folder once they're there.</p>
+
+					<h2 id="pom">2. Add a pom</h2>
+<pre><code class="language-xml">&lt;project&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+  &lt;groupId&gt;com.example&lt;/groupId&gt;
+  &lt;artifactId&gt;MyApp&lt;/artifactId&gt;
+  &lt;version&gt;1.0.0-SNAPSHOT&lt;/version&gt;
+  &lt;packaging&gt;woapplication&lt;/packaging&gt;
+  &lt;properties&gt;
+    &lt;maven.compiler.release&gt;25&lt;/maven.compiler.release&gt;
+    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+  &lt;/properties&gt;
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;wonder.core&lt;/groupId&gt;
+      &lt;artifactId&gt;ERExtensions&lt;/artifactId&gt;
+      &lt;version&gt;7.4&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;is.rebbi.slim&lt;/groupId&gt;
+      &lt;artifactId&gt;ERProjectLayout&lt;/artifactId&gt;
+      &lt;version&gt;8.1.3&lt;/version&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+  &lt;build&gt;
+    &lt;finalName&gt;${project.artifactId}&lt;/finalName&gt;
+    &lt;sourceDirectory&gt;Sources&lt;/sourceDirectory&gt;
+    &lt;plugins&gt;
+      &lt;plugin&gt;
+        &lt;groupId&gt;is.rebbi&lt;/groupId&gt;
+        &lt;artifactId&gt;vermilingua-maven-plugin&lt;/artifactId&gt;
+        &lt;version&gt;1.2.0&lt;/version&gt;
+        &lt;extensions&gt;true&lt;/extensions&gt;
+      &lt;/plugin&gt;
+    &lt;/plugins&gt;
+  &lt;/build&gt;
+&lt;/project&gt;</code></pre>
+					<p>Every <code>WOFramework/…</code> entry in the old <code>.classpath</code> becomes a dependency. ERExtensions brings WebObjects itself, JavaWOExtensions, ERFoundation and ERWebObjects, so those need no entries of their own. Wonder's other frameworks are in the WOCommunity repository under the same names, most of them in <code>wonder.core</code>; Ajax is in <code>wonder.ajax</code>. Maven has to be pointed at that repository; the <a href="/guide/building-with-vermilingua">vermilingua guide</a> shows how. A test folder, if there is one, goes in as <code>&lt;testSourceDirectory&gt;Tests&lt;/testSourceDirectory&gt;</code>.</p>
+
+					<h2 id="properties">3. Rewrite build.properties</h2>
+<pre><code class="language-properties">project.name=MyApp
+project.type=application
+principalClass=com.example.Application
+dir.components=Components
+dir.woresources=Resources
+dir.webserverResources=WebServerResources</code></pre>
+					<p>Keep the <code>component.inlineBinding…</code> and <code>component.wellFormedTemplateRequired</code> keys if your project sets them; the editor reads them. Everything else the wizard wrote (<code>classes.dir</code>, <code>project.name.lowercase</code>, <code>embed.*</code>, <code>webXML</code>, <code>customInfoPListContent</code>) is read only by the Ant build. The <a href="/guide/build-properties">build.properties guide</a> covers each key.</p>
+
+					<h2 id="layout">4. Register ERProjectLayout</h2>
+<pre><code class="language-java">public class Application extends ERXApplication {
+
+	static {
+		ERXProjectLayout.register();
+	}
+	…</code></pre>
+					<p>It reads the <code>dir.*</code> keys, so in development the application finds its components and resources in the same folders vermilingua packages from. Without it, development depends on your Eclipse natures, and on Wonder 7.4 that goes wrong (<a href="#why">section 7</a>). wonder-slim registers it itself.</p>
+					<div class="whoa-callout"><p><strong>JDK 24 and later.</strong> WebObjects' <code>NSTimeZone</code> uses <code>sun.security.action.GetPropertyAction</code>, which the JDK no longer has. Wonder 7.4 then fails at start-up with <code>NoClassDefFoundError: sun/security/action/GetPropertyAction</code>, and 7.5-SNAPSHOT doesn't include the class either. Copy <a href="https://github.com/undur/wonder-slim/blob/master/ERExtensions/src/main/java/sun/security/action/GetPropertyAction.java">wonder-slim's replacement</a> into <code>Sources/sun/security/action/</code>.</p></div>
+
+					<h2 id="run">5. Build, import, launch</h2>
+<pre><code class="language-bash">mvn package
+./target/MyApp.woa/MyApp -WOPort 1200</code></pre>
+					<p>Once that runs, use <em>File → Import → Maven → Existing Maven Projects</em> in Eclipse, and launch the application as a Java Application, as the <a href="/guide/launching-from-eclipse">launching guide</a> describes. On Wonder 7.4, add <code>-Dwebobjects.user.dir</code> pointing at a built bundle to the VM arguments, for example the <code>target/MyApp.woa</code> that <code>mvn package</code> builds. Without it, start-up fails with a <code>NullPointerException</code> in <code>ERXApplication$Loader.collectMainProps</code>. 7.5-SNAPSHOT needs no arguments.</p>
+
+					<h2 id="standard">6. Optional: the standard Maven layout</h2>
+<pre><code class="language-bash">mkdir -p src/main
+git mv Sources src/main/java
+git mv Components src/main/components
+git mv Resources src/main/woresources
+git mv WebServerResources src/main/webserver-resources
+git mv Tests src/test/java</code></pre>
+					<p>Then remove <code>&lt;sourceDirectory&gt;</code> and <code>&lt;testSourceDirectory&gt;</code> from the pom, and the three <code>dir.*</code> keys from <code>build.properties</code>, since these folders are the defaults. Note <code>src/main/woresources</code>: vermilingua packages bundle resources from there. <code>src/main/resources</code>, where wolifecycle and the old walk-through put them, is for the classpath, and a model there ends up in the jar, not in the bundle. If you use EOGenerator, update the model paths in your <code>.eogen</code> files.</p>
+
+					<h2 id="why">7. Why ERProjectLayout</h2>
+					<p>Without ERProjectLayout, the code that finds a project's resources in development is ERFoundation's, and ERFoundation decides the layout from the natures in <code>.project</code>. Wonder 7.4's ERFoundation 1.0 only recognises <code>org.maven.ide.eclipse.maven2Nature</code>, the m2eclipse nature from before m2e, which is why the old walk-through's <code>.project</code> had it. Even with that nature, it looks for models only in <code>src/main/resources</code>. 7.5-SNAPSHOT brings ERFoundation 1.2, which recognises the current m2e nature and both folders. Results from the test project, run from the project folder:</p>
+					<div class="tw"><table class="feed-table">
+						<thead><tr><th>Wonder</th><th>Layout, without ERProjectLayout</th><th>In development</th></tr></thead>
+						<tbody>
+							<tr><td class="c-repo">7.4</td><td>Fluffy Bunny</td><td>Works, as long as <code>.project</code> doesn't have the old nature.</td></tr>
+							<tr><td class="c-repo">7.4</td><td>standard</td><td>Blank pages, and <em>No template found for component Main</em> in the debug log.</td></tr>
+							<tr><td class="c-repo">7.4</td><td>standard, old nature added</td><td>Runs, but a model in <code>src/main/woresources</code> isn't loaded, with no error. The built application loads it.</td></tr>
+							<tr><td class="c-repo">7.5-SNAPSHOT</td><td>standard</td><td>Works.</td></tr>
+						</tbody>
+					</table></div>
+					<p>With ERProjectLayout registered, every one of these works, on 7.4 included. Development no longer depends on <code>.project</code>.</p>
+
+					<h2 id="dropped">8. What the old walk-through needed that this doesn't</h2>
+					<ul>
+						<li><strong>Hand-written <code>.classpath</code> and <code>.project</code>,</strong> and turning off automatic builds while you write them. The Maven import generates both from the pom.</li>
+						<li><strong>The <code>woproject</code> pattern sets.</strong> vermilingua ignores them and packages the declared folders.</li>
+						<li><strong><code>flattenComponents</code>.</strong> vermilingua always flattens components, and a component in a subfolder was found both in development and in the bundle.</li>
+						<li><strong>WOLips' <em>Generate bundles</em>.</strong> On Wonder 7.4, the bundle <code>webobjects.user.dir</code> points at comes from <code>mvn package</code>.</li>
+						<li><strong>Overriding <code>_sessionClass()</code>, and <code>ERXPatcher.setClassForName</code> for <code>Main</code>.</strong> Didn't happen: <code>Session</code> and <code>Main</code> in their own packages were found in every run.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div>
+			<nav class="toc">
+				<div class="toc-head">On this page</div>
+				<a href="#ant">Remove the Ant build</a>
+				<a href="#pom">Add a pom</a>
+				<a href="#properties">Rewrite build.properties</a>
+				<a href="#layout">Register ERProjectLayout</a>
+				<a href="#run">Build, import, launch</a>
+				<a href="#standard">The standard layout</a>
+				<a href="#why">Why ERProjectLayout</a>
+				<a href="#dropped">No longer needed</a>
+			</nav>
+		</div>
+	</div>
+</wo:WCLook>
