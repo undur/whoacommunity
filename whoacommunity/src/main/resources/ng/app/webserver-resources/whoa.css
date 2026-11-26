@@ -591,7 +591,7 @@ a:hover { color: var(--whoa-accent); }
 .comment-form .form-control { background: var(--whoa-panel); border-color: var(--whoa-line); color: var(--whoa-bright); border-radius: 5px; }
 .comment-form .form-control::placeholder { color: var(--whoa-dim); }
 .comment-form .form-control:focus { background: var(--whoa-panel); border-color: var(--whoa-accent); box-shadow: none; color: var(--whoa-bright); }
-.comment-form .form-hint { color: var(--whoa-dim); }
+.comment-form .form-text { color: var(--whoa-dim); }
 .comment-answer { max-width: 12rem; }
 
 .btn-primary { border-radius: 5px; font-weight: 600; }
